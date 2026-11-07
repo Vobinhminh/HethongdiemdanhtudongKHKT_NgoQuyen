@@ -53,7 +53,7 @@
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <!-- CỘT 1: THÔNG TIN HỌC SINH & LỌC THÔNG MINH -->
+              <!-- CỘT 1: THÔNG TIN HỌC SINH (ĐÃ BỎ MÃ HS RA KHỎI BẢNG HIỂN THỊ) -->
               <div class="space-y-4">
                   <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
                       <h3 class="font-bold text-blue-800 mb-3 text-sm uppercase"><i class="fas fa-user-graduate mr-1"></i> 1. Thông tin học sinh</h3>
@@ -62,10 +62,10 @@
                       <div class="mb-3 relative select-custom" id="wrapper-ai-class">
                           <label class="block text-xs font-bold text-slate-600 mb-1">Chọn Lớp</label>
                           <input type="hidden" id="ai-inp-class" value="">
-                          <button type="button" onclick="aiToggleSelect('dropdown-ai-class')" class="w-full flex justify-between p-2.5 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-700 shadow-sm"><span id="ai-label-class" class="text-slate-400">-- Bấm chọn lớp --</span><i class="fas fa-chevron-down text-slate-400"></i></button>
+                          <button type="button" onclick="aiToggleSelect('dropdown-ai-class', 'search-class-input')" class="w-full flex justify-between p-2.5 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-700 shadow-sm"><span id="ai-label-class" class="text-slate-400">-- Bấm chọn lớp --</span><i class="fas fa-chevron-down text-slate-400"></i></button>
                           
                           <div id="dropdown-ai-class" class="hidden absolute z-50 w-full mt-1 bg-white border rounded-xl shadow-2xl p-2">
-                            <input type="text" placeholder="🔍 Gõ tên lớp để lọc..." oninput="filterOptions('search-class-input', 'ul-class-list')" id="search-class-input" class="w-full p-2 mb-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold outline-none focus:border-cyan-500">
+                            <input type="text" placeholder="🔍 Gõ lớp (VD: 1, 10, 12...)" oninput="filterOptions('search-class-input', 'ul-class-list')" id="search-class-input" class="w-full p-2 mb-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold outline-none focus:border-cyan-500">
                             <ul id="ul-class-list" class="max-h-[180px] overflow-y-auto custom-scrollbar"></ul>
                           </div>
                       </div>
@@ -74,7 +74,7 @@
                       <div class="mb-3 relative select-custom" id="wrapper-ai-name">
                           <label class="block text-xs font-bold text-slate-600 mb-1">Họ và Tên Học Sinh</label>
                           <input type="hidden" id="ai-inp-name" value="">
-                          <button type="button" onclick="aiToggleSelect('dropdown-ai-name')" class="w-full flex justify-between p-2.5 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-700 shadow-sm"><span id="ai-label-name" class="text-slate-400">-- Chọn học sinh --</span><i class="fas fa-chevron-down text-slate-400"></i></button>
+                          <button type="button" onclick="aiToggleSelect('dropdown-ai-name', 'search-student-input')" class="w-full flex justify-between p-2.5 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-700 shadow-sm"><span id="ai-label-name" class="text-slate-400">-- Chọn học sinh --</span><i class="fas fa-chevron-down text-slate-400"></i></button>
                           
                           <div id="dropdown-ai-name" class="hidden absolute z-50 w-full mt-1 bg-white border rounded-xl shadow-2xl p-2">
                             <input type="text" placeholder="🔍 Gõ tên học sinh để lọc..." oninput="filterOptions('search-student-input', 'ul-student-list')" id="search-student-input" class="w-full p-2 mb-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold outline-none focus:border-cyan-500">
@@ -82,30 +82,26 @@
                           </div>
                       </div>
 
-                      <!-- TỰ ĐỘNG ĐIỀN CHỨC VỤ, NGÀY SINH & MÃ HS -->
-                      <div class="grid grid-cols-3 gap-2 mb-3">
+                      <!-- TỰ ĐỘNG ĐIỀN CHỨC VỤ VÀ NGÀY SINH (CHỈ GIỮ 2 CỘT NÀY) -->
+                      <div class="grid grid-cols-2 gap-3 mb-3">
                           <div>
-                              <label class="block text-[11px] font-bold text-slate-500 mb-1">Chức vụ</label>
-                              <input type="text" id="ai-inp-role" readonly placeholder="Chức vụ" class="w-full p-2 rounded-lg border bg-slate-200 text-xs font-bold text-slate-600">
+                              <label class="block text-xs font-bold text-slate-600 mb-1">Chức vụ</label>
+                              <input type="text" id="ai-inp-role" readonly placeholder="Chức vụ" class="w-full p-2.5 rounded-lg border bg-slate-200 text-xs font-bold text-slate-600">
                           </div>
                           <div>
-                              <label class="block text-[11px] font-bold text-slate-500 mb-1">Ngày sinh</label>
-                              <input type="text" id="ai-inp-dob" readonly placeholder="Ngày sinh" class="w-full p-2 rounded-lg border bg-slate-200 text-xs font-bold text-slate-600">
-                          </div>
-                          <div>
-                              <label class="block text-[11px] font-bold text-slate-500 mb-1">Mã HS</label>
-                              <input type="text" id="ai-inp-id" readonly placeholder="Mã HS" class="w-full p-2 rounded-lg border bg-slate-200 text-xs font-bold text-slate-600">
+                              <label class="block text-xs font-bold text-slate-600 mb-1">Ngày sinh</label>
+                              <input type="text" id="ai-inp-dob" readonly placeholder="Ngày sinh" class="w-full p-2.5 rounded-lg border bg-slate-200 text-xs font-bold text-slate-600">
                           </div>
                       </div>
+                      <!-- MÃ HS ĐƯỢC ẨN ĐỂ ĐỒNG BỘ NỀN TẢNG -->
+                      <input type="hidden" id="ai-inp-id">
 
                       <!-- XÁC THỰC PIN VỚI TÍCH XANH / TÍCH ĐỎ -->
                       <div>
                           <label class="block text-xs font-bold text-slate-600 mb-1">Xác thực Mật khẩu PIN (6 Số)</label>
                           <div class="relative">
                               <input type="password" id="ai-inp-pin" maxlength="6" inputmode="numeric" placeholder="Nhập PIN 6 số..." oninput="aiCheckPinLive()" class="w-full p-2.5 rounded-lg border border-slate-300 text-sm font-bold text-center tracking-widest bg-white focus:border-cyan-500 focus:outline-none transition shadow-sm" disabled>
-                              <!-- Biểu tượng Tích Xanh (Đúng) -->
                               <i id="ai-icon-pin-correct" class="fas fa-check-circle absolute right-3 top-3 text-emerald-500 text-lg hidden"></i>
-                              <!-- Biểu tượng Tích Đỏ (Sai) -->
                               <i id="ai-icon-pin-wrong" class="fas fa-times-circle absolute right-3 top-3 text-red-500 text-lg hidden"></i>
                           </div>
                       </div>
@@ -121,7 +117,7 @@
                   </div>
               </div>
 
-              <!-- CỘT 2: CAMERA AI & TIẾN TRÌNH QUÉT 3 GÓC -->
+              <!-- CỘT 2: CAMERA AI & QUY TRÌNH QUÉT CHỦ ĐỘNG 3 MẪU -->
               <div class="flex flex-col items-center bg-slate-800 p-4 rounded-xl border-4 border-slate-700 relative">
                   <!-- CÀI ĐẶT CAMERA & AR -->
                   <div class="flex flex-col w-full mb-3 space-y-2">
@@ -138,10 +134,10 @@
                       </div>
                   </div>
 
-                  <!-- THÔNG BÁO HƯỚNG DẪN QUÉT 3 GÓC -->
+                  <!-- THÔNG BÁO HƯỚNG DẪN TỪNG BƯỚC -->
                   <div id="scan-instruction-box" class="w-full bg-cyan-900/90 text-cyan-200 text-xs font-bold p-2.5 rounded-lg mb-3 text-center border border-cyan-500/50 flex items-center justify-center space-x-2">
                     <i class="fas fa-info-circle text-cyan-400 text-sm"></i>
-                    <span id="scan-instruction-text">Bấm "Bật Cam" và bắt đầu quy trình thu thập 3 góc ảnh</span>
+                    <span id="scan-instruction-text">Hãy Bật Cam và chọn Quét Mẫu 1 (Chính diện)</span>
                   </div>
 
                   <!-- KHUNG HIỂN THỊ CAMERA & ĐẾM NGƯỢC -->
@@ -184,13 +180,13 @@
                     </div>
                   </div>
 
-                  <!-- CÁC NÚT ĐIỀU KHIỂN -->
+                  <!-- NÚT ĐIỀU KHIỂN LUỒNG CẬP NHẬT TỰ ĐỘNG -->
                   <div class="w-full grid grid-cols-2 gap-2 mt-4 z-20">
                       <button id="ai-btn-toggle-cam" onclick="aiToggleCamera()" class="bg-slate-600 hover:bg-slate-500 text-white font-bold py-2.5 rounded-lg text-xs transition shadow-md flex items-center justify-center">
                           <i class="fas fa-power-off mr-1"></i> Bật Cam
                       </button>
-                      <button id="ai-btn-start-sequence" onclick="start3AngleSequence()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2.5 rounded-lg shadow-lg text-xs transition flex items-center justify-center hidden">
-                          <i class="fas fa-play-circle mr-1"></i> Quét 3 Góc Mẫu AI
+                      <button id="ai-btn-step-action" onclick="triggerNextAngleStep()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2.5 rounded-lg shadow-lg text-xs transition flex items-center justify-center hidden">
+                          <i class="fas fa-play-circle mr-1"></i> <span id="btn-step-label">Quét Mẫu 1 (Chính diện)</span>
                       </button>
                       <button id="ai-btn-retake" onclick="aiReset3AngleSequence()" class="col-span-2 bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-lg text-xs transition shadow-md flex items-center justify-center hidden">
                           <i class="fas fa-redo mr-1"></i> Quét Lại Từ Đầu
@@ -202,15 +198,16 @@
   </div>
 
   <script>
-    // URL APPS SCRIPT BACKEND (Tự động gọi API khi chạy trên GitHub Pages)
+    // URL APPS SCRIPT BACKEND (Tự động điều hướng kết nối API)
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxYDm51fvs_fNToHqnNMQ4dV7hZLIggWFB2BjD0i3dMoRhIB7k48dhG5vNblVxtetkBfw/exec";
 
-    // Nút quay lại Cổng Điểm Danh mượt mà
+    // Nút quay lại Cổng Điểm Danh (Tắt Cam an toàn trước khi chuyển)
     function goBackToPortal() { 
+      aiStopCamera();
       window.location.href = 'index.html'; 
     }
 
-    // BỘ ĐIỀU HÀNH HYBRID API (Hỗ trợ cả GitHub Pages và Apps Script)
+    // BỘ ĐIỀU HÀNH HYBRID API CHUẨN XÁC
     function callBackendApi(fnName, ...args) {
       return new Promise((resolve, reject) => {
         if (window.google && google.script && google.script.run) {
@@ -236,8 +233,9 @@
 
     let appData = { classes: [] };
     let aiCurrentStudents = [];
-    let capturedSamples = [null, null, null]; // Mẫu 1 (Chính diện), Mẫu 2 (Trái), Mẫu 3 (Phải)
-    let isSequenceRunning = false;
+    let capturedSamples = [null, null, null]; 
+    let currentStepIndex = 0; // 0: Mẫu 1 (Chính diện), 1: Mẫu 2 (Trái), 2: Mẫu 3 (Phải)
+    let isCountdownActive = false;
     let aiIsARActive = true;
     let aiIsCameraOn = false;
     let aiCurrentStream = null;
@@ -248,14 +246,18 @@
       }
     });
 
-    function aiToggleSelect(id) {
+    function aiToggleSelect(id, inputToFocus) {
       document.querySelectorAll('div[id^="dropdown-ai-"]').forEach(el => {
         if(el.id !== id) el.classList.add('hidden');
       });
-      document.getElementById(id).classList.toggle('hidden');
+      const target = document.getElementById(id);
+      target.classList.toggle('hidden');
+      if (!target.classList.contains('hidden') && inputToFocus) {
+        setTimeout(() => document.getElementById(inputToFocus).focus(), 100);
+      }
     }
 
-    // LỌC DANH SÁCH THÔNG MINH (KHI GÕ CHỮ TRONG Ô SẠCH TÌM KIẾM)
+    // LỌC DANH SÁCH THÔNG MINH KHI GÕ TỪ KHÓA
     function filterOptions(inputId, listId) {
       const q = document.getElementById(inputId).value.toLowerCase().trim();
       const items = document.querySelectorAll(`#${listId} li`);
@@ -278,7 +280,7 @@
         .catch(err => {
           document.getElementById("loading-screen").classList.add("hidden");
           document.getElementById("step-ai-photo").classList.remove("hidden");
-          console.warn("Lỗi tải init data:", err);
+          console.warn("Lỗi nạp danh sách dữ liệu:", err);
         });
     });
 
@@ -358,7 +360,7 @@
         document.getElementById("ai-icon-pin-wrong").classList.add("hidden");
     }
 
-    // KIỂM TRA MÃ PIN THỜI GIAN THỰC (HIỂN THỊ TÍCH XANH HOẶC TÍCH ĐỎ)
+    // XÁC THỰC PIN THỜI GIAN THỰC (TÍCH XANH / TÍCH ĐỎ)
     function aiCheckPinLive() {
         const name = document.getElementById("ai-inp-name").value.trim(); 
         const pin = document.getElementById("ai-inp-pin").value.trim();
@@ -439,13 +441,18 @@
     function aiToggleCamera() { if (aiIsCameraOn) aiStopCamera(); else aiStartCamera(); }
 
     function aiStopCamera() {
-        if (aiCurrentStream) { aiCurrentStream.getTracks().forEach(track => track.stop()); aiCurrentStream = null; }
-        videoElement.srcObject = null; canvasElement.style.display = "none";
-        document.getElementById("ai-btn-start-sequence").classList.add("hidden");
+        if (aiCurrentStream) { 
+          aiCurrentStream.getTracks().forEach(track => track.stop()); 
+          aiCurrentStream = null; 
+        }
+        videoElement.srcObject = null; 
+        canvasElement.style.display = "none";
+        document.getElementById("ai-btn-step-action").classList.add("hidden");
         const btnToggle = document.getElementById("ai-btn-toggle-cam"); 
         btnToggle.innerHTML = '<i class="fas fa-power-off mr-1"></i> Bật Cam'; 
         btnToggle.classList.replace('bg-red-600', 'bg-slate-600'); 
         aiIsCameraOn = false;
+        aiReset3AngleSequence();
     }
 
     async function aiStartCamera() {
@@ -457,7 +464,7 @@
             videoElement.srcObject = aiCurrentStream;
             videoElement.onloadedmetadata = () => {
                 videoElement.play(); 
-                document.getElementById("ai-btn-start-sequence").classList.remove("hidden"); 
+                document.getElementById("ai-btn-step-action").classList.remove("hidden"); 
                 canvasElement.style.display = "block"; 
                 const btnToggle = document.getElementById("ai-btn-toggle-cam"); 
                 btnToggle.innerHTML = '<i class="fas fa-power-off mr-1"></i> Tắt Cam'; 
@@ -469,12 +476,12 @@
     }
 
     async function aiProcessRealTimeAR() {
-        if (!isSequenceRunning && videoElement.videoWidth > 0 && aiIsCameraOn) await faceMesh.send({image: videoElement});
-        if (!isSequenceRunning && aiIsCameraOn) requestAnimationFrame(aiProcessRealTimeAR);
+        if (!isCountdownActive && videoElement.videoWidth > 0 && aiIsCameraOn) await faceMesh.send({image: videoElement});
+        if (aiIsCameraOn) requestAnimationFrame(aiProcessRealTimeAR);
     }
 
     function aiOnFaceMeshResults(results) {
-        if (isSequenceRunning) return; 
+        if (isCountdownActive) return; 
         canvasElement.width = videoElement.videoWidth; 
         canvasElement.height = videoElement.videoHeight;
         canvasCtx.save(); 
@@ -496,46 +503,53 @@
     }
 
     // =========================================================================
-    // LUỒNG QUÉT 3 GÓC TỰ ĐỘNG (5s CHÍNH DIỆN -> 5s QUAY TRÁI -> 5s QUAY PHẢI)
+    // LUỒNG TỪNG BƯỚC QUÉT MẪU (CAMERA LUÔN GIỮ CHẠY LIÊN TỤC)
     // =========================================================================
-    async function start3AngleSequence() {
-      if (!videoElement.srcObject) return Swal.fire('Cảnh báo', 'Vui lòng bật Cam trước!', 'warning');
-      isSequenceRunning = true;
-      capturedSamples = [null, null, null];
-      document.getElementById("ai-btn-start-sequence").classList.add("hidden");
+    async function triggerNextAngleStep() {
+      if (!videoElement.srcObject || !aiIsCameraOn) return Swal.fire('Cảnh báo', 'Vui lòng bật Cam!', 'warning');
+      if (isCountdownActive) return;
 
-      // Góc 1: Chính diện
-      let s1 = await runSingleAngleCountdown(1, "CHÍNH DIỆN", "Nhìn thẳng vào mắt Camera");
-      if (!s1) return cancelSequence();
-      capturedSamples[0] = s1;
-      updateThumbUI(1, s1);
+      const angleConfigs = [
+        { title: "CHÍNH DIỆN", subtext: "Nhìn thẳng vào mắt Camera", btnNext: "Quét Mẫu 2 (Quay Trái)", instruction: "Đã xong Mẫu 1. Hãy quay mặt sang TRÁI và bấm nút quét Mẫu 2" },
+        { title: "QUAY SANG TRÁI", subtext: "Xoay nhẹ đầu sang bên trái", btnNext: "Quét Mẫu 3 (Quay Phải)", instruction: "Đã xong Mẫu 2. Hãy quay mặt sang PHẢI và bấm nút quét Mẫu 3" },
+        { title: "QUAY SANG PHẢI", subtext: "Xoay nhẹ đầu sang bên phải", btnNext: "Đã thu thập đủ 3 Mẫu", instruction: "🎉 ĐÃ THU THẬP ĐỦ 3 MẪU ẢNH! Vui lòng nhập PIN để lưu." }
+      ];
 
-      // Góc 2: Quay Trái
-      let s2 = await runSingleAngleCountdown(2, "QUAY SANG TRÁI", "Xoay nhẹ đầu sang bên trái");
-      if (!s2) return cancelSequence();
-      capturedSamples[1] = s2;
-      updateThumbUI(2, s2);
+      const currentConfig = angleConfigs[currentStepIndex];
+      isCountdownActive = true;
 
-      // Góc 3: Quay Phải
-      let s3 = await runSingleAngleCountdown(3, "QUAY SANG PHẢI", "Xoay nhẹ đầu sang bên phải");
-      if (!s3) return cancelSequence();
-      capturedSamples[2] = s3;
-      updateThumbUI(3, s3);
+      // Thực hiện đếm ngược 5s cho bước hiện tại
+      let sampleBase64 = await runCountdown5Sec(currentStepIndex + 1, currentConfig.title, currentConfig.subtext);
+      if (sampleBase64) {
+        capturedSamples[currentStepIndex] = sampleBase64;
+        updateThumbUI(currentStepIndex + 1, sampleBase64);
 
-      isSequenceRunning = false;
-      document.getElementById("scan-instruction-text").innerText = "🎉 ĐÃ THU THẬP ĐỦ 3 MẪU ẢNH! Vui lòng nhập PIN để lưu.";
-      document.getElementById("ai-btn-retake").classList.remove("hidden");
+        // Chuyển bước kế tiếp
+        currentStepIndex++;
+        if (currentStepIndex < 3) {
+          const nextConfig = angleConfigs[currentStepIndex - 1];
+          document.getElementById("btn-step-label").innerText = angleConfigs[currentStepIndex].btnNext;
+          document.getElementById("scan-instruction-text").innerText = nextConfig.instruction;
+        } else {
+          // Hoàn thành cả 3 mẫu
+          document.getElementById("ai-btn-step-action").classList.add("hidden");
+          document.getElementById("scan-instruction-text").innerText = angleConfigs[2].instruction;
+          document.getElementById("ai-btn-retake").classList.remove("hidden");
+          
+          Swal.fire({
+            icon: 'success',
+            title: 'Thu thập thành công!',
+            text: 'Đã hoàn tất 3 mẫu ảnh (Chính diện, Trái, Phải). Camera vẫn tiếp tục hoạt động. Vui lòng nhập PIN để gửi lên Drive.',
+            confirmButtonText: 'Đã hiểu'
+          });
+        }
+      }
 
-      Swal.fire({
-        icon: 'success',
-        title: 'Thu thập thành công!',
-        text: 'Đã lưu thành công 3 mẫu ảnh AI (Chính diện, Trái, Phải). Vui lòng xác thực mã PIN để lưu dữ liệu.',
-        confirmButtonText: 'Đã hiểu'
-      });
+      isCountdownActive = false;
       aiCheckEnableUpload();
     }
 
-    function runSingleAngleCountdown(angleIdx, title, subtext) {
+    function runCountdown5Sec(angleIdx, title, subtext) {
       return new Promise((resolve) => {
         const overlay = document.getElementById("countdown-overlay");
         const titleEl = document.getElementById("countdown-angle-title");
@@ -561,7 +575,6 @@
             document.getElementById("ai-loading").classList.remove("hidden");
             playBeep(1200, 0.2);
 
-            // Chụp & Tách nền bằng MediaPipe SelfieSegmentation
             selfieSegmentation.onResults((results) => {
               let imgBase64 = processSegmentedCrop(results);
               document.getElementById("ai-loading").classList.add("hidden");
@@ -596,7 +609,7 @@
         outCanvas.height = cropH > 0 ? cropH : h;
         const outCtx = outCanvas.getContext('2d');
 
-        outCtx.fillStyle = "#0f4c81"; // Phông xanh thẻ chuẩn
+        outCtx.fillStyle = "#0f4c81"; 
         outCtx.fillRect(0, 0, outCanvas.width, outCanvas.height);
         
         const fgCanvas = document.createElement('canvas'); 
@@ -617,23 +630,22 @@
       box.innerHTML = `<img src="${base64Img}" class="w-full h-full object-cover">`;
     }
 
-    function cancelSequence() {
-      isSequenceRunning = false;
-      document.getElementById("countdown-overlay").classList.add("hidden");
-      document.getElementById("ai-loading").classList.add("hidden");
-      document.getElementById("ai-btn-start-sequence").classList.remove("hidden");
-    }
-
     function aiReset3AngleSequence() {
       capturedSamples = [null, null, null];
+      currentStepIndex = 0;
+      isCountdownActive = false;
+
       [1, 2, 3].forEach(i => {
         document.getElementById(`thumb-box-${i}`).innerHTML = `<i class="fas fa-user text-slate-600"></i>`;
       });
-      document.getElementById("scan-instruction-text").innerText = "Bấm 'Quét 3 Góc Mẫu AI' để thực hiện lại quy trình";
+
+      document.getElementById("scan-instruction-text").innerText = "Hãy Bật Cam và chọn Quét Mẫu 1 (Chính diện)";
+      document.getElementById("btn-step-label").innerText = "Quét Mẫu 1 (Chính diện)";
       document.getElementById("ai-btn-retake").classList.add("hidden");
-      document.getElementById("ai-btn-start-sequence").classList.remove("hidden");
+      if (aiIsCameraOn) {
+        document.getElementById("ai-btn-step-action").classList.remove("hidden");
+      }
       aiCheckEnableUpload();
-      aiProcessRealTimeAR();
     }
 
     function playBeep(freq = 1000, duration = 0.1) {
@@ -651,7 +663,7 @@
       } catch(e) {}
     }
 
-    // ĐẨY BỘ 3 MẪU ẢNH LÊN GOOGLE DRIVE (TẠO THƯ MỤC TÊN_NGÀYSINH_MÃHS)
+    // ĐẨY BỘ 3 MẪU ẢNH LÊN GOOGLE DRIVE
     function aiUploadToServer() {
         const clsInput = document.getElementById("ai-inp-class").value.trim(); 
         const name = document.getElementById("ai-inp-name").value.trim(); 

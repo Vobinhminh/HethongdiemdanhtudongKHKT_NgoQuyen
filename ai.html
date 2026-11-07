@@ -30,7 +30,6 @@
 </head>
 <body class="flex flex-col items-center justify-start pb-24">
 
-  <!-- HEADER NÚT BACK CHUYỂN THẲNG VỀ CỔNG ĐIỂM DANH -->
   <header class="glass-header text-slate-800 p-4 sticky top-0 z-50 flex items-center justify-between max-w-4xl w-full mx-auto rounded-b-2xl mb-6">
     <div class="flex items-center space-x-2">
         <div class="bg-cyan-500/10 p-2 rounded-lg border border-cyan-200"><i class="fas fa-camera-retro text-cyan-600"></i></div>
@@ -53,12 +52,10 @@
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <!-- CỘT 1: THÔNG TIN HỌC SINH -->
               <div class="space-y-4">
                   <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
                       <h3 class="font-bold text-blue-800 mb-3 text-sm uppercase"><i class="fas fa-user-graduate mr-1"></i> 1. Thông tin học sinh</h3>
                       
-                      <!-- DROPDOWN CHỌN LỚP + Ô LỌC THÔNG MINH NỔI POPUP chuẩn (Z-INDEX 50) -->
                       <div class="mb-3 relative select-custom" id="wrapper-ai-class">
                           <label class="block text-xs font-bold text-slate-600 mb-1">Chọn Lớp</label>
                           <input type="hidden" id="ai-inp-class" value="">
@@ -76,7 +73,6 @@
                           </div>
                       </div>
 
-                      <!-- DROPDOWN CHỌN HỌC SINH + Ô LỌC THÔNG MINH NỔI POPUP chuẩn -->
                       <div class="mb-3 relative select-custom" id="wrapper-ai-name">
                           <label class="block text-xs font-bold text-slate-600 mb-1">Họ và Tên Học Sinh</label>
                           <input type="hidden" id="ai-inp-name" value="">
@@ -94,7 +90,6 @@
                           </div>
                       </div>
 
-                      <!-- CHỨC VỤ VÀ NGÀY SINH  -->
                       <div class="grid grid-cols-2 gap-3 mb-3">
                           <div>
                               <label class="block text-xs font-bold text-slate-600 mb-1">Chức vụ</label>
@@ -107,7 +102,6 @@
                       </div>
                       <input type="hidden" id="ai-inp-id">
 
-                      <!-- XÁC THỰC PIN VỚI TÍCH XANH / TÍCH ĐỎ -->
                       <div>
                           <label class="block text-xs font-bold text-slate-600 mb-1">Xác thực Mật khẩu PIN (6 Số)</label>
                           <div class="relative">
@@ -118,7 +112,6 @@
                       </div>
                   </div>
 
-                  <!-- THỦ TỤC ĐẨY LÊN DRIVE -->
                   <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
                       <h3 class="font-bold text-emerald-800 mb-2 text-sm uppercase"><i class="fas fa-cloud-upload-alt mr-1"></i> 2. Đẩy Bộ 3 Mẫu Ảnh Lên Drive</h3>
                       <p class="text-[11px] text-slate-500 mb-3">Chụp đủ 3 góc mẫu ảnh + Nhập đúng PIN để mở khóa lưu dữ liệu.</p>
@@ -128,7 +121,6 @@
                   </div>
               </div>
 
-              <!-- CỘT 2: CAMERA AI -->
               <div class="flex flex-col items-center bg-slate-800 p-4 rounded-xl border-4 border-slate-700 relative">
                   <div class="flex flex-col w-full mb-3 space-y-2">
                       <div class="flex items-center justify-between bg-slate-900 p-2 rounded-lg border border-slate-600">
@@ -165,7 +157,6 @@
                     </div>
                   </div>
 
-                  <!-- 3 MẪU THUMBNAILS -->
                   <div class="w-full grid grid-cols-3 gap-2 mt-3">
                     <div class="bg-slate-900 p-1.5 rounded-lg border border-slate-700 text-center">
                       <span class="text-[10px] text-slate-400 font-bold block mb-1">Mẫu 1: Chính diện</span>
@@ -202,17 +193,15 @@
           </div>
       </div>
   </div>
-  <script>
-    // URL APPS SCRIPT BACKEND
-    const WEB_APP_URL = https://script.google.com/macros/s/AKfycbxYDm51fvs_fNToHqnNMQ4dV7hZLIggWFB2BjD0i3dMoRhlB7k48dhG5vNblVxtetkBfw/exec";
 
-    // Nút quay lại Cổng Điểm Danh (Tắt Cam an toàn trước khi chuyển)
+  <script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxYDm51fvs_fNToHqnNMQ4dV7hZLIggWFB2BjD0i3dMoRhIB7k48dhG5vNblVxtetkBfw/exec";
+
     function goBackToPortal() { 
       aiStopCamera();
       window.location.href = 'index.html'; 
     }
 
-    // BỘ ĐIỀU HÀNH HYBRID API (HỖ TRỢ FETCH CROSS-ORIGIN & GOOGLE.SCRIPT.RUN)
     function callBackendApi(fnName, ...args) {
       return new Promise((resolve, reject) => {
         if (window.google && google.script && google.script.run) {
@@ -246,7 +235,7 @@
     let appData = { classes: [] };
     let aiCurrentStudents = [];
     let capturedSamples = [null, null, null]; 
-    let currentStepIndex = 0; // 0: Mẫu 1 (Chính diện), 1: Mẫu 2 (Trái), 2: Mẫu 3 (Phải)
+    let currentStepIndex = 0; 
     let isCountdownActive = false;
     let aiIsARActive = true;
     let aiIsCameraOn = false;
@@ -269,7 +258,6 @@
       }
     }
 
-    // LỌC DANH SÁCH THÔNG MINH KHI GÕ TỪ KHÓA
     function filterOptions(inputId, listId) {
       const q = document.getElementById(inputId).value.toLowerCase().trim();
       const items = document.querySelectorAll(`#${listId} li`);
@@ -293,12 +281,6 @@
           document.getElementById("loading-screen").classList.add("hidden");
           document.getElementById("step-ai-photo").classList.remove("hidden");
           console.warn("Lỗi nạp danh sách dữ liệu:", err);
-          Swal.fire({
-            icon: 'warning',
-            title: 'Chưa lấy được danh sách Lớp',
-            html: 'Vui lòng kiểm tra bản quyền triển khai GAS đã mở <b>Bất kỳ ai (Anyone)</b> chưa!',
-            confirmButtonText: 'Đã hiểu'
-          });
         });
     });
 
@@ -378,7 +360,6 @@
         document.getElementById("ai-icon-pin-wrong").classList.add("hidden");
     }
 
-    // XÁC THỰC PIN THỜI GIAN THỰC (TÍCH XANH / TÍCH ĐỎ)
     function aiCheckPinLive() {
         const name = document.getElementById("ai-inp-name").value.trim(); 
         const pin = document.getElementById("ai-inp-pin").value.trim();
@@ -520,9 +501,6 @@
         canvasCtx.restore();
     }
 
-    // =========================================================================
-    // LUỒNG TỪNG BƯỚC QUÉT MẪU (CAMERA LUÔN GIỮ CHẠY LIÊN TỤC)
-    // =========================================================================
     async function triggerNextAngleStep() {
       if (!videoElement.srcObject || !aiIsCameraOn) return Swal.fire('Cảnh báo', 'Vui lòng bật Cam!', 'warning');
       if (isCountdownActive) return;
@@ -536,20 +514,17 @@
       const currentConfig = angleConfigs[currentStepIndex];
       isCountdownActive = true;
 
-      // Thực hiện đếm ngược 5s cho bước hiện tại
       let sampleBase64 = await runCountdown5Sec(currentStepIndex + 1, currentConfig.title, currentConfig.subtext);
       if (sampleBase64) {
         capturedSamples[currentStepIndex] = sampleBase64;
         updateThumbUI(currentStepIndex + 1, sampleBase64);
 
-        // Chuyển bước kế tiếp
         currentStepIndex++;
         if (currentStepIndex < 3) {
           const nextConfig = angleConfigs[currentStepIndex - 1];
           document.getElementById("btn-step-label").innerText = angleConfigs[currentStepIndex].btnNext;
           document.getElementById("scan-instruction-text").innerText = nextConfig.instruction;
         } else {
-          // Hoàn thành cả 3 mẫu
           document.getElementById("ai-btn-step-action").classList.add("hidden");
           document.getElementById("scan-instruction-text").innerText = angleConfigs[2].instruction;
           document.getElementById("ai-btn-retake").classList.remove("hidden");
@@ -681,7 +656,6 @@
       } catch(e) {}
     }
 
-    // ĐẨY BỘ 3 MẪU ẢNH LÊN GOOGLE DRIVE
     function aiUploadToServer() {
         const clsInput = document.getElementById("ai-inp-class").value.trim(); 
         const name = document.getElementById("ai-inp-name").value.trim(); 

@@ -53,36 +53,48 @@
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <!-- CỘT 1: THÔNG TIN HỌC SINH (ĐÃ BỎ MÃ HS RA KHỎI BẢNG HIỂN THỊ) -->
+              <!-- CỘT 1: THÔNG TIN HỌC SINH -->
               <div class="space-y-4">
                   <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
                       <h3 class="font-bold text-blue-800 mb-3 text-sm uppercase"><i class="fas fa-user-graduate mr-1"></i> 1. Thông tin học sinh</h3>
                       
-                      <!-- DROPDOWN CHỌN LỚP + Ô LỌC THÔNG MINH -->
+                      <!-- DROPDOWN CHỌN LỚP + Ô LỌC THÔNG MINH NỔI POPUP chuẩn (Z-INDEX 50) -->
                       <div class="mb-3 relative select-custom" id="wrapper-ai-class">
                           <label class="block text-xs font-bold text-slate-600 mb-1">Chọn Lớp</label>
                           <input type="hidden" id="ai-inp-class" value="">
-                          <button type="button" onclick="aiToggleSelect('dropdown-ai-class', 'search-class-input')" class="w-full flex justify-between p-2.5 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-700 shadow-sm"><span id="ai-label-class" class="text-slate-400">-- Bấm chọn lớp --</span><i class="fas fa-chevron-down text-slate-400"></i></button>
+                          <button type="button" onclick="aiToggleSelect('dropdown-ai-class', 'search-class-input')" class="w-full flex justify-between p-2.5 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-700 shadow-sm hover:border-cyan-500 transition">
+                            <span id="ai-label-class" class="text-slate-400">-- Bấm chọn lớp --</span>
+                            <i class="fas fa-chevron-down text-slate-400"></i>
+                          </button>
                           
-                          <div id="dropdown-ai-class" class="hidden absolute z-50 w-full mt-1 bg-white border rounded-xl shadow-2xl p-2">
-                            <input type="text" placeholder="🔍 Gõ lớp (VD: 1, 10, 12...)" oninput="filterOptions('search-class-input', 'ul-class-list')" id="search-class-input" class="w-full p-2 mb-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold outline-none focus:border-cyan-500">
-                            <ul id="ul-class-list" class="max-h-[180px] overflow-y-auto custom-scrollbar"></ul>
+                          <div id="dropdown-ai-class" class="hidden absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl p-2.5">
+                            <div class="relative mb-2">
+                              <input type="text" placeholder="🔍 Gõ lớp (VD: 10, 12, A1...)" oninput="filterOptions('search-class-input', 'ul-class-list')" id="search-class-input" class="w-full p-2 pl-8 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold outline-none focus:border-cyan-500 text-slate-700">
+                              <i class="fas fa-search absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
+                            </div>
+                            <ul id="ul-class-list" class="max-h-[180px] overflow-y-auto custom-scrollbar space-y-0.5"></ul>
                           </div>
                       </div>
 
-                      <!-- DROPDOWN CHỌN HỌC SINH + Ô LỌC THÔNG MINH -->
+                      <!-- DROPDOWN CHỌN HỌC SINH + Ô LỌC THÔNG MINH NỔI POPUP chuẩn -->
                       <div class="mb-3 relative select-custom" id="wrapper-ai-name">
                           <label class="block text-xs font-bold text-slate-600 mb-1">Họ và Tên Học Sinh</label>
                           <input type="hidden" id="ai-inp-name" value="">
-                          <button type="button" onclick="aiToggleSelect('dropdown-ai-name', 'search-student-input')" class="w-full flex justify-between p-2.5 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-700 shadow-sm"><span id="ai-label-name" class="text-slate-400">-- Chọn học sinh --</span><i class="fas fa-chevron-down text-slate-400"></i></button>
+                          <button type="button" onclick="aiToggleSelect('dropdown-ai-name', 'search-student-input')" class="w-full flex justify-between p-2.5 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-700 shadow-sm hover:border-cyan-500 transition">
+                            <span id="ai-label-name" class="text-slate-400">-- Chọn học sinh --</span>
+                            <i class="fas fa-chevron-down text-slate-400"></i>
+                          </button>
                           
-                          <div id="dropdown-ai-name" class="hidden absolute z-50 w-full mt-1 bg-white border rounded-xl shadow-2xl p-2">
-                            <input type="text" placeholder="🔍 Gõ tên học sinh để lọc..." oninput="filterOptions('search-student-input', 'ul-student-list')" id="search-student-input" class="w-full p-2 mb-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold outline-none focus:border-cyan-500">
-                            <ul id="ul-student-list" class="max-h-[180px] overflow-y-auto custom-scrollbar"></ul>
+                          <div id="dropdown-ai-name" class="hidden absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl p-2.5">
+                            <div class="relative mb-2">
+                              <input type="text" placeholder="🔍 Gõ tên học sinh để lọc..." oninput="filterOptions('search-student-input', 'ul-student-list')" id="search-student-input" class="w-full p-2 pl-8 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold outline-none focus:border-cyan-500 text-slate-700">
+                              <i class="fas fa-search absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
+                            </div>
+                            <ul id="ul-student-list" class="max-h-[180px] overflow-y-auto custom-scrollbar space-y-0.5"></ul>
                           </div>
                       </div>
 
-                      <!-- TỰ ĐỘNG ĐIỀN CHỨC VỤ VÀ NGÀY SINH (CHỈ GIỮ 2 CỘT NÀY) -->
+                      <!-- CHỨC VỤ VÀ NGÀY SINH  -->
                       <div class="grid grid-cols-2 gap-3 mb-3">
                           <div>
                               <label class="block text-xs font-bold text-slate-600 mb-1">Chức vụ</label>
@@ -93,7 +105,6 @@
                               <input type="text" id="ai-inp-dob" readonly placeholder="Ngày sinh" class="w-full p-2.5 rounded-lg border bg-slate-200 text-xs font-bold text-slate-600">
                           </div>
                       </div>
-                      <!-- MÃ HS ĐƯỢC ẨN ĐỂ ĐỒNG BỘ NỀN TẢNG -->
                       <input type="hidden" id="ai-inp-id">
 
                       <!-- XÁC THỰC PIN VỚI TÍCH XANH / TÍCH ĐỎ -->
@@ -117,9 +128,8 @@
                   </div>
               </div>
 
-              <!-- CỘT 2: CAMERA AI & QUY TRÌNH QUÉT CHỦ ĐỘNG 3 MẪU -->
+              <!-- CỘT 2: CAMERA AI -->
               <div class="flex flex-col items-center bg-slate-800 p-4 rounded-xl border-4 border-slate-700 relative">
-                  <!-- CÀI ĐẶT CAMERA & AR -->
                   <div class="flex flex-col w-full mb-3 space-y-2">
                       <div class="flex items-center justify-between bg-slate-900 p-2 rounded-lg border border-slate-600">
                           <span class="text-white text-xs font-bold uppercase"><i class="fas fa-video text-cyan-400 mr-2"></i> Thiết bị Cam</span>
@@ -134,18 +144,15 @@
                       </div>
                   </div>
 
-                  <!-- THÔNG BÁO HƯỚNG DẪN TỪNG BƯỚC -->
                   <div id="scan-instruction-box" class="w-full bg-cyan-900/90 text-cyan-200 text-xs font-bold p-2.5 rounded-lg mb-3 text-center border border-cyan-500/50 flex items-center justify-center space-x-2">
                     <i class="fas fa-info-circle text-cyan-400 text-sm"></i>
                     <span id="scan-instruction-text">Hãy Bật Cam và chọn Quét Mẫu 1 (Chính diện)</span>
                   </div>
 
-                  <!-- KHUNG HIỂN THỊ CAMERA & ĐẾM NGƯỢC -->
                   <div class="relative w-full overflow-hidden rounded-xl">
                     <video id="camera-stream" autoplay playsinline></video>
                     <canvas id="preview-canvas" class="w-full rounded-lg shadow-lg border border-slate-600"></canvas>
                     
-                    <!-- LỚP ĐẾM NGƯỢC 5 GIÂY -->
                     <div id="countdown-overlay" class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center hidden z-20">
                       <span class="text-cyan-400 text-xs font-extrabold uppercase tracking-widest mb-1" id="countdown-angle-title">GÓC CHÍNH DIỆN</span>
                       <span class="text-white text-6xl font-black animate-ping" id="countdown-number">5</span>
@@ -158,7 +165,7 @@
                     </div>
                   </div>
 
-                  <!-- HIỂN THỊ 3 MẪU ẢNH ĐÃ CHỤP (THUMBNAILS) -->
+                  <!-- 3 MẪU THUMBNAILS -->
                   <div class="w-full grid grid-cols-3 gap-2 mt-3">
                     <div class="bg-slate-900 p-1.5 rounded-lg border border-slate-700 text-center">
                       <span class="text-[10px] text-slate-400 font-bold block mb-1">Mẫu 1: Chính diện</span>
@@ -180,7 +187,6 @@
                     </div>
                   </div>
 
-                  <!-- NÚT ĐIỀU KHIỂN LUỒNG CẬP NHẬT TỰ ĐỘNG -->
                   <div class="w-full grid grid-cols-2 gap-2 mt-4 z-20">
                       <button id="ai-btn-toggle-cam" onclick="aiToggleCamera()" class="bg-slate-600 hover:bg-slate-500 text-white font-bold py-2.5 rounded-lg text-xs transition shadow-md flex items-center justify-center">
                           <i class="fas fa-power-off mr-1"></i> Bật Cam
@@ -196,10 +202,9 @@
           </div>
       </div>
   </div>
-
   <script>
-    // URL APPS SCRIPT BACKEND (Tự động điều hướng kết nối API)
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxYDm51fvs_fNToHqnNMQ4dV7hZLIggWFB2BjD0i3dMoRhIB7k48dhG5vNblVxtetkBfw/exec";
+    // URL APPS SCRIPT BACKEND
+    const WEB_APP_URL = https://script.google.com/macros/s/AKfycbxYDm51fvs_fNToHqnNMQ4dV7hZLIggWFB2BjD0i3dMoRhlB7k48dhG5vNblVxtetkBfw/exec";
 
     // Nút quay lại Cổng Điểm Danh (Tắt Cam an toàn trước khi chuyển)
     function goBackToPortal() { 
@@ -207,7 +212,7 @@
       window.location.href = 'index.html'; 
     }
 
-    // BỘ ĐIỀU HÀNH HYBRID API CHUẨN XÁC
+    // BỘ ĐIỀU HÀNH HYBRID API (HỖ TRỢ FETCH CROSS-ORIGIN & GOOGLE.SCRIPT.RUN)
     function callBackendApi(fnName, ...args) {
       return new Promise((resolve, reject) => {
         if (window.google && google.script && google.script.run) {
@@ -218,15 +223,22 @@
           fetch(WEB_APP_URL, {
             method: "POST",
             mode: "cors",
+            redirect: "follow",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify({ action: fnName, args: args })
           })
-          .then(res => res.json())
+          .then(res => {
+            if (!res.ok) throw new Error("HTTP error status: " + res.status);
+            return res.json();
+          })
           .then(data => {
-            if (data && data.status === "error") reject(data.msg);
+            if (data && data.status === "error") reject(data.msg || "Lỗi xử lý server");
             else resolve(data);
           })
-          .catch(reject);
+          .catch(err => {
+            console.error("Lỗi Fetch API:", err);
+            reject(err);
+          });
         }
       });
     }
@@ -281,6 +293,12 @@
           document.getElementById("loading-screen").classList.add("hidden");
           document.getElementById("step-ai-photo").classList.remove("hidden");
           console.warn("Lỗi nạp danh sách dữ liệu:", err);
+          Swal.fire({
+            icon: 'warning',
+            title: 'Chưa lấy được danh sách Lớp',
+            html: 'Vui lòng kiểm tra bản quyền triển khai GAS đã mở <b>Bất kỳ ai (Anyone)</b> chưa!',
+            confirmButtonText: 'Đã hiểu'
+          });
         });
     });
 

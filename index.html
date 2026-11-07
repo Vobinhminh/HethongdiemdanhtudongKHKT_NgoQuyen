@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cổng Điểm Danh Ngô Quyền</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Thư viện Html5-Qrcode cho tính năng quét QR camera -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    body { background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%); font-family: 'Inter', sans-serif; color: #334155; min-height: 100vh; }
+    .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06); }
+    .glass-header { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(226, 232, 240, 0.8); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+    .loader { border: 3px solid rgba(59, 130, 246, 0.1); border-top: 3px solid #3b82f6; border-radius: 50%; width: 45px; height: 45px; animation: spin 0.8s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .toggle-checkbox:checked { right: 0; border-color: #10b981; } .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-start">
+
+  <div class="w-full max-w-5xl min-h-screen flex flex-col relative pb-24">
+    
+    <header class="glass-header text-slate-800 p-4 sticky top-0 z-50 flex items-center justify-between max-w-md w-full mx-auto rounded-b-2xl">
+      <div class="flex items-center space-x-2">
+        <div class="bg-blue-500/10 p-2 rounded-lg border border-blue-200"><i class="fas fa-school text-blue-600"></i></div>
+        <span class="font-bold text-sm tracking-wider text-blue-700">THPT NGÔ QUYỀN</span>
+      </div>
+      <button type="button" id="btn-back" onclick="goBack()" class="hidden bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-1.5 px-3 rounded-lg text-xs border border-slate-200 transition shadow-sm">
+        <i class="fas fa-arrow-left mr-1"></i> Quay lại
+      </button>
+      <div id="session-info" class="text-xs font-semibold bg-white px-3 py-1.5 rounded-full border border-slate-200 text-slate-600 shadow-sm">
+        <i class="fas fa-satellite-dish mr-1 text-blue-500"></i> Đang tải...
+      </div>
+    </header>
+
+    <div id="loading-screen" class="flex-1 flex flex-col items-center justify-center p-6 text-center max-w-md w-full mx-auto">
+      <div class="loader mb-4"></div><p class="text-blue-600 font-semibold text-sm animate-pulse" id="loading-msg">KẾT NỐI HỆ THỐNG...</p>
+    </div>
+
+    <!-- MÀN HÌNH ĐÓNG CỬA -->
+    <div id="out-of-time-screen" class="hidden flex-1 flex flex-col items-center justify-center p-6 text-center max-w-md w-full mx-auto">
+      <div class="glass-card p-8 rounded-2xl w-full max-w-sm border-red-200">
+        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-200"><i class="fas fa-lock text-red-500 text-2xl"></i></div>
+        <h2 class="text-lg font-bold text-red-600 mb-2">HỆ THỐNG ĐÃ KHÓA</h2>
+        <p id="out-of-time-msg" class="text-slate-500 text-sm whitespace-pre-line leading-relaxed"></p>
+        <button type="button" onclick="changeStep('gv-login')" class="mt-6 w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-600 font-bold py-3 px-4 rounded-xl shadow-sm transition duration-200 flex items-center justify-center space-x-2">
+          <i class="fas fa-chalkboard-teacher text-lg"></i><span>Quản trị viên</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- CỔNG ĐĂNG NHẬP -->
+    <div id="step-0" class="hidden flex-1 flex flex-col items-center justify-center p-6 max-w-md w-full mx-auto">
+      <div class="glass-card p-8 rounded-3xl w-full text-center">
+        <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6"><i class="fas fa-user-shield text-blue-600 text-3xl"></i></div>
+        <h2 class="text-2xl font-extrabold text-slate-800 mb-2">CỔNG ĐIỂM DANH</h2>
+        <button type="button" onclick="changeStep('1')" class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 text-white font-bold py-4 px-4 rounded-xl shadow-lg mt-6 mb-3 flex items-center justify-center space-x-3"><i class="fas fa-user-graduate text-xl"></i><span>Học sinh đăng nhập</span></button>
+        <button type="button" onclick="openTramDiemDanh()" class="w-full bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 text-white font-bold py-4 px-4 rounded-xl shadow-lg mb-3 flex items-center justify-center space-x-3"><i class="fas fa-camera-retro text-xl"></i><span>Trạm thu thập ảnh AI</span></button>
+        <button type="button" onclick="changeStep('gv-login')" class="w-full bg-white border-2 border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-4 px-4 rounded-xl shadow-sm flex items-center justify-center space-x-3"><i class="fas fa-chalkboard-teacher text-xl text-slate-500"></i><span>Giáo viên đăng nhập</span></button>
+      </div>
+    </div>
+
+    <!-- GV LOGIN -->
+    <div id="step-gv-login" class="hidden flex-1 p-5 flex flex-col justify-center max-w-md w-full mx-auto">
+      <div class="glass-card p-6 rounded-2xl shadow-xl border border-emerald-100">
+        <h2 class="text-xl font-bold text-slate-800 text-center mb-5 border-b pb-3">XÁC THỰC GIÁO VIÊN</h2>
+        <div class="mb-4 relative select-custom" id="wrapper-gv-name">
+          <label class="block text-xs font-bold text-slate-500 uppercase mb-2">1. Chọn tài khoản</label>
+          <input type="hidden" id="gv-auth-name" value="">
+          <button type="button" onclick="toggleSelect('dropdown-gv-name')" class="w-full flex justify-between p-3.5 bg-white border border-slate-300 rounded-xl font-bold"><span id="label-gv-name" class="text-slate-400">-- Bấm chọn --</span><i class="fas fa-chevron-down text-slate-400"></i></button>
+          <ul id="dropdown-gv-name" class="hidden absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl max-h-[220px] overflow-y-auto custom-scrollbar py-2 shadow-2xl"></ul>
+        </div>
+        <div class="mb-4"><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Chức vụ</label><input type="text" id="gv-auth-role" readonly class="w-full p-3 bg-slate-200 border border-slate-300 rounded-xl text-slate-600 font-bold text-sm"></div>
+        <div class="mb-5">
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">2. Password (6 số)</label>
+            <input type="password" id="gv-auth-pin" maxlength="6" inputmode="numeric" pattern="[0-9]*" onkeypress="return event.charCode >= 48 && event.charCode <= 57" oninput="clearInlineError('gv-auth-error')" class="w-full p-3 bg-white border border-slate-300 rounded-xl text-center text-lg tracking-widest font-mono shadow-sm">
+            <p id="gv-auth-error" class="text-red-500 text-xs font-bold mt-2 text-center hidden"></p>
+        </div>
+        <button type="button" id="btn-submit-gv" onclick="submitGiaoVienLogin()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg"><i class="fas fa-sign-in-alt mr-1"></i> ĐĂNG NHẬP</button>
+      </div>
+    </div>
+
+    <!-- BẢNG ĐIỀU KHIỂN ADMIN -->
+    <div id="step-admin" class="hidden flex-1 p-5 flex flex-col justify-center max-w-md w-full mx-auto">
+      <div class="glass-card p-6 rounded-3xl shadow-xl border border-blue-100 text-center">
+        <h2 class="text-xl font-bold text-slate-800 mb-1">QUẢN TRỊ VIÊN</h2><p class="text-sm text-slate-500 mb-6" id="admin-welcome-text"></p>
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <button type="button" onclick="adminCheckStats()" class="bg-blue-50 text-blue-700 p-4 rounded-xl shadow-sm border border-blue-200"><i class="fas fa-chart-pie text-2xl mb-2"></i><br><span class="text-xs font-bold">TIẾN ĐỘ NỘP</span></button>
+          <button type="button" onclick="adminLockData()" class="bg-amber-50 text-amber-700 p-4 rounded-xl shadow-sm border border-amber-200"><i class="fas fa-lock text-2xl mb-2"></i><br><span class="text-xs font-bold">CHỐT SỔ</span></button>
+          <button type="button" id="btn-admin-config" onclick="adminOpenConfig()" class="hidden col-span-2 bg-indigo-50 text-indigo-700 p-4 rounded-xl shadow-sm border border-indigo-200"><i class="fas fa-cogs text-xl mr-2"></i><span class="text-sm font-bold">CÀI ĐẶT HỆ THỐNG</span></button>
+          <button type="button" id="btn-admin-data" onclick="changeStep('admin-data')" class="hidden col-span-2 bg-emerald-50 text-emerald-700 p-4 rounded-xl shadow-sm border border-emerald-200"><i class="fas fa-database text-xl mr-2"></i><span class="text-sm font-bold">QUẢN LÝ DỮ LIỆU & NHẬP FILE</span></button>
+        </div>
+        <button type="button" onclick="changeStep('0')" class="w-full text-sm text-slate-500 border border-slate-200 rounded-lg py-2"><i class="fas fa-sign-out-alt mr-1"></i> Thoát</button>
+      </div>
+    </div>
+
+    <!-- ADMIN CÀI ĐẶT -->
+    <div id="step-admin-config" class="hidden flex-1 flex flex-col p-4 max-w-md w-full mx-auto">
+      <div class="glass-card p-4 rounded-2xl mb-4 text-center">
+        <h3 class="font-bold text-indigo-600 mb-1 uppercase text-sm"><i class="fas fa-cogs mr-2"></i> CÀI ĐẶT HỆ THỐNG</h3>
+      </div>
+      <div class="glass-card p-4 rounded-xl border-t-4 border-t-blue-500 mb-4">
+        <label class="flex items-center space-x-3 mb-4 cursor-pointer"><input type="checkbox" id="cfg-require-subject" class="w-5 h-5 text-blue-600"><span class="font-bold text-sm">Bật tính năng chọn Môn học</span></label>
+        <label class="block text-xs font-bold text-slate-500 mb-1">Môn học CA SÁNG (Cách nhau dấu phẩy)</label>
+        <textarea id="cfg-subj-sang" rows="2" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-xs mb-3"></textarea>
+        <label class="block text-xs font-bold text-slate-500 mb-1">Môn học CA CHIỀU (Cách nhau dấu phẩy)</label>
+        <textarea id="cfg-subj-chieu" rows="2" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-xs"></textarea>
+      </div>
+      <div class="glass-card p-4 rounded-xl border-t-4 border-t-indigo-500 mb-20">
+        <h4 class="font-bold text-sm mb-3">Khóa thời gian điểm danh</h4>
+        <div class="flex space-x-2 mb-4"><button type="button" onclick="syncTime('Sang')" class="flex-1 bg-indigo-50 text-indigo-700 py-2 rounded-lg text-xs font-bold">Đồng bộ Sáng</button><button type="button" onclick="syncTime('Chieu')" class="flex-1 bg-indigo-50 text-indigo-700 py-2 rounded-lg text-xs font-bold">Đồng bộ Chiều</button></div>
+        <div class="grid grid-cols-2 gap-3" id="time-grid"></div>
+      </div>
+      <div class="fixed bottom-0 left-0 right-0 p-4 glass-header flex justify-center z-40">
+        <button type="button" onclick="saveAdminConfigData()" class="w-full max-w-md bg-indigo-600 text-white font-bold py-3 rounded-xl shadow-lg">LƯU CÀI ĐẶT</button>
+      </div>
+    </div>
+
+    <!-- ADMIN QUẢN LÝ DỮ LIỆU -->
+    <div id="step-admin-data" class="hidden flex-1 flex flex-col p-4 max-w-md w-full mx-auto pb-24">
+      <div class="glass-card p-4 rounded-2xl mb-4 text-center"><h3 class="font-bold text-emerald-600 mb-1 uppercase text-sm"><i class="fas fa-database mr-2"></i> QUẢN LÝ DỮ LIỆU</h3></div>
+      
+      <div class="glass-card p-4 rounded-xl border-t-4 border-t-emerald-500 mb-4 grid grid-cols-2 gap-3">
+         <button type="button" onclick="document.getElementById('csv-uploader').click()" class="bg-emerald-50 text-emerald-700 py-3 rounded-xl shadow-sm border border-emerald-200 font-bold text-sm"><i class="fas fa-upload mb-1 block text-lg"></i>Nạp File CSV</button>
+         <input type="file" id="csv-uploader" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
+         <button type="button" id="btn-open-sheets-data" class="bg-blue-50 text-blue-700 py-3 rounded-xl shadow-sm border border-blue-200 font-bold text-sm"><i class="fas fa-table mb-1 block text-lg"></i>Mở Google Sheets</button>
+      </div>
+
+      <div class="glass-card p-4 rounded-xl border-t-4 border-t-blue-500 mb-4">
+         <h4 class="font-bold text-sm mb-3 text-blue-700"><i class="fas fa-user-plus mr-1"></i> Thêm Giám Thị Mới</h4>
+         <input type="text" id="add-gt-name" placeholder="Họ và tên..." class="w-full p-2.5 mb-2 border rounded-lg text-sm">
+         <input type="text" id="add-gt-role" placeholder="Chức vụ (vd: Giám thị)" class="w-full p-2.5 mb-3 border rounded-lg text-sm">
+         <button type="button" onclick="reqAddGiamThi()" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg">THÊM TÀI KHOẢN</button>
+      </div>
+
+      <div class="glass-card p-4 rounded-xl border-t-4 border-t-amber-500 mb-4">
+         <h4 class="font-bold text-sm mb-3 text-amber-700"><i class="fas fa-user-graduate mr-1"></i> Thêm Học Sinh Mới</h4>
+         <div class="flex gap-2 mb-2">
+            <input type="text" id="add-hs-class" placeholder="Lớp (vd: 10A1)" class="w-1/3 p-2.5 border rounded-lg text-sm">
+            <input type="text" id="add-hs-name" placeholder="Họ và tên..." class="w-2/3 p-2.5 border rounded-lg text-sm">
+         </div>
+         <div class="flex gap-2 mb-3">
+            <input type="text" id="add-hs-role" placeholder="Chức vụ" class="w-1/3 p-2.5 border rounded-lg text-sm">
+            <input type="text" id="add-hs-dob" placeholder="Ngày sinh" class="w-1/3 p-2.5 border rounded-lg text-sm">
+            <input type="text" id="add-hs-id" placeholder="Mã HS" class="w-1/3 p-2.5 border rounded-lg text-sm">
+         </div>
+         <button type="button" onclick="reqAddHocSinh()" class="w-full bg-amber-500 text-white font-bold py-2 rounded-lg">THÊM HỌC SINH</button>
+      </div>
+
+      <div class="glass-card p-4 rounded-xl border-t-4 border-t-red-500 mb-4">
+         <h4 class="font-bold text-sm mb-3 text-red-700"><i class="fas fa-key mr-1"></i> Cấp Lại Mật Khẩu (Reset)</h4>
+         <select id="reset-type" onchange="document.getElementById('reset-class-box').style.display = this.value==='HS'?'block':'none'" class="w-full p-2.5 mb-2 border rounded-lg text-sm font-bold">
+            <option value="GV">Giáo viên / Giám thị</option><option value="HS">Học sinh</option>
+         </select>
+         <div id="reset-class-box" style="display:none;"><input type="text" id="reset-class" placeholder="Nhập tên Lớp..." class="w-full p-2.5 mb-2 border rounded-lg text-sm"></div>
+         <input type="text" id="reset-name" placeholder="Nhập chính xác Họ và tên..." class="w-full p-2.5 mb-3 border rounded-lg text-sm">
+         <button type="button" onclick="reqResetPin()" class="w-full bg-red-600 text-white font-bold py-2 rounded-lg">LẤY MẬT KHẨU MỚI</button>
+      </div>
+    </div>
+
+    <!-- BƯỚC 1: XÁC THỰC HỌC SINH -->
+    <div id="step-1" class="hidden flex-1 p-5 flex flex-col justify-center max-w-md w-full mx-auto">
+      <div class="glass-card p-6 rounded-2xl shadow-xl border border-blue-100">
+        <h2 class="text-xl font-bold text-slate-800 text-center mb-5 border-b pb-3">XÁC THỰC THÔNG TIN</h2>
+        <div class="mb-4 relative select-custom" id="wrapper-class">
+          <label class="block text-xs font-bold text-slate-500 mb-2">1. Chọn Lớp</label>
+          <input type="hidden" id="auth-class" value="">
+          <button type="button" onclick="toggleSelect('dropdown-class')" class="w-full flex justify-between p-3.5 bg-white border border-slate-300 rounded-xl font-bold text-sm"><span id="label-class" class="text-slate-400">-- Bấm chọn --</span><i class="fas fa-chevron-down text-slate-400"></i></button>
+          <ul id="dropdown-class" class="hidden absolute z-50 w-full mt-1 bg-white border rounded-xl max-h-[220px] overflow-y-auto custom-scrollbar shadow-xl"></ul>
+        </div>
+        <div id="subject-container" class="mb-4 relative select-custom hidden">
+          <label class="block text-xs font-bold text-slate-500 mb-2">Môn học hiện tại</label>
+          <input type="hidden" id="auth-subject" value="">
+          <button type="button" onclick="toggleSelect('dropdown-subject')" class="w-full flex justify-between p-3.5 bg-white border border-slate-300 rounded-xl font-bold text-sm"><span id="label-subject" class="text-slate-400">-- Bấm chọn --</span><i class="fas fa-chevron-down text-slate-400"></i></button>
+          <ul id="dropdown-subject" class="hidden absolute z-50 w-full mt-1 bg-white border rounded-xl max-h-[260px] overflow-y-auto custom-scrollbar shadow-xl"></ul>
+        </div>
+        <div id="auth-loading-text" class="hidden text-center text-blue-500 text-xs font-bold mb-4 animate-pulse">Đang tải dữ liệu...</div>
+        <div id="personal-info-section" class="opacity-50 pointer-events-none bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div class="mb-4 relative select-custom" id="wrapper-name">
+            <label class="block text-xs font-bold text-slate-500 mb-2">2. Họ và tên người báo cáo</label>
+            <input type="hidden" id="auth-name" value="">
+            <button type="button" onclick="toggleSelect('dropdown-name')" class="w-full flex justify-between p-3 bg-white border rounded-xl font-bold text-sm"><span id="label-name" class="text-slate-400">-- Chọn tên --</span><i class="fas fa-chevron-down text-slate-400"></i></button>
+            <ul id="dropdown-name" class="hidden absolute z-50 w-full mt-1 bg-white border rounded-xl max-h-[220px] overflow-y-auto custom-scrollbar py-2 shadow-xl"></ul>
+          </div>
+          <div class="mb-4"><input type="text" id="auth-role" readonly placeholder="Chức vụ..." class="w-full p-3 bg-slate-200 border rounded-xl font-bold text-sm text-slate-600"></div>
+          <div class="mb-4">
+              <input type="password" id="auth-pin" maxlength="6" inputmode="numeric" pattern="[0-9]*" onkeypress="return event.charCode >= 48 && event.charCode <= 57" oninput="clearInlineError('auth-error')" placeholder="Password 6 số..." class="w-full p-3 bg-white border rounded-xl font-mono text-center text-lg tracking-widest">
+              <p id="auth-error" class="text-red-500 text-xs font-bold mt-2 text-center hidden"></p>
+          </div>
+          <button type="button" id="btn-submit-hs" onclick="verifyStudentLogin()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg">MỞ KHÓA ĐIỂM DANH</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BƯỚC 2: MÀN HÌNH ĐIỂM DANH & QUÉT QR -->
+    <div id="step-2" class="hidden flex-1 flex flex-col p-4 w-full items-center">
+      
+      <!-- MÔ-ĐUN QUÉT MÃ QR HỌC SINH -->
+      <div class="glass-card p-5 rounded-2xl mb-5 shadow-xl border border-blue-100 max-w-md w-full">
+        <div class="flex items-center justify-between border-b pb-3 mb-4">
+          <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center font-bold">
+              <i class="fas fa-qrcode text-lg"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-slate-800 text-sm leading-tight">Điểm danh bằng QR / Khuôn mặt</h4>
+              <p class="text-[11px] text-slate-400">Quét thẻ QR hoặc nhận diện khuôn mặt</p>
+            </div>
+          </div>
+          <button type="button" id="btn-toggle-qr" onclick="toggleQRScanner()" 
+            class="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs py-2 px-3.5 rounded-xl shadow-md transition-all flex items-center space-x-1.5">
+            <i class="fas fa-camera text-xs"></i>
+            <span id="btn-qr-text">Bật Camera</span>
+          </button>
+        </div>
+
+        <div id="qr-reader-wrapper" class="hidden flex-col items-center">
+          <div id="qr-camera-select-box" class="w-full mb-3 hidden">
+            <select id="qr-camera-select" onchange="changeCamera(this.value)" 
+              class="w-full p-2 text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg text-slate-700 outline-none">
+            </select>
+          </div>
+          <div class="relative w-full rounded-2xl overflow-hidden border-2 border-blue-500/50 bg-black shadow-inner">
+            <div id="qr-reader" class="w-full"></div>
+            <div class="absolute inset-0 pointer-events-none border-2 border-dashed border-blue-400/40 rounded-2xl flex items-center justify-center">
+              <div class="w-48 h-48 border-2 border-emerald-400 rounded-xl relative animate-pulse">
+                <div class="absolute -top-1 -left-1 w-4 h-4 border-t-4 border-l-4 border-emerald-500"></div>
+                <div class="absolute -top-1 -right-1 w-4 h-4 border-t-4 border-r-4 border-emerald-500"></div>
+                <div class="absolute -bottom-1 -left-1 w-4 h-4 border-b-4 border-l-4 border-emerald-500"></div>
+                <div class="absolute -bottom-1 -right-1 w-4 h-4 border-b-4 border-r-4 border-emerald-500"></div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-3 flex items-center space-x-2 text-xs text-slate-500 font-medium">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+            <span>Đưa mã QR hoặc khuôn mặt học sinh vào khung hình</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- THẺ SĨ SỐ LỚP -->
+      <div class="glass-card p-5 rounded-2xl mb-5 text-center max-w-md w-full">
+        <h3 class="font-bold text-emerald-600 mb-4 uppercase text-sm"><i class="fas fa-clipboard-check mr-1"></i> Trạng Thái Sĩ Số Lớp</h3>
+        <div class="flex items-center justify-between bg-emerald-50 border border-emerald-200 p-4 rounded-xl" id="box-all-present">
+          <div class="text-left"><span class="block font-extrabold text-emerald-700 text-xl" id="text-all-present">LỚP ĐI ĐỦ</span></div>
+          <div class="relative w-14 mr-2"><input type="checkbox" id="toggle-all-present" checked onchange="toggleAllPresent()" class="toggle-checkbox absolute block w-8 h-8 rounded-full bg-white border-4 appearance-none cursor-pointer z-10"/><label for="toggle-all-present" class="toggle-label block overflow-hidden h-8 rounded-full bg-slate-300 cursor-pointer"></label></div>
+        </div>
+      </div>
+
+      <!-- ĐÃ GOM TOÀN BỘ 5 MỤC VI PHẠM VÀO 1 THẺ DUY NHẤT -->
+      <div id="violation-section" class="hidden glass-card p-5 rounded-2xl mb-24 max-w-md w-full border-t-4 border-t-blue-500 shadow-xl">
+        <div class="flex items-center justify-between border-b pb-3 mb-4">
+          <h4 class="font-bold text-slate-800 text-sm uppercase flex items-center">
+            <i class="fas fa-list-check text-blue-600 mr-2"></i> Danh Sách Vi Phạm
+          </h4>
+          <span class="bg-blue-100 text-blue-700 text-xs font-extrabold px-3 py-1 rounded-full border border-blue-200" id="badge-remaining-students">
+            Còn lại: 0/0
+          </span>
+        </div>
+
+        <!-- 1. Vắng Có Phép -->
+        <div class="mb-4 bg-amber-50/50 p-3 rounded-xl border border-amber-200/60">
+          <label class="block text-xs font-bold text-amber-700 mb-1.5 flex items-center">
+            <span class="w-2 h-2 rounded-full bg-amber-500 mr-1.5"></span>Vắng Có Phép
+          </label>
+          <input type="text" list="student-list-global" placeholder="🔍 Gõ tên học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-amber-500 mb-2" onchange="addViolation(this, 'vangCoPhep')">
+          <div id="chip-vangCoPhep" class="flex flex-wrap gap-1.5"></div>
+        </div>
+
+        <!-- 2. Vắng Không Phép -->
+        <div class="mb-4 bg-red-50/50 p-3 rounded-xl border border-red-200/60">
+          <label class="block text-xs font-bold text-red-700 mb-1.5 flex items-center">
+            <span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>Vắng Không Phép
+          </label>
+          <input type="text" list="student-list-global" placeholder="🔍 Gõ tên học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-red-500 mb-2" onchange="addViolation(this, 'vangKhongPhep')">
+          <div id="chip-vangKhongPhep" class="flex flex-wrap gap-1.5"></div>
+        </div>
+
+        <!-- 3. Đi Trễ -->
+        <div class="mb-4 bg-orange-50/50 p-3 rounded-xl border border-orange-200/60">
+          <label class="block text-xs font-bold text-orange-700 mb-1.5 flex items-center">
+            <span class="w-2 h-2 rounded-full bg-orange-500 mr-1.5"></span>Đi Trễ
+          </label>
+          <div class="flex gap-2 mb-2">
+            <input type="text" id="inp-tre-name" list="student-list-global" placeholder="🔍 Gõ tên..." class="flex-1 p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-orange-500">
+            <input type="number" id="inp-tre-min" placeholder="Phút" class="w-16 p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-center focus:outline-none focus:border-orange-500">
+            <button type="button" onclick="addTre()" class="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white px-3.5 rounded-lg font-bold text-xs shadow-sm transition-all"><i class="fas fa-plus"></i></button>
+          </div>
+          <div id="chip-tre" class="flex flex-wrap gap-1.5"></div>
+        </div>
+
+        <!-- 4. Bỏ Tiết -->
+        <div class="mb-4 bg-purple-50/50 p-3 rounded-xl border border-purple-200/60">
+          <label class="block text-xs font-bold text-purple-700 mb-1.5 flex items-center">
+            <span class="w-2 h-2 rounded-full bg-purple-500 mr-1.5"></span>Bỏ Tiết
+          </label>
+          <input type="text" list="student-list-global" placeholder="🔍 Gõ tên học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-purple-500 mb-2" onchange="addViolation(this, 'boTietNames')">
+          <div id="chip-boTietNames" class="flex flex-wrap gap-1.5"></div>
+        </div>
+
+        <!-- 5. Không ĐT / Đồng Phục -->
+        <div class="bg-slate-100/70 p-3 rounded-xl border border-slate-200">
+          <label class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center">
+            <span class="w-2 h-2 rounded-full bg-slate-500 mr-1.5"></span>Không ĐT / Đồng Phục
+          </label>
+          <input type="text" list="student-list-global" placeholder="🔍 Gõ tên học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-slate-500 mb-2" onchange="addViolation(this, 'khongDTNames')">
+          <div id="chip-khongDTNames" class="flex flex-wrap gap-1.5"></div>
+        </div>
+      </div>
+      <datalist id="student-list-global"></datalist>
+
+      <div class="fixed bottom-0 left-0 right-0 p-4 glass-header z-40 flex justify-center">
+        <button type="button" onclick="previewAttendance()" class="w-full max-w-md bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg uppercase text-sm">XÁC NHẬN NỘP BÁO CÁO</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    // URL WEB APP GOOGLE APPS SCRIPT BACKEND (Dán link /exec của bạn vào đây)
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxYDm51fvs_fNToHqnNMQ4dV7hZLIggWFB2BjD0i3dMoRhlB7k48dhG5vNblVxtetkBfw/exec";
+
+    // Nút mở Trạm AI (trang ai.html chạy cùng repo trên GitHub Pages)
+    function openTramDiemDanh() { 
+      window.location.href = "ai.html"; 
+    }
+
+    // BỘ ĐIỀU HÀNH API HYBRID (Chạy mượt trên cả GitHub Pages lẫn Google Apps Script)
+    function callBackendApi(fnName, ...args) {
+      return new Promise((resolve, reject) => {
+        if (window.google && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)[fnName](...args);
+        } else {
+          fetch(WEB_APP_URL, {
+            method: "POST",
+            mode: "cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ action: fnName, args: args })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.status === "error") reject(data.msg);
+            else resolve(data);
+          })
+          .catch(reject);
+        }
+      });
+    }
+
+    let currentStep = '0';
+    let appData = { session: "", dateStr: "", className: "", subject: "", rowIndex: null, requireSubject: false, students: [], reporterInfo: null, giaoVienList: [], subjectList: [] };
+    let violations = { vangCoPhep: [], vangKhongPhep: [], boTietNames: [], khongDTNames: [], treNames: [] };
+    
+    let hsPinFails = 0;
+    let gvPinFails = 0;
+
+    let html5QrCode = null;
+    let isScannerActive = false;
+    let currentCameraId = null;
+
+    function renderTimeGrid() {
+       let grid = document.getElementById("time-grid");
+       let days = ["T2","T3","T4","T5","T6","T7"];
+       grid.innerHTML = "";
+       days.forEach(d => {
+          grid.innerHTML += `<div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+             <div class="font-bold text-indigo-600 text-xs mb-2 border-b pb-1">${d}</div>
+             <div class="flex justify-between items-center mb-2">
+                <span class="text-[10px] font-bold w-8">Sáng</span>
+                <label class="flex items-center space-x-1 cursor-pointer text-[10px] mr-1"><input type="checkbox" id="cfg-${d}_Sang_Unlock" onchange="toggleLockInput('${d}_Sang')" class="w-3 h-3 text-indigo-600"> <span class="font-bold text-indigo-600">Bỏ khóa</span></label>
+                <input type="time" id="cfg-${d}_Sang" class="text-xs p-1 border rounded w-20 text-center font-mono">
+             </div>
+             <div class="flex justify-between items-center">
+                <span class="text-[10px] font-bold w-8">Chiều</span>
+                <label class="flex items-center space-x-1 cursor-pointer text-[10px] mr-1"><input type="checkbox" id="cfg-${d}_Chieu_Unlock" onchange="toggleLockInput('${d}_Chieu')" class="w-3 h-3 text-indigo-600"> <span class="font-bold text-indigo-600">Bỏ khóa</span></label>
+                <input type="time" id="cfg-${d}_Chieu" class="text-xs p-1 border rounded w-20 text-center font-mono">
+             </div>
+         </div>`;
+       });
+    }
+    
+    function toggleLockInput(key) {
+       let cb = document.getElementById(`cfg-${key}_Unlock`);
+       let inp = document.getElementById(`cfg-${key}`);
+       if (cb.checked) { inp.disabled = true; inp.classList.add("opacity-50", "bg-slate-200"); } 
+       else { inp.disabled = false; inp.classList.remove("opacity-50", "bg-slate-200"); }
+    }
+    renderTimeGrid();
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.select-custom')) {
+        document.querySelectorAll('ul[id^="dropdown-"]').forEach(el => {
+          if (!el.classList.contains('hidden')) { el.classList.add('hidden'); if (el.id === 'dropdown-subject') triggerFetchStudents(); }
+        });
+      }
+    });
+    function toggleSelect(id) {
+      document.querySelectorAll('ul[id^="dropdown-"]').forEach(el => {
+        if(el.id !== id && !el.classList.contains('hidden')) { el.classList.add('hidden'); if (el.id === 'dropdown-subject') triggerFetchStudents(); }
+      });
+      document.getElementById(id).classList.toggle('hidden');
+    }
+    function chooseOption(inputId, labelId, dropdownId, value, text, isTriggerFetch = false, isAutoFillRole = false) {
+      document.getElementById(inputId).value = value; document.getElementById(labelId).innerText = text;
+      document.getElementById(labelId).classList.replace('text-slate-400', 'text-slate-800'); document.getElementById(dropdownId).classList.add('hidden');
+      if(isTriggerFetch) triggerFetchStudents(); if(isAutoFillRole) autoFillRole();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      callBackendApi('getAppInitData')
+        .then(initUI)
+        .catch(showError);
+    });
+
+    function renderDataDropdowns(data) {
+      const ulClass = document.getElementById("dropdown-class"); ulClass.innerHTML = ""; 
+      data.classes.forEach(c => {
+        let li = document.createElement("li"); li.className = "px-4 py-3 hover:bg-blue-50 cursor-pointer text-slate-700 font-bold border-b border-slate-100"; li.innerText = c;
+        li.onclick = () => chooseOption('auth-class', 'label-class', 'dropdown-class', c, c, true); ulClass.appendChild(li);
+      });
+      
+      const ulGvName = document.getElementById("dropdown-gv-name"); ulGvName.innerHTML = "";
+      if(data.giaoVienList) {
+        data.giaoVienList.forEach((gv, i) => {
+          let li = document.createElement("li"); li.className = "px-4 py-3 hover:bg-emerald-50 cursor-pointer text-slate-700 font-bold border-b border-slate-100"; li.innerText = gv.name;
+          li.onclick = () => chooseGiaoVienOption(i, gv.name); ulGvName.appendChild(li);
+        });
+      }
+      
+      if (data.requireSubject) {
+        document.getElementById("subject-container").classList.remove("hidden");
+        const ulSubject = document.getElementById("dropdown-subject");
+        ulSubject.innerHTML = `<li class="px-4 py-3 border-b"><label class="flex items-center space-x-3"><input type="checkbox" value="Tất cả (Cả buổi)" onchange="handleSubjectCheck(this)" class="subj-checkbox w-4 h-4"><span class="font-bold">Tất cả (Cả buổi)</span></label></li>
+                               <li class="px-4 py-3 border-b"><label class="flex items-center space-x-3"><input type="checkbox" value="Tất cả (Cả ngày)" onchange="handleSubjectCheck(this)" class="subj-checkbox w-4 h-4"><span class="font-bold">Tất cả (Cả ngày)</span></label></li>`;
+        data.subjectList.forEach(subj => {
+          ulSubject.innerHTML += `<li class="px-4 py-2.5 border-b"><label class="flex items-center space-x-3"><input type="checkbox" value="${subj}" onchange="handleSubjectCheck(this)" class="subj-checkbox w-4 h-4"><span class="text-sm font-medium">${subj}</span></label></li>`;
+        });
+        ulSubject.innerHTML += `<li class="p-2 sticky bottom-0 bg-white"><button type="button" onclick="closeSubjectDropdown()" class="w-full bg-blue-600 text-white font-bold py-2 rounded">XÁC NHẬN CHỌN</button></li>`;
+      } else {
+        document.getElementById("subject-container").classList.add("hidden");
+      }
+    }
+
+    function initUI(data) {
+      appData = { ...appData, ...data };
+      renderDataDropdowns(data);
+      hideLoading();
+      
+      if (!data.isAllowed) {
+        document.getElementById("out-of-time-screen").classList.remove("hidden"); document.getElementById("out-of-time-msg").innerText = data.message;
+      } else {
+        document.getElementById("session-info").innerHTML = `<i class="fas fa-clock"></i> ${data.dateStr} | ${data.session}`; changeStep('0');
+      }
+    }
+
+    function reloadAppData() {
+      showLoading("Đang đồng bộ dữ liệu mới...");
+      callBackendApi('getAppInitData')
+        .then(data => {
+          appData = { ...appData, ...data };
+          renderDataDropdowns(data);
+          hideLoading();
+        })
+        .catch(showError);
+    }
+
+    function handleSubjectCheck(cb) {
+       const allCbs = document.querySelectorAll('.subj-checkbox');
+       if (cb.checked) {
+          if (cb.value.startsWith("Tất cả")) { allCbs.forEach(c => { if(c !== cb) c.checked = false; }); } 
+          else { allCbs.forEach(c => { if(c.value.startsWith("Tất cả")) c.checked = false; }); }
+       }
+       let selected = Array.from(allCbs).filter(c => c.checked).map(c => c.value);
+       const label = document.getElementById('label-subject');
+       if(selected.length === 0) { label.innerText = "-- Bấm chọn --"; label.classList.replace('text-slate-800', 'text-slate-400'); document.getElementById('auth-subject').value = ""; } 
+       else { label.innerText = selected.join(", "); label.classList.replace('text-slate-400', 'text-slate-800'); document.getElementById('auth-subject').value = selected.join(", "); }
+    }
+    function closeSubjectDropdown() { document.getElementById('dropdown-subject').classList.add('hidden'); triggerFetchStudents(); }
+
+    function changeStep(step) {
+      currentStep = step;
+      if (isScannerActive && step !== '2') { stopQRScanner(); }
+      ["step-0", "step-1", "step-2", "step-admin", "step-admin-config", "step-admin-data", "step-gv-login"].forEach(id => { let el = document.getElementById(id); if(el) el.classList.add("hidden"); });
+      let outEl = document.getElementById("out-of-time-screen"); if(outEl) outEl.classList.add("hidden");
+      document.getElementById(`step-${step}`).classList.remove("hidden");
+      
+      const btnBack = document.getElementById("btn-back"); const infoBox = document.getElementById("session-info");
+      if (step === '0') { btnBack.classList.add("hidden"); infoBox.classList.remove("hidden"); } 
+      else { btnBack.classList.remove("hidden"); infoBox.classList.add("hidden"); }
+    }
+
+    function goBack() {
+      if (currentStep === '1' || currentStep === 'gv-login' || currentStep === 'admin') changeStep('0');
+      else if (currentStep === 'admin-config' || currentStep === 'admin-data') changeStep('admin');
+      else if (currentStep === '2') {
+        Swal.fire({ title: 'Quay lại?', text: 'Dữ liệu vi phạm sẽ bị xóa.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Đồng ý' }).then((res) => {
+          if (res.isConfirmed) { document.getElementById("personal-info-section").classList.add("opacity-50", "pointer-events-none"); changeStep('1'); }
+        });
+      }
+    }
+
+    function showInlineError(id, message) {
+       let el = document.getElementById(id);
+       el.innerText = message;
+       el.classList.remove("hidden");
+    }
+    function clearInlineError(id) {
+       let el = document.getElementById(id);
+       el.innerText = "";
+       el.classList.add("hidden");
+    }
+
+    function chooseGiaoVienOption(index, name) {
+      clearInlineError('gv-auth-error');
+      document.getElementById('gv-auth-name').value = name; document.getElementById('label-gv-name').innerText = name; document.getElementById('label-gv-name').classList.replace('text-slate-400', 'text-slate-800');
+      document.getElementById('dropdown-gv-name').classList.add('hidden'); document.getElementById('gv-auth-role').value = appData.giaoVienList[index].role; document.getElementById('gv-auth-pin').focus();
+    }
+
+    function submitGiaoVienLogin() {
+      const name = document.getElementById('gv-auth-name').value; const pin = document.getElementById('gv-auth-pin').value;
+      if (!name) { showInlineError('gv-auth-error', '❌ Vui lòng chọn Tên tài khoản!'); return; }
+      if (!pin) { showInlineError('gv-auth-error', '❌ Vui lòng nhập mật khẩu!'); return; }
+      
+      showLoading("Đang xác thực...");
+      callBackendApi('verifyGiaoVien', name, pin)
+        .then(res => {
+          hideLoading();
+          if (res.success) {
+            gvPinFails = 0;
+            clearInlineError('gv-auth-error');
+            document.getElementById('admin-welcome-text').innerText = `Xin chào, ${res.adminName} (${res.role})`;
+            document.getElementById("btn-open-sheets-data").onclick = () => window.open(res.url, "_blank");
+            if (res.role.toLowerCase().includes("quản lý") || res.role.toLowerCase().includes("admin")) {
+              document.getElementById("btn-admin-config").classList.remove("hidden"); document.getElementById("btn-admin-config").classList.add("flex");
+              document.getElementById("btn-admin-data").classList.remove("hidden"); document.getElementById("btn-admin-data").classList.add("flex");
+            } else {
+              document.getElementById("btn-admin-config").classList.add("hidden"); document.getElementById("btn-admin-data").classList.add("hidden");
+            }
+            changeStep('admin'); document.getElementById('gv-auth-pin').value = ""; 
+          } else {
+            gvPinFails++;
+            if(gvPinFails >= 3) {
+                showInlineError('gv-auth-error', '🔒 Nhập sai 3 lần! Đang quay về cổng chính...');
+                document.getElementById('gv-auth-pin').disabled = true;
+                document.getElementById('btn-submit-gv').disabled = true;
+                setTimeout(() => {
+                   document.getElementById('gv-auth-pin').value = "";
+                   document.getElementById('gv-auth-pin').disabled = false;
+                   document.getElementById('btn-submit-gv').disabled = false;
+                   gvPinFails = 0; clearInlineError('gv-auth-error'); changeStep('0');
+                }, 1500);
+            } else {
+                showInlineError('gv-auth-error', `❌ Mật khẩu không đúng! Bạn còn ${3 - gvPinFails} lần thử.`);
+            }
+          }
+        })
+        .catch(showError);
+    }
+
+    function adminCheckStats() {
+       showLoading("Đang kiểm tra...");
+       callBackendApi('getAdminStatsWeb', appData.session, appData.dateStr)
+        .then(res => {
+          hideLoading();
+          Swal.fire({title: `Thống kê`, html: `<div class="text-left text-sm p-4 bg-slate-50 border"><div class="flex justify-between border-b pb-2 mb-2"><span>Tổng số lớp:</span><span class="font-bold">${res.total}</span></div><div class="flex justify-between border-b pb-2 mb-2"><span>Đã nộp:</span><span class="text-emerald-600 font-bold">${res.submitted}</span></div><div class="flex justify-between border-b pb-2 mb-2"><span>Chưa nộp:</span><span class="text-red-600 font-bold">${res.missing.length}</span></div>${res.missing.length > 0 ? `<div class="mt-4"><p class="text-red-600 font-bold mb-1">Chưa nộp:</p><p class="text-xs leading-relaxed">${res.missing.join(", ")}</p></div>` : ``}</div>`});
+        })
+        .catch(showError);
+    }
+
+    function adminLockData() {
+       Swal.fire({ title: 'Khóa sổ?', text: `Chốt sổ báo cáo ngày ${appData.dateStr}?`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Đồng ý khóa' }).then(res => {
+          if (res.isConfirmed) { showLoading("Đang khóa..."); callBackendApi('lockAttendanceWeb', appData.dateStr).then(msg => { hideLoading(); Swal.fire('Xong', msg, 'success'); }).catch(showError); }
+       });
+    }
+
+    function adminOpenConfig() {
+      showLoading("Đang tải cài đặt...");
+      callBackendApi('getAdminConfig')
+        .then(config => {
+          hideLoading();
+          ["T2","T3","T4","T5","T6","T7"].forEach(d => { 
+             if(config[`${d}_Sang`] === "NONE") {
+                document.getElementById(`cfg-${d}_Sang_Unlock`).checked = true; document.getElementById(`cfg-${d}_Sang`).value = "07:30";
+             } else {
+                document.getElementById(`cfg-${d}_Sang_Unlock`).checked = false; document.getElementById(`cfg-${d}_Sang`).value = config[`${d}_Sang`];
+             }
+             toggleLockInput(`${d}_Sang`);
+             
+             if(config[`${d}_Chieu`] === "NONE") {
+                document.getElementById(`cfg-${d}_Chieu_Unlock`).checked = true; document.getElementById(`cfg-${d}_Chieu`).value = "13:30";
+             } else {
+                document.getElementById(`cfg-${d}_Chieu_Unlock`).checked = false; document.getElementById(`cfg-${d}_Chieu`).value = config[`${d}_Chieu`];
+             }
+             toggleLockInput(`${d}_Chieu`);
+          });
+          document.getElementById("cfg-require-subject").checked = config.requireSubject;
+          document.getElementById("cfg-subj-sang").value = config.subjectList_Sang;
+          document.getElementById("cfg-subj-chieu").value = config.subjectList_Chieu;
+          changeStep('admin-config');
+        })
+        .catch(showError);
+    }
+    
+    function syncTime(session) { 
+       const val = document.getElementById(`cfg-T2_${session}`).value; 
+       const isUnlocked = document.getElementById(`cfg-T2_${session}_Unlock`).checked;
+       ["T3","T4","T5","T6","T7"].forEach(d => { 
+          document.getElementById(`cfg-${d}_${session}`).value = val; 
+          document.getElementById(`cfg-${d}_${session}_Unlock`).checked = isUnlocked;
+          toggleLockInput(`${d}_${session}`);
+       }); 
+    }
+    
+    function saveAdminConfigData() {
+      let configData = {};
+      ["T2","T3","T4","T5","T6","T7"].forEach(d => { 
+         configData[`${d}_Sang`] = document.getElementById(`cfg-${d}_Sang_Unlock`).checked ? "NONE" : document.getElementById(`cfg-${d}_Sang`).value; 
+         configData[`${d}_Chieu`] = document.getElementById(`cfg-${d}_Chieu_Unlock`).checked ? "NONE" : document.getElementById(`cfg-${d}_Chieu`).value; 
+      });
+      configData.requireSubject = document.getElementById("cfg-require-subject").checked ? "true" : "false";
+      configData.subjectList_Sang = document.getElementById("cfg-subj-sang").value; configData.subjectList_Chieu = document.getElementById("cfg-subj-chieu").value;
+      showLoading("Đang lưu...");
+      callBackendApi('saveAdminConfig', configData)
+        .then(msg => { hideLoading(); Swal.fire('Xong', msg, 'success').then(() => reloadAppData()); })
+        .catch(showError);
+    }
+
+    function reqAddGiamThi() {
+       let name = document.getElementById("add-gt-name").value; let role = document.getElementById("add-gt-role").value;
+       if(!name) return Swal.fire('Lỗi','Vui lòng nhập Tên', 'error');
+       showLoading("Đang tạo tài khoản...");
+       callBackendApi('adminAddGiamThi', name, role)
+        .then(msg => { hideLoading(); Swal.fire('Thành công', msg, 'success').then(() => { document.getElementById("add-gt-name").value=""; document.getElementById("add-gt-role").value=""; reloadAppData(); }); })
+        .catch(showError);
+    }
+    
+    function reqAddHocSinh() {
+       let cls = document.getElementById("add-hs-class").value; let name = document.getElementById("add-hs-name").value; 
+       let role = document.getElementById("add-hs-role").value; let dob = document.getElementById("add-hs-dob").value; let id = document.getElementById("add-hs-id").value;
+       if(!cls || !name) return Swal.fire('Lỗi','Nhập tối thiểu Lớp và Tên', 'error');
+       showLoading("Đang tạo HS...");
+       callBackendApi('adminAddHocSinh', cls, name, role, dob, id)
+        .then(res => { 
+          hideLoading(); 
+          if(res.error) Swal.fire('Lỗi', res.error, 'error'); else { Swal.fire('Thành công', res, 'success').then(() => { document.getElementById("add-hs-name").value=""; document.getElementById("add-hs-id").value=""; document.getElementById("add-hs-dob").value=""; reloadAppData(); }); }
+        })
+        .catch(showError);
+    }
+    
+    function reqResetPin() {
+       let type = document.getElementById("reset-type").value; let cls = document.getElementById("reset-class").value; let name = document.getElementById("reset-name").value;
+       if(!name || (type==='HS' && !cls)) return Swal.fire('Lỗi', 'Nhập đủ thông tin cần thiết', 'error');
+       showLoading("Đang cấp lại PIN...");
+       callBackendApi('adminResetPassword', type, cls, name)
+        .then(res => {
+          hideLoading(); if(res.error) Swal.fire('Lỗi', res.error, 'error'); else { Swal.fire('Thành công', res, 'success').then(() => { document.getElementById("reset-name").value=""; }); }
+        })
+        .catch(showError);
+    }
+
+    function handleCSVUpload(event) {
+      const file = event.target.files[0]; if(!file) return;
+      if(!file.name.toLowerCase().endsWith('.csv')) { Swal.fire('Sai file', 'Chỉ hỗ trợ .CSV', 'error'); event.target.value = ''; return; }
+      Swal.fire({ title: 'Nạp File?', text: `Nạp dữ liệu từ "${file.name}".`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Bắt đầu nạp' }).then(res => {
+        if(res.isConfirmed) {
+          showLoading("Đang nạp và làm mới...");
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            callBackendApi('importDataFile', e.target.result)
+              .then(msg => { hideLoading(); Swal.fire('Xuất sắc!', msg, 'success').then(()=> reloadAppData()); })
+              .catch(showError);
+          };
+          reader.readAsText(file);
+        }
+        event.target.value = ''; 
+      });
+    }
+
+    function triggerFetchStudents() {
+      const cls = document.getElementById("auth-class").value; const subj = document.getElementById("auth-subject").value; const personalSection = document.getElementById("personal-info-section");
+      personalSection.classList.add("opacity-50", "pointer-events-none"); document.getElementById("auth-name").value = ""; document.getElementById("auth-pin").value = "";
+      if (!cls || (appData.requireSubject && !subj)) return;
+      appData.className = cls; appData.subject = subj; document.getElementById("auth-loading-text").classList.remove("hidden");
+      callBackendApi('getClassData', cls, appData.session, appData.dateStr, subj)
+        .then(onClassDataReady)
+        .catch(showError);
+    }
+    
+    function onClassDataReady(res) {
+      document.getElementById("auth-loading-text").classList.add("hidden");
+      clearInlineError('auth-error');
+      if (res.status === "LOCKED") { Swal.fire({ title: 'Khóa sổ', html: `Lớp <b>${appData.className}</b> đã nộp.`, icon: 'error' }); document.getElementById("auth-class").value = ""; return; }
+      appData.rowIndex = res.rowIndex; appData.students = res.students;
+      const ulName = document.getElementById("dropdown-name"); ulName.innerHTML = '';
+      res.students.forEach((s, i) => {
+        let li = document.createElement("li"); li.className = "px-4 py-3 hover:bg-blue-50 cursor-pointer font-bold border-b"; li.innerText = s.name;
+        li.onclick = () => chooseOption('auth-name', 'label-name', 'dropdown-name', i, s.name, false, true); ulName.appendChild(li);
+      });
+      document.getElementById("personal-info-section").classList.remove("opacity-50", "pointer-events-none");
+    }
+    
+    function autoFillRole() {
+      clearInlineError('auth-error');
+      const idx = document.getElementById("auth-name").value; if (idx === "") return;
+      document.getElementById("auth-role").value = appData.students[idx].role; document.getElementById("auth-pin").focus();
+    }
+
+    function verifyStudentLogin() {
+      const idx = document.getElementById("auth-name").value; const pin = document.getElementById("auth-pin").value;
+      if (idx === "") { showInlineError('auth-error', '❌ Vui lòng chọn Tên của bạn!'); return; }
+      if (!pin) { showInlineError('auth-error', '❌ Vui lòng nhập mật khẩu!'); return; }
+      
+      const student = appData.students[idx]; 
+      if (student.pin.toString() !== pin.toString()) {
+          hsPinFails++;
+          if(hsPinFails >= 3) {
+              showInlineError('auth-error', '🔒 Nhập sai 3 lần! Đang quay về cổng chính...');
+              document.getElementById("auth-pin").disabled = true;
+              document.getElementById("btn-submit-hs").disabled = true;
+              setTimeout(() => {
+                  document.getElementById("auth-pin").value = ""; 
+                  document.getElementById("auth-pin").disabled = false;
+                  document.getElementById("btn-submit-hs").disabled = false;
+                  hsPinFails = 0; 
+                  clearInlineError('auth-error');
+                  document.getElementById("personal-info-section").classList.add("opacity-50", "pointer-events-none");
+                  changeStep('0');
+              }, 1500);
+          } else {
+              showInlineError('auth-error', `❌ Mật khẩu không đúng! Bạn còn ${3 - hsPinFails} lần thử.`);
+          }
+          return;
+      }
+      
+      hsPinFails = 0; clearInlineError('auth-error');
+      appData.reporterInfo = { name: student.name, role: student.role }; violations = { vangCoPhep: [], vangKhongPhep: [], boTietNames: [], khongDTNames: [], treNames: [] };
+      document.getElementById("toggle-all-present").checked = true; toggleAllPresent(); updateAvailableStudentsDatalist(); changeStep('2');
+    }
+
+    // --- LOGIC MÔ-ĐUN QUÉT CAMERA QR & NHẬN DIỆN KHUÔN MẶT ---
+    function toggleQRScanner() {
+      const wrapper = document.getElementById("qr-reader-wrapper");
+      const btnText = document.getElementById("btn-qr-text");
+      const btn = document.getElementById("btn-toggle-qr");
+
+      if (isScannerActive) {
+        stopQRScanner();
+      } else {
+        wrapper.classList.remove("hidden");
+        btnText.innerText = "Tắt Camera";
+        if (btn) btn.classList.replace("bg-blue-600", "bg-red-600");
+
+        if (!html5QrCode) {
+          html5QrCode = new Html5Qrcode("qr-reader");
+        }
+
+        Html5Qrcode.getCameras().then(cameras => {
+          if (cameras && cameras.length > 0) {
+            const selectBox = document.getElementById("qr-camera-select-box");
+            const selectEl = document.getElementById("qr-camera-select");
+            
+            if (cameras.length > 1) {
+              selectBox.classList.remove("hidden");
+              selectEl.innerHTML = cameras.map((c, i) => 
+                `<option value="${c.id}">${c.label || 'Camera ' + (i + 1)}</option>`
+              ).join('');
+            }
+            
+            const backCam = cameras.find(c => c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('rear'));
+            currentCameraId = backCam ? backCam.id : cameras[0].id;
+            if (selectEl) selectEl.value = currentCameraId;
+
+            startScanning(currentCameraId);
+          } else {
+            startScanning({ facingMode: "environment" });
+          }
+        }).catch(err => {
+          startScanning({ facingMode: "user" });
+        });
+      }
+    }
+
+    function startScanning(cameraConfig) {
+      const config = { fps: 15, qrbox: { width: 200, height: 200 }, aspectRatio: 1.0 };
+      
+      html5QrCode.start(cameraConfig, config, onScanSuccess, onScanFailure)
+        .then(() => {
+          isScannerActive = true;
+        })
+        .catch(err => {
+          console.error("Camera Error:", err);
+          Swal.fire({
+            icon: 'error',
+            title: 'Chưa mở được Camera',
+            html: 'Bấm nút <b>Cho phép (Allow)</b> Camera trên thanh địa chỉ trình duyệt để kích hoạt.',
+            confirmButtonText: 'Đã hiểu'
+          });
+          resetQRScannerState();
+        });
+    }
+
+    function changeCamera(cameraId) {
+      if (html5QrCode && isScannerActive) {
+        html5QrCode.stop().then(() => {
+          currentCameraId = cameraId;
+          startScanning(cameraId);
+        }).catch(err => console.error(err));
+      }
+    }
+
+    function stopQRScanner() {
+      if (html5QrCode && isScannerActive) {
+        html5QrCode.stop().then(() => {
+          resetQRScannerState();
+        }).catch(err => {
+          resetQRScannerState();
+        });
+      } else {
+        resetQRScannerState();
+      }
+    }
+
+    function resetQRScannerState() {
+      const wrapper = document.getElementById("qr-reader-wrapper");
+      if (wrapper) wrapper.classList.add("hidden");
+      const btnText = document.getElementById("btn-qr-text");
+      if (btnText) btnText.innerText = "Bật Camera";
+      const btn = document.getElementById("btn-toggle-qr");
+      if (btn) btn.classList.replace("bg-red-600", "bg-blue-600");
+      isScannerActive = false;
+    }
+
+    function onScanSuccess(decodedText) {
+      if (!isScannerActive) return;
+      html5QrCode.pause(true);
+      playBeepSound();
+
+      let student = null;
+      let detectionType = "Mã QR";
+      try {
+        let data = JSON.parse(decodedText);
+        student = appData.students.find(s => (data.maHS && s.maHS === data.maHS) || (data.name && s.name.toLowerCase() === data.name.toLowerCase()) || (data.image && s.image && data.image === s.image));
+        if (data.type === 'FACE' || data.image) { detectionType = "Khuôn mặt (Mã hoá ảnh)"; }
+      } catch (e) {
+        let textVal = decodedText.trim().toLowerCase();
+        student = appData.students.find(s => {
+          let nameMatch = s.name && s.name.toLowerCase() === textVal;
+          let idMatch = s.maHS && s.maHS.toString().toLowerCase() === textVal;
+          let faceMatch = s.image && s.image.toLowerCase().includes(textVal);
+          if (faceMatch) detectionType = "Khuôn mặt (Mã hoá ảnh)";
+          return nameMatch || idMatch || faceMatch;
+        });
+      }
+
+      if (student) {
+        const toggleAll = document.getElementById("toggle-all-present");
+        if (toggleAll && toggleAll.checked) {
+          toggleAll.checked = false;
+          toggleAllPresent();
+        }
+
+        Swal.fire({
+          title: `<span class="text-blue-700">${student.name}</span>`,
+          html: `<div class="text-xs text-slate-500 font-bold mb-1">Mã HS: ${student.maHS || 'N/A'} - Lớp ${appData.className}</div>
+                 <div class="text-[11px] text-emerald-600 font-semibold mb-2"><i class="fas fa-check-circle mr-1"></i> Nhận diện qua: ${detectionType}</div>`,
+          icon: 'success',
+          input: 'select',
+          inputOptions: {
+            'vangCoPhep': '🔴 Vắng có phép',
+            'vangKhongPhep': '❌ Vắng không phép',
+            'tre': '⏰ Đi trễ',
+            'boTietNames': '⚠️ Bỏ tiết',
+            'khongDTNames': '📱 Không ĐT / Đồng phục'
+          },
+          inputPlaceholder: '-- Chọn hình thức ghi nhận --',
+          showCancelButton: true,
+          confirmButtonText: 'Ghi Nhận',
+          cancelButtonText: 'Bỏ qua',
+          customClass: { popup: 'rounded-2xl' }
+        }).then((res) => {
+          if (res.isConfirmed && res.value) {
+            const type = res.value;
+            if (type === 'tre') {
+              Swal.fire({
+                title: 'Nhập số phút trễ',
+                input: 'number',
+                inputValue: 5,
+                inputAttributes: { min: 1, max: 45 },
+                showCancelButton: true,
+                confirmButtonText: 'Lưu'
+              }).then((minRes) => {
+                if (minRes.isConfirmed && minRes.value) {
+                  const treStr = `${student.name} trễ ${minRes.value} phút`;
+                  if (!violations.treNames.includes(treStr)) {
+                    violations.treNames.push(treStr);
+                    renderChips('treNames', 'tre');
+                    updateAvailableStudentsDatalist();
+                  }
+                }
+                resumeScanner();
+              });
+            } else {
+              if (!violations[type].includes(student.name)) {
+                violations[type].push(student.name);
+                renderChips(type);
+                updateAvailableStudentsDatalist();
+              }
+              resumeScanner();
+            }
+          } else {
+            resumeScanner();
+          }
+        });
+      } else {
+        Swal.fire({ toast: true, position: 'top', icon: 'warning', title: 'Không tìm thấy dữ liệu học sinh trong lớp ' + appData.className, showConfirmButton: false, timer: 2000 });
+        setTimeout(resumeScanner, 1500);
+      }
+    }
+
+    function resumeScanner() {
+      if (html5QrCode && isScannerActive) {
+        try { html5QrCode.resume(); } catch(e) {}
+      }
+    }
+
+    function onScanFailure(error) {}
+
+    function playBeepSound() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(1000, ctx.currentTime);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.12);
+      } catch(e) {}
+    }
+
+    // LẤY DANH SÁCH HỌC SINH ĐÃ ĐƯỢC ĐÁNH DẤU (QUÉT MÃ HOẶC NHẬP THỦ CÔNG)
+    function getAlreadyMarkedStudents() {
+      let marked = [
+        ...violations.vangCoPhep,
+        ...violations.vangKhongPhep,
+        ...violations.boTietNames,
+        ...violations.khongDTNames,
+        ...violations.treNames.map(t => t.split(' trễ ')[0].trim())
+      ];
+      return Array.from(new Set(marked));
+    }
+
+    // TỰ ĐỘNG LỌC TRỪ HỌC SINH VÀ CẬP NHẬT THỐNG KÊ SĨ SỐ CÒN LẠI
+    function updateAvailableStudentsDatalist() {
+      const dlGlobal = document.getElementById("student-list-global");
+      if (!dlGlobal) return;
+      dlGlobal.innerHTML = "";
+      const marked = getAlreadyMarkedStudents();
+      const totalStudents = appData.students ? appData.students.length : 0;
+      let remainingCount = 0;
+
+      if (appData.students) {
+        appData.students.forEach(s => {
+          if (!marked.includes(s.name)) {
+            let opt = document.createElement("option");
+            opt.value = s.name;
+            dlGlobal.appendChild(opt);
+            remainingCount++;
+          }
+        });
+      }
+
+      // Cập nhật huy hiệu đếm: "Còn lại: 37/40"
+      const badge = document.getElementById("badge-remaining-students");
+      if (badge) {
+        badge.innerHTML = `Còn lại: <span class="text-blue-800 font-extrabold">${remainingCount}</span>/${totalStudents}`;
+      }
+    }
+
+    function toggleAllPresent() {
+      const isAllPresent = document.getElementById("toggle-all-present").checked;
+      const section = document.getElementById("violation-section"); const boxAllPresent = document.getElementById("box-all-present"); const textAllPresent = document.getElementById("text-all-present");
+      if (isAllPresent) {
+        section.classList.add("hidden"); boxAllPresent.classList.replace("bg-white", "bg-emerald-50"); textAllPresent.innerText = "LỚP ĐI ĐỦ"; textAllPresent.classList.replace("text-slate-600", "text-emerald-700");
+        violations = { vangCoPhep: [], vangKhongPhep: [], boTietNames: [], khongDTNames: [], treNames: [] }; renderAllChips(); updateAvailableStudentsDatalist();
+      } else {
+        section.classList.remove("hidden"); boxAllPresent.classList.replace("bg-emerald-50", "bg-white"); textAllPresent.innerText = "GHI NHẬN VI PHẠM"; textAllPresent.classList.replace("text-emerald-700", "text-slate-600");
+      }
+    }
+
+    function addViolation(inputEl, arrayName) {
+      const name = inputEl.value.trim(); if (!name) return;
+      if (!appData.students.some(s => s.name.toLowerCase() === name.toLowerCase())) { Swal.fire('Sai tên', 'Không có trong lớp!', 'warning'); inputEl.value = ""; return; }
+      if (getAlreadyMarkedStudents().includes(name)) { Swal.fire('Trùng', 'Đã đánh dấu ở mục khác.', 'error'); inputEl.value = ""; return; }
+      if (!violations[arrayName].includes(name)) violations[arrayName].push(name);
+      inputEl.value = ""; renderChips(arrayName); updateAvailableStudentsDatalist();
+    }
+
+    function addTre() {
+      const nInp = document.getElementById("inp-tre-name"); const mInp = document.getElementById("inp-tre-min"); const name = nInp.value.trim(); const mins = parseInt(mInp.value);
+      if (!name || !mins) return Swal.fire('Lỗi', 'Nhập đủ thông tin!', 'warning'); if (mins > 45) return Swal.fire('Lỗi', 'Quá 45 phút', 'error');
+      if (!appData.students.some(s => s.name.toLowerCase() === name.toLowerCase())) return Swal.fire('Sai tên', 'Không có trong lớp', 'warning');
+      if (getAlreadyMarkedStudents().includes(name)) { Swal.fire('Trùng lặp!', 'Đã đánh dấu ở mục khác', 'error'); nInp.value = ""; mInp.value = ""; return; }
+      const str = `${name} trễ ${mins} phút`; if (!violations.treNames.includes(str)) violations.treNames.push(str);
+      nInp.value = ""; mInp.value = ""; renderChips('treNames', 'tre'); updateAvailableStudentsDatalist();
+    }
+
+    function renderAllChips() { renderChips('vangCoPhep'); renderChips('vangKhongPhep'); renderChips('boTietNames'); renderChips('khongDTNames'); renderChips('treNames', 'tre'); }
+    
+    function renderChips(arrN, cId = null) {
+      const tId = cId ? `chip-${cId}` : `chip-${arrN}`; const c = document.getElementById(tId); c.innerHTML = "";
+      violations[arrN].forEach((item, idx) => {
+        const chip = document.createElement("div"); chip.className = "bg-white border text-xs px-3 py-1.5 rounded-full flex items-center font-bold shadow-sm";
+        chip.innerHTML = `<span>${item}</span><button type="button" onclick="removeChip('${arrN}', ${idx}, '${cId || arrN}')" class="ml-2 text-red-500 font-bold bg-red-50 hover:bg-red-100 rounded-full w-5 h-5 flex items-center justify-center transition-colors"><i class="fas fa-times text-[10px]"></i></button>`;
+        c.appendChild(chip);
+      });
+    }
+
+    function removeChip(aN, idx, rId) { 
+      violations[aN].splice(idx, 1); 
+      renderChips(aN, rId); 
+      updateAvailableStudentsDatalist(); 
+    }
+
+    function previewAttendance() {
+      let p = { session: appData.session, subject: appData.subject, className: appData.className, reporterName: appData.reporterInfo.name, reporterRole: appData.reporterInfo.role, rowIndex: appData.rowIndex, vangCoPhep: violations.vangCoPhep, vangKhongPhep: violations.vangKhongPhep, treNames: violations.treNames, boTietNames: violations.boTietNames, khongDTNames: violations.khongDTNames };
+      let presentCount = appData.students.length - (p.vangCoPhep.length + p.vangKhongPhep.length);
+      Swal.fire({ title: 'Xác Nhận Nộp', html: `<div class="text-sm text-left bg-slate-50 p-4 border rounded-xl mt-2"><div class="flex justify-between border-b pb-2 mb-2 font-bold"><span>Tổng sĩ số: ${appData.students.length}</span><span class="text-emerald-600">Đi học: ${presentCount}</span></div><div class="flex justify-between py-1 border-b"><span>Vắng phép:</span><span class="font-bold text-amber-600">${p.vangCoPhep.length}</span></div><div class="flex justify-between py-1 border-b"><span>Không phép:</span><span class="font-bold text-red-600">${p.vangKhongPhep.length}</span></div><div class="flex justify-between py-1 border-b"><span>Đi trễ:</span><span class="font-bold text-orange-600">${p.treNames.length}</span></div></div>`, showCancelButton: true, confirmButtonText: 'ĐỒNG Ý NỘP' }).then((res) => {
+        if (res.isConfirmed) {
+          showLoading("Đang mã hóa...");
+          callBackendApi('saveAttendance', p)
+            .then(r => {
+              Swal.fire('Thành công!', r, 'success').then(() => {
+                 document.getElementById("auth-class").value = ""; document.getElementById("auth-subject").value = "";
+                 document.querySelectorAll('.subj-checkbox').forEach(cb => cb.checked = false);
+                 document.getElementById("personal-info-section").classList.add("opacity-50", "pointer-events-none");
+                 hideLoading(); changeStep('0');
+              });
+            })
+            .catch(showError);
+        }
+      });
+    }
+
+    function showLoading(t) { 
+        document.getElementById("loading-msg").innerText = t || "KẾT NỐI HỆ THỐNG..."; 
+        document.getElementById("loading-screen").classList.remove("hidden"); 
+        document.getElementById("loading-screen").classList.add("flex"); 
+        ["step-0", "step-1", "step-2", "step-admin", "step-admin-config", "step-admin-data", "step-gv-login"].forEach(id => { 
+            let el = document.getElementById(id); if(el) el.classList.add("hidden"); 
+        }); 
+        document.getElementById("btn-back").classList.add("hidden"); 
+        document.getElementById("session-info").classList.add("hidden"); 
+    }
+    
+    function hideLoading() { 
+        document.getElementById("loading-screen").classList.add("hidden"); 
+        document.getElementById("loading-screen").classList.remove("flex");
+        changeStep(currentStep); 
+    }
+    
+    function showError(err) { 
+        hideLoading(); 
+        Swal.fire('Lỗi', err.message || err, 'error'); 
+    }
+  </script>
+</body>
+</html>

@@ -9,6 +9,9 @@
   <link rel="icon" type="image/png" href="icon (1).png">
   <link rel="apple-touch-icon" href="icon (1).png">
 
+  <!-- TỰ ĐỘNG CẬP NHẬT HỆ THỐNG -->
+  <script src="version.js"></script>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -198,21 +201,6 @@
 
   <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxYDm51fvs_fNToHqnNMQ4dV7hZLIggWFB2BjD0i3dMoRhIB7k48dhG5vNblVxtetkBfw/exec";
-    const APP_VERSION = "3.4.0"; // Đồng bộ phiên bản phần mềm tự cập nhật
-
-    // BỘ TỰ ĐỘNG CẬP NHẬT PHẦN MỀM (AUTO UPDATE ENGINE)
-    function checkAutoUpdateSoftware() {
-      try {
-        const lastVer = localStorage.getItem("app_version_ngo_quyen");
-        if (lastVer && lastVer !== APP_VERSION) {
-          localStorage.setItem("app_version_ngo_quyen", APP_VERSION);
-          window.location.reload(true);
-          return;
-        }
-        localStorage.setItem("app_version_ngo_quyen", APP_VERSION);
-      } catch(e) {}
-    }
-    checkAutoUpdateSoftware();
 
     function goBackToPortal() { 
       aiStopCamera();

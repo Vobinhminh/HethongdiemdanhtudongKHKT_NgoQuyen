@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Trạm Thu Thập Ảnh AI - THPT Ngô Quyền</title>
+
+  <!-- FAVICON ICON HỆ THỐNG -->
+  <link rel="icon" type="image/png" href="icon (1).png">
+  <link rel="apple-touch-icon" href="icon (1).png">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -31,8 +36,8 @@
 <body class="flex flex-col items-center justify-start pb-24">
 
   <header class="glass-header text-slate-800 p-4 sticky top-0 z-50 flex items-center justify-between max-w-4xl w-full mx-auto rounded-b-2xl mb-6">
-    <div class="flex items-center space-x-2">
-        <div class="bg-cyan-500/10 p-2 rounded-lg border border-cyan-200"><i class="fas fa-camera-retro text-cyan-600"></i></div>
+    <div class="flex items-center space-x-2.5">
+        <img src="icon (1).png" alt="Logo" class="w-8 h-8 object-contain drop-shadow" onerror="this.src='https://img.icons8.com/fluency/512/camera.png'">
         <span class="font-bold text-sm tracking-wider text-cyan-700">TRẠM ẢNH AI NGÔ QUYỀN</span>
     </div>
     
@@ -48,7 +53,10 @@
   <div id="step-ai-photo" class="hidden flex-1 p-4 flex flex-col items-center max-w-4xl w-full mx-auto">
       <div class="glass-card w-full p-6 rounded-2xl mb-6 shadow-xl border border-cyan-100">
           <div class="text-center mb-6">
-              <h1 class="text-2xl font-extrabold text-cyan-700 uppercase tracking-wide"><i class="fas fa-robot mr-2"></i> Trạm Thu Thập 3 Mẫu Ảnh Thẻ AI</h1>
+              <h1 class="text-2xl font-extrabold text-cyan-700 uppercase tracking-wide flex items-center justify-center">
+                <img src="icon (1).png" class="w-8 h-8 mr-2 object-contain inline-block" onerror="this.style.display='none'">
+                Trạm Thu Thập 3 Mẫu Ảnh Thẻ AI
+              </h1>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -56,36 +64,30 @@
                   <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
                       <h3 class="font-bold text-blue-800 mb-3 text-sm uppercase"><i class="fas fa-user-graduate mr-1"></i> 1. Thông tin học sinh</h3>
                       
+                      <!-- BỎ Ô GÕ SEARCH LỚP - BẤM CHỌN TRỰC TIẾP -->
                       <div class="mb-3 relative select-custom" id="wrapper-ai-class">
                           <label class="block text-xs font-bold text-slate-600 mb-1">Chọn Lớp</label>
                           <input type="hidden" id="ai-inp-class" value="">
-                          <button type="button" onclick="aiToggleSelect('dropdown-ai-class', 'search-class-input')" class="w-full flex justify-between p-2.5 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-700 shadow-sm hover:border-cyan-500 transition">
+                          <button type="button" onclick="aiToggleSelect('dropdown-ai-class')" class="w-full flex justify-between p-2.5 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-700 shadow-sm hover:border-cyan-500 transition">
                             <span id="ai-label-class" class="text-slate-400">-- Bấm chọn lớp --</span>
                             <i class="fas fa-chevron-down text-slate-400"></i>
                           </button>
                           
-                          <div id="dropdown-ai-class" class="hidden absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl p-2.5">
-                            <div class="relative mb-2">
-                              <input type="text" placeholder="🔍 Gõ lớp (VD: 10, 12, A1...)" oninput="filterOptions('search-class-input', 'ul-class-list')" id="search-class-input" class="w-full p-2 pl-8 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold outline-none focus:border-cyan-500 text-slate-700">
-                              <i class="fas fa-search absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
-                            </div>
+                          <div id="dropdown-ai-class" class="hidden absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl p-2">
                             <ul id="ul-class-list" class="max-h-[180px] overflow-y-auto custom-scrollbar space-y-0.5"></ul>
                           </div>
                       </div>
 
+                      <!-- BỎ Ô GÕ SEARCH HỌC SINH - BẤM CHỌN TRỰC TIẾP -->
                       <div class="mb-3 relative select-custom" id="wrapper-ai-name">
                           <label class="block text-xs font-bold text-slate-600 mb-1">Họ và Tên Học Sinh</label>
                           <input type="hidden" id="ai-inp-name" value="">
-                          <button type="button" onclick="aiToggleSelect('dropdown-ai-name', 'search-student-input')" class="w-full flex justify-between p-2.5 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-700 shadow-sm hover:border-cyan-500 transition">
+                          <button type="button" onclick="aiToggleSelect('dropdown-ai-name')" class="w-full flex justify-between p-2.5 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-700 shadow-sm hover:border-cyan-500 transition">
                             <span id="ai-label-name" class="text-slate-400">-- Chọn học sinh --</span>
                             <i class="fas fa-chevron-down text-slate-400"></i>
                           </button>
                           
-                          <div id="dropdown-ai-name" class="hidden absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl p-2.5">
-                            <div class="relative mb-2">
-                              <input type="text" placeholder="🔍 Gõ tên học sinh để lọc..." oninput="filterOptions('search-student-input', 'ul-student-list')" id="search-student-input" class="w-full p-2 pl-8 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold outline-none focus:border-cyan-500 text-slate-700">
-                              <i class="fas fa-search absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
-                            </div>
+                          <div id="dropdown-ai-name" class="hidden absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl p-2">
                             <ul id="ul-student-list" class="max-h-[180px] overflow-y-auto custom-scrollbar space-y-0.5"></ul>
                           </div>
                       </div>
@@ -195,7 +197,22 @@
   </div>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxYDm51fvs_fNToHqnNMQ4dV7hZLIggWFB2BjD0i3dMoRhlB7k48dhG5vNblVxtetkBfw/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxYDm51fvs_fNToHqnNMQ4dV7hZLIggWFB2BjD0i3dMoRhIB7k48dhG5vNblVxtetkBfw/exec";
+    const APP_VERSION = "3.4.0"; // Đồng bộ phiên bản phần mềm tự cập nhật
+
+    // BỘ TỰ ĐỘNG CẬP NHẬT PHẦN MỀM (AUTO UPDATE ENGINE)
+    function checkAutoUpdateSoftware() {
+      try {
+        const lastVer = localStorage.getItem("app_version_ngo_quyen");
+        if (lastVer && lastVer !== APP_VERSION) {
+          localStorage.setItem("app_version_ngo_quyen", APP_VERSION);
+          window.location.reload(true);
+          return;
+        }
+        localStorage.setItem("app_version_ngo_quyen", APP_VERSION);
+      } catch(e) {}
+    }
+    checkAutoUpdateSoftware();
 
     function goBackToPortal() { 
       aiStopCamera();
@@ -247,25 +264,12 @@
       }
     });
 
-    function aiToggleSelect(id, inputToFocus) {
+    function aiToggleSelect(id) {
       document.querySelectorAll('div[id^="dropdown-ai-"]').forEach(el => {
         if(el.id !== id) el.classList.add('hidden');
       });
       const target = document.getElementById(id);
-      target.classList.toggle('hidden');
-      if (!target.classList.contains('hidden') && inputToFocus) {
-        setTimeout(() => document.getElementById(inputToFocus).focus(), 100);
-      }
-    }
-
-    function filterOptions(inputId, listId) {
-      const q = document.getElementById(inputId).value.toLowerCase().trim();
-      const items = document.querySelectorAll(`#${listId} li`);
-      items.forEach(item => {
-        const text = item.innerText.toLowerCase();
-        if (text.includes(q)) item.classList.remove('hidden');
-        else item.classList.add('hidden');
-      });
+      if (target) target.classList.toggle('hidden');
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -363,7 +367,7 @@
     function aiCheckPinLive() {
         const name = document.getElementById("ai-inp-name").value.trim(); 
         const pin = document.getElementById("ai-inp-pin").value.trim();
-        const student = aiCurrentStudents.find(s => s.name.toLowerCase() === name.toLowerCase());
+        const student = aiCurrentStudents.find(s => s.name && s.name.toLowerCase() === name.toLowerCase());
         const iconCorrect = document.getElementById("ai-icon-pin-correct");
         const iconWrong = document.getElementById("ai-icon-pin-wrong");
         const pinInput = document.getElementById("ai-inp-pin");
@@ -371,7 +375,7 @@
         if (!student) return;
 
         if (pin.length === 6) {
-            if (pin.toString() === student.pin.toString()) { 
+            if (student.pin && pin.toString() === student.pin.toString()) { 
                 iconCorrect.classList.remove("hidden"); 
                 iconWrong.classList.add("hidden");
                 pinInput.classList.replace("border-slate-300", "border-emerald-500"); 

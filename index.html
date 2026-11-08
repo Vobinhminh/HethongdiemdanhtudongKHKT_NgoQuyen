@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Cổng Điểm Danh Ngô Quyền</title>
+  
+  <!-- FAVICON ICON HỆ THỐNG -->
+  <link rel="icon" type="image/png" href="icon (1).png">
+  <link rel="apple-touch-icon" href="icon (1).png">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -27,9 +32,10 @@
 
   <div class="w-full max-w-5xl min-h-screen flex flex-col relative pb-24">
     
+    <!-- HEADER HIỂN THỊ ICON NỔI BẬT -->
     <header class="glass-header text-slate-800 p-4 sticky top-0 z-50 flex items-center justify-between max-w-md w-full mx-auto rounded-b-2xl">
-      <div class="flex items-center space-x-2">
-        <div class="bg-blue-500/10 p-2 rounded-lg border border-blue-200"><i class="fas fa-school text-blue-600"></i></div>
+      <div class="flex items-center space-x-2.5">
+        <img src="icon (1).png" alt="Logo" class="w-8 h-8 object-contain drop-shadow" onerror="this.src='https://img.icons8.com/fluency/512/book.png'">
         <span class="font-bold text-sm tracking-wider text-blue-700">THPT NGÔ QUYỀN</span>
       </div>
       <button type="button" id="btn-back" onclick="goBack()" class="hidden bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-1.5 px-3 rounded-lg text-xs border border-slate-200 transition shadow-sm">
@@ -56,12 +62,15 @@
       </div>
     </div>
 
-    <!-- CỔNG ĐĂNG NHẬP -->
+    <!-- CỔNG ĐĂNG NHẬP CHÍNH CÓ LOGO TRỰC QUAN -->
     <div id="step-0" class="hidden flex-1 flex flex-col items-center justify-center p-6 max-w-md w-full mx-auto">
       <div class="glass-card p-8 rounded-3xl w-full text-center">
-        <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6"><i class="fas fa-user-shield text-blue-600 text-3xl"></i></div>
-        <h2 class="text-2xl font-extrabold text-slate-800 mb-2">CỔNG ĐIỂM DANH</h2>
-        <button type="button" onclick="changeStep('1')" class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 text-white font-bold py-4 px-4 rounded-xl shadow-lg mt-6 mb-3 flex items-center justify-center space-x-3"><i class="fas fa-user-graduate text-xl"></i><span>Học sinh đăng nhập</span></button>
+        <div class="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-5 p-2 shadow-inner border border-blue-100">
+            <img src="icon (1).png" alt="Logo Trường" class="w-20 h-20 object-contain" onerror="this.src='https://img.icons8.com/fluency/512/book.png'">
+        </div>
+        <h2 class="text-2xl font-extrabold text-slate-800 mb-2 tracking-wide">CỔNG ĐIỂM DANH</h2>
+        <p class="text-xs text-slate-400 font-medium mb-4">Hệ Thống Quản Lý Điểm Danh THPT Ngô Quyền</p>
+        <button type="button" onclick="changeStep('1')" class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 text-white font-bold py-4 px-4 rounded-xl shadow-lg mb-3 flex items-center justify-center space-x-3"><i class="fas fa-user-graduate text-xl"></i><span>Học sinh đăng nhập</span></button>
         <button type="button" onclick="openTramDiemDanh()" class="w-full bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 text-white font-bold py-4 px-4 rounded-xl shadow-lg mb-3 flex items-center justify-center space-x-3"><i class="fas fa-camera-retro text-xl"></i><span>Trạm thu thập ảnh AI</span></button>
         <button type="button" onclick="changeStep('gv-login')" class="w-full bg-white border-2 border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-4 px-4 rounded-xl shadow-sm flex items-center justify-center space-x-3"><i class="fas fa-chalkboard-teacher text-xl text-slate-500"></i><span>Giáo viên đăng nhập</span></button>
       </div>
@@ -254,7 +263,7 @@
         </div>
       </div>
 
-      <!-- ĐÃ GOM TOÀN BỘ 5 MỤC VI PHẠM VÀO 1 THẺ DUY NHẤT -->
+      <!-- GOM VI PHẠM VÀO 1 THẺ -->
       <div id="violation-section" class="hidden glass-card p-5 rounded-2xl mb-24 max-w-md w-full border-t-4 border-t-blue-500 shadow-xl">
         <div class="flex items-center justify-between border-b pb-3 mb-4">
           <h4 class="font-bold text-slate-800 text-sm uppercase flex items-center">
@@ -270,7 +279,7 @@
           <label class="block text-xs font-bold text-amber-700 mb-1.5 flex items-center">
             <span class="w-2 h-2 rounded-full bg-amber-500 mr-1.5"></span>Vắng Có Phép
           </label>
-          <input type="text" list="student-list-global" placeholder="🔍 Gõ tên học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-amber-500 mb-2" onchange="addViolation(this, 'vangCoPhep')">
+          <input type="text" list="student-list-global" placeholder="🔍 Chọn học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-amber-500 mb-2" onchange="addViolation(this, 'vangCoPhep')">
           <div id="chip-vangCoPhep" class="flex flex-wrap gap-1.5"></div>
         </div>
 
@@ -279,7 +288,7 @@
           <label class="block text-xs font-bold text-red-700 mb-1.5 flex items-center">
             <span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>Vắng Không Phép
           </label>
-          <input type="text" list="student-list-global" placeholder="🔍 Gõ tên học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-red-500 mb-2" onchange="addViolation(this, 'vangKhongPhep')">
+          <input type="text" list="student-list-global" placeholder="🔍 Chọn học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-red-500 mb-2" onchange="addViolation(this, 'vangKhongPhep')">
           <div id="chip-vangKhongPhep" class="flex flex-wrap gap-1.5"></div>
         </div>
 
@@ -289,7 +298,7 @@
             <span class="w-2 h-2 rounded-full bg-orange-500 mr-1.5"></span>Đi Trễ
           </label>
           <div class="flex gap-2 mb-2">
-            <input type="text" id="inp-tre-name" list="student-list-global" placeholder="🔍 Gõ tên..." class="flex-1 p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-orange-500">
+            <input type="text" id="inp-tre-name" list="student-list-global" placeholder="🔍 Chọn tên..." class="flex-1 p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-orange-500">
             <input type="number" id="inp-tre-min" placeholder="Phút" class="w-16 p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-center focus:outline-none focus:border-orange-500">
             <button type="button" onclick="addTre()" class="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white px-3.5 rounded-lg font-bold text-xs shadow-sm transition-all"><i class="fas fa-plus"></i></button>
           </div>
@@ -301,7 +310,7 @@
           <label class="block text-xs font-bold text-purple-700 mb-1.5 flex items-center">
             <span class="w-2 h-2 rounded-full bg-purple-500 mr-1.5"></span>Bỏ Tiết
           </label>
-          <input type="text" list="student-list-global" placeholder="🔍 Gõ tên học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-purple-500 mb-2" onchange="addViolation(this, 'boTietNames')">
+          <input type="text" list="student-list-global" placeholder="🔍 Chọn học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-purple-500 mb-2" onchange="addViolation(this, 'boTietNames')">
           <div id="chip-boTietNames" class="flex flex-wrap gap-1.5"></div>
         </div>
 
@@ -310,7 +319,7 @@
           <label class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center">
             <span class="w-2 h-2 rounded-full bg-slate-500 mr-1.5"></span>Không ĐT / Đồng Phục
           </label>
-          <input type="text" list="student-list-global" placeholder="🔍 Gõ tên học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-slate-500 mb-2" onchange="addViolation(this, 'khongDTNames')">
+          <input type="text" list="student-list-global" placeholder="🔍 Chọn học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-slate-500 mb-2" onchange="addViolation(this, 'khongDTNames')">
           <div id="chip-khongDTNames" class="flex flex-wrap gap-1.5"></div>
         </div>
       </div>
@@ -321,16 +330,34 @@
       </div>
     </div>
   </div>
-  <script>
-    // URL WEB APP GOOGLE APPS SCRIPT BACKEND (Dán link /exec của bạn vào đây)
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxYDm51fvs_fNToHqnNMQ4dV7hZLIggWFB2BjD0i3dMoRhlB7k48dhG5vNblVxtetkBfw/exec";
 
-    // Nút mở Trạm AI (trang ai.html chạy cùng repo trên GitHub Pages)
+  <script>
+    // URL WEB APP GOOGLE APPS SCRIPT BACKEND
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxYDm51fvs_fNToHqnNMQ4dV7hZLIggWFB2BjD0i3dMoRhIB7k48dhG5vNblVxtetkBfw/exec";
+    const APP_VERSION = "3.4.0"; // Phiên bản phần mềm
+
+    // ==========================================
+    // BỘ TỰ ĐỘNG CẬP NHẬT PHẦN MỀM (AUTO UPDATE ENGINE)
+    // ==========================================
+    function checkAutoUpdateSoftware() {
+      try {
+        const lastVer = localStorage.getItem("app_version_ngo_quyen");
+        if (lastVer && lastVer !== APP_VERSION) {
+          localStorage.setItem("app_version_ngo_quyen", APP_VERSION);
+          window.location.reload(true);
+          return;
+        }
+        localStorage.setItem("app_version_ngo_quyen", APP_VERSION);
+      } catch(e) {}
+    }
+    checkAutoUpdateSoftware();
+
+    // Nút mở Trạm AI
     function openTramDiemDanh() { 
       window.location.href = "ai.html"; 
     }
 
-    // BỘ ĐIỀU HÀNH API HYBRID (Chạy mượt trên cả GitHub Pages lẫn Google Apps Script)
+    // BỘ ĐIỀU HÀNH API HYBRID
     function callBackendApi(fnName, ...args) {
       return new Promise((resolve, reject) => {
         if (window.google && google.script && google.script.run) {
@@ -744,7 +771,6 @@
       document.getElementById("toggle-all-present").checked = true; toggleAllPresent(); updateAvailableStudentsDatalist(); changeStep('2');
     }
 
-    // --- LOGIC MÔ-ĐUN QUÉT CAMERA QR & NHẬN DIỆN KHUÔN MẶT ---
     function toggleQRScanner() {
       const wrapper = document.getElementById("qr-reader-wrapper");
       const btnText = document.getElementById("btn-qr-text");
@@ -947,7 +973,6 @@
       } catch(e) {}
     }
 
-    // LẤY DANH SÁCH HỌC SINH ĐÃ ĐƯỢC ĐÁNH DẤU (QUÉT MÃ HOẶC NHẬP THỦ CÔNG)
     function getAlreadyMarkedStudents() {
       let marked = [
         ...violations.vangCoPhep,
@@ -959,7 +984,6 @@
       return Array.from(new Set(marked));
     }
 
-    // TỰ ĐỘNG LỌC TRỪ HỌC SINH VÀ CẬP NHẬT THỐNG KÊ SĨ SỐ CÒN LẠI
     function updateAvailableStudentsDatalist() {
       const dlGlobal = document.getElementById("student-list-global");
       if (!dlGlobal) return;
@@ -979,7 +1003,6 @@
         });
       }
 
-      // Cập nhật huy hiệu đếm: "Còn lại: 37/40"
       const badge = document.getElementById("badge-remaining-students");
       if (badge) {
         badge.innerHTML = `Còn lại: <span class="text-blue-800 font-extrabold">${remainingCount}</span>/${totalStudents}`;

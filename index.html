@@ -91,7 +91,7 @@
         </div>
         <div class="mb-4"><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Chức vụ</label><input type="text" id="gv-auth-role" readonly class="w-full p-3 bg-slate-200 border border-slate-300 rounded-xl text-slate-600 font-bold text-sm"></div>
         <div class="mb-5">
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">2. Password (6 số)</label>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">2. Password</label>
             <input type="password" id="gv-auth-pin" maxlength="6" inputmode="numeric" pattern="[0-9]*" onkeypress="return event.charCode >= 48 && event.charCode <= 57" oninput="clearInlineError('gv-auth-error')" class="w-full p-3 bg-white border border-slate-300 rounded-xl text-center text-lg tracking-widest font-mono shadow-sm">
             <p id="gv-auth-error" class="text-red-500 text-xs font-bold mt-2 text-center hidden"></p>
         </div>
@@ -530,10 +530,64 @@
        el.classList.add("hidden");
     }
 
+    // Modal Đổi Mật Khẩu Chung (Dùng cho cả HS và GV khi đăng nhập lần đầu)
+    function promptChangePin(type, className, nameOrId, oldPin, callback) {
+      Swal.fire({
+        title: '🔒 Yêu Cầu Đổi Mã PIN',
+        html: `<div class="text-left text-xs text-slate-600 mb-3">Vì lý do bảo mật, bạn cần đổi mã PIN mặc định (123456) trước khi tiếp tục sử dụng hệ thống.</div>
+               <input type="password" id="swal-new-pin" class="swal2-input !text-center !font-mono !tracking-widest" placeholder="Mã PIN mới (≥ 4 số)" maxlength="6" inputmode="numeric">`,
+        confirmButtonText: 'Xác nhận đổi',
+        allowOutsideClick: false,
+        preConfirm: () => {
+          const newPin = document.getElementById('swal-new-pin').value;
+          if (!newPin || newPin.length < 4) {
+            Swal.showValidationMessage('Mã PIN mới phải có ít nhất 4 ký tự!');
+            return false;
+          }
+          if (newPin === '123456') {
+            Swal.showValidationMessage('Mã PIN mới không được trùng với mật khẩu mặc định (123456)!');
+            return false;
+          }
+          return newPin;
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const newPin = result.value;
+          showLoading("Đang cập nhật mã PIN...");
+          callBackendApi('changeUserPin', type, className, nameOrId, oldPin, newPin)
+            .then(res => {
+              hideLoading();
+              if (res.status === 'success') {
+                Swal.fire('Thành công!', 'Đổi mã PIN thành công! Hệ thống đã cập nhật trạng thái.', 'success').then(() => {
+                  if (callback) callback();
+                });
+              } else {
+                Swal.fire('Lỗi', res.msg, 'error');
+              }
+            })
+            .catch(showError);
+        }
+      });
+    }
+
     function chooseGiaoVienOption(index, name) {
       clearInlineError('gv-auth-error');
       document.getElementById('gv-auth-name').value = name; document.getElementById('label-gv-name').innerText = name; document.getElementById('label-gv-name').classList.replace('text-slate-400', 'text-slate-800');
       document.getElementById('dropdown-gv-name').classList.add('hidden'); document.getElementById('gv-auth-role').value = appData.giaoVienList[index].role; document.getElementById('gv-auth-pin').focus();
+    }
+
+    function proceedAdminLogin(res) {
+        gvPinFails = 0;
+        clearInlineError('gv-auth-error');
+        document.getElementById('admin-welcome-text').innerText = `Xin chào, ${res.adminName} (${res.role})`;
+        document.getElementById("btn-open-sheets-data").onclick = () => window.open(res.url, "_blank");
+        if (res.role.toLowerCase().includes("quản lý") || res.role.toLowerCase().includes("admin")) {
+            document.getElementById("btn-admin-config").classList.remove("hidden"); document.getElementById("btn-admin-config").classList.add("flex");
+            document.getElementById("btn-admin-data").classList.remove("hidden"); document.getElementById("btn-admin-data").classList.add("flex");
+        } else {
+            document.getElementById("btn-admin-config").classList.add("hidden"); document.getElementById("btn-admin-data").classList.add("hidden");
+        }
+        changeStep('admin'); document.getElementById('gv-auth-pin').value = ""; 
     }
 
     function submitGiaoVienLogin() {
@@ -546,17 +600,13 @@
         .then(res => {
           hideLoading();
           if (res.success) {
-            gvPinFails = 0;
-            clearInlineError('gv-auth-error');
-            document.getElementById('admin-welcome-text').innerText = `Xin chào, ${res.adminName} (${res.role})`;
-            document.getElementById("btn-open-sheets-data").onclick = () => window.open(res.url, "_blank");
-            if (res.role.toLowerCase().includes("quản lý") || res.role.toLowerCase().includes("admin")) {
-              document.getElementById("btn-admin-config").classList.remove("hidden"); document.getElementById("btn-admin-config").classList.add("flex");
-              document.getElementById("btn-admin-data").classList.remove("hidden"); document.getElementById("btn-admin-data").classList.add("flex");
+            if (res.isFirstLogin) {
+              promptChangePin('GV', '', res.adminName, pin, () => {
+                proceedAdminLogin(res);
+              });
             } else {
-              document.getElementById("btn-admin-config").classList.add("hidden"); document.getElementById("btn-admin-data").classList.add("hidden");
+              proceedAdminLogin(res);
             }
-            changeStep('admin'); document.getElementById('gv-auth-pin').value = ""; 
           } else {
             gvPinFails++;
             if(gvPinFails >= 3) {
@@ -725,6 +775,12 @@
       document.getElementById("auth-role").value = appData.students[idx].role; document.getElementById("auth-pin").focus();
     }
 
+    function proceedStudentLogin(student, pin) {
+      hsPinFails = 0; clearInlineError('auth-error');
+      appData.reporterInfo = { name: student.name, role: student.role }; violations = { vangCoPhep: [], vangKhongPhep: [], boTietNames: [], khongDTNames: [], treNames: [] };
+      document.getElementById("toggle-all-present").checked = true; toggleAllPresent(); updateAvailableStudentsDatalist(); changeStep('2');
+    }
+
     function verifyStudentLogin() {
       const idx = document.getElementById("auth-name").value; const pin = document.getElementById("auth-pin").value;
       if (idx === "") { showInlineError('auth-error', '❌ Vui lòng chọn Tên của bạn!'); return; }
@@ -752,9 +808,16 @@
           return;
       }
       
-      hsPinFails = 0; clearInlineError('auth-error');
-      appData.reporterInfo = { name: student.name, role: student.role }; violations = { vangCoPhep: [], vangKhongPhep: [], boTietNames: [], khongDTNames: [], treNames: [] };
-      document.getElementById("toggle-all-present").checked = true; toggleAllPresent(); updateAvailableStudentsDatalist(); changeStep('2');
+      // Kiểm tra nếu là lần đăng nhập đầu tiên (isFirstLogin = true)
+      if (student.isFirstLogin) {
+          promptChangePin('HS', appData.className, student.name, pin, () => {
+              student.isFirstLogin = false; // Đã đổi thành công
+              student.pin = pin; // Cập nhật lại phiên (Backend đã cập nhật Sheet)
+              proceedStudentLogin(student, pin);
+          });
+      } else {
+          proceedStudentLogin(student, pin);
+      }
     }
 
     function toggleQRScanner() {

@@ -503,6 +503,12 @@
       ["step-0", "step-1", "step-2", "step-admin", "step-admin-config", "step-admin-data", "step-gv-login"].forEach(id => { let el = document.getElementById(id); if(el) el.classList.add("hidden"); });
       let outEl = document.getElementById("out-of-time-screen"); if(outEl) outEl.classList.add("hidden");
       document.getElementById(`step-${step}`).classList.remove("hidden");
+      if(step === '1') {
+          let mainCard = document.querySelector("#step-1 > div:first-child");
+          if (mainCard) mainCard.classList.remove("hidden");
+          let noticeDiv = document.getElementById("student-notice-view");
+          if (noticeDiv) noticeDiv.classList.add("hidden");
+      }
       
       const btnBack = document.getElementById("btn-back"); const infoBox = document.getElementById("session-info");
       if (step === '0') { btnBack.classList.add("hidden"); infoBox.classList.remove("hidden"); } 
@@ -535,13 +541,17 @@
       Swal.fire({
         title: '🔒 Yêu Cầu Đổi Mã PIN',
         html: `<div class="text-left text-xs text-slate-600 mb-3">Vì lý do bảo mật, bạn cần đổi mã PIN mặc định (123456) trước khi tiếp tục sử dụng hệ thống.</div>
-               <input type="password" id="swal-new-pin" class="swal2-input !text-center !font-mono !tracking-widest" placeholder="Mã PIN mới (≥ 4 số)" maxlength="6" inputmode="numeric">`,
+               <input type="password" id="swal-new-pin" class="swal2-input !text-center !font-mono !tracking-widest" placeholder="Mã PIN mới (bắt buộc 6 số)" maxlength="6" inputmode="numeric">`,
         confirmButtonText: 'Xác nhận đổi',
         allowOutsideClick: false,
         preConfirm: () => {
           const newPin = document.getElementById('swal-new-pin').value;
-          if (!newPin || newPin.length < 4) {
-            Swal.showValidationMessage('Mã PIN mới phải có ít nhất 4 ký tự!');
+          if (!newPin || newPin.length !== 6) {
+            Swal.showValidationMessage('Mã PIN mới phải có đúng 6 số!');
+            return false;
+          }
+          if (newPin === oldPin) {
+            Swal.showValidationMessage('Mã PIN mới không được trùng với mã PIN cũ!');
             return false;
           }
           if (newPin === '123456') {
@@ -778,8 +788,73 @@
     function proceedStudentLogin(student, pin) {
       hsPinFails = 0; clearInlineError('auth-error');
       appData.reporterInfo = { name: student.name, role: student.role }; violations = { vangCoPhep: [], vangKhongPhep: [], boTietNames: [], khongDTNames: [], treNames: [] };
-      document.getElementById("toggle-all-present").checked = true; toggleAllPresent(); updateAvailableStudentsDatalist(); changeStep('2');
+      
+      const role = student.role ? student.role.toLowerCase() : "";
+      const allowedRoles = ["lớp trưởng", "lớp phó", "bí thư", "giám thị phân công"];
+      const isAllowedToReport = allowedRoles.some(r => role.includes(r));
+
+      if (isAllowedToReport) {
+          document.getElementById("toggle-all-present").checked = true; toggleAllPresent(); updateAvailableStudentsDatalist(); changeStep('2');
+      } else {
+          // Hiển thị thông báo (View Only)
+          showStudentNotice(student);
+      }
     }
+
+    function showStudentNotice(student) {
+        document.getElementById("personal-info-section").classList.add("opacity-50", "pointer-events-none");
+        
+        // Tạo màn hình thông báo
+        let noticeHtml = `<div class="glass-card p-6 rounded-2xl shadow-xl max-w-md w-full mx-auto mt-4 border border-blue-100">
+            <h2 class="text-xl font-bold text-blue-700 text-center mb-4"><i class="fas fa-bullhorn mr-2"></i> THÔNG BÁO DÀNH CHO HỌC SINH</h2>
+            <div class="text-left text-sm text-slate-700 space-y-3">
+                <div class="flex justify-between border-b pb-2">
+                    <span class="font-semibold">Họ và tên:</span>
+                    <span class="font-bold text-blue-600">${student.name}</span>
+                </div>
+                <div class="flex justify-between border-b pb-2">
+                    <span class="font-semibold">Ngày tháng năm:</span>
+                    <span class="font-bold text-slate-800">${appData.dateStr}</span>
+                </div>
+                <div class="flex justify-between border-b pb-2">
+                    <span class="font-semibold">Vắng:</span>
+                    <span class="font-bold text-red-500">Chưa có dữ liệu</span>
+                </div>
+                <div class="flex justify-between border-b pb-2">
+                    <span class="font-semibold">Trễ:</span>
+                    <span class="font-bold text-orange-500">Chưa có dữ liệu</span>
+                </div>
+                <div class="flex justify-between border-b pb-2">
+                    <span class="font-semibold">Môn học:</span>
+                    <span class="font-bold text-emerald-600">${appData.subject || "N/A"}</span>
+                </div>
+                <div class="flex justify-between border-b pb-2">
+                    <span class="font-semibold">Mang điện thoại:</span>
+                    <span class="font-bold text-purple-600">Chưa có dữ liệu</span>
+                </div>
+            </div>
+            <button type="button" onclick="changeStep('0')" class="mt-5 w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition shadow-sm">
+                Quay Lại Màn Hình Chính
+            </button>
+        </div>`;
+        
+        let step1 = document.getElementById("step-1");
+        // Kiểm tra xem đã có notice chưa để không add nhiều lần
+        let existingNotice = document.getElementById("student-notice-view");
+        if (existingNotice) {
+            existingNotice.innerHTML = noticeHtml;
+            existingNotice.classList.remove("hidden");
+        } else {
+            let noticeDiv = document.createElement("div");
+            noticeDiv.id = "student-notice-view";
+            noticeDiv.innerHTML = noticeHtml;
+            step1.appendChild(noticeDiv);
+        }
+        
+        // Ẩn form xác thực
+        document.querySelector("#step-1 > div:first-child").classList.add("hidden");
+    }
+
 
     function verifyStudentLogin() {
       const idx = document.getElementById("auth-name").value; const pin = document.getElementById("auth-pin").value;

@@ -621,7 +621,6 @@
 
     /* MÔ ĐUN DUYỆT PHÉP TỰ ĐỘNG TỪ FILE */
     function downloadLeaveTemplate() {
-       // Tạo mẫu CSV tự động và cho tải về
        const csvContent = "\uFEFFHọ và tên,Lớp,Ngày bắt đầu nghỉ (YYYY-MM-DD),Số ngày nghỉ,Lý do\nNguyễn Văn A,10A1,2026-11-15,1,Sốt cao\nTrần Thị B,11B2,2026-11-16,2,Việc gia đình";
        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
        const link = document.createElement("a");
@@ -652,7 +651,6 @@
              showLoading("Đang phân tích dữ liệu và duyệt phép...");
              const reader = new FileReader();
              reader.onload = function(e) {
-                // Chuyển file thành chuỗi Base64 đẩy lên Apps Script xử lý
                 const base64Data = e.target.result.split(',')[1];
                 callBackendApi('importLeaveFile', base64Data, file.name)
                    .then(msg => { hideLoading(); Swal.fire('Hoàn tất!', msg || 'Đã duyệt phép thành công.', 'success'); })
@@ -706,7 +704,6 @@
     
     function onClassDataReady(res) {
       document.getElementById("auth-loading-text").classList.add("hidden"); clearInlineError('auth-error');
-      // KIỂM TRA LỚP ĐÃ CHỐT SỔ HAY CHƯA VÀ CẤP QUYỀN MỞ KHÓA SỬA 1 LẦN
       if (res.status === "LOCKED") { 
           Swal.fire({ 
               title: 'Lớp Đã Điểm Danh', 
@@ -714,7 +711,7 @@
               icon: 'warning', showCancelButton: true, confirmButtonText: 'Yêu cầu sửa (1 lần)', cancelButtonText: 'Đóng'
           }).then(r => {
               if (r.isConfirmed) {
-                  appData.isEditMode = true; // Bật cờ chỉnh sửa
+                  appData.isEditMode = true;
                   appData.rowIndex = res.rowIndex; appData.students = res.students;
                   const ulName = document.getElementById("dropdown-name"); ulName.innerHTML = '';
                   res.students.forEach((s, i) => {
@@ -747,33 +744,41 @@
     function proceedStudentLogin(student, pin) {
       hsPinFails = 0; clearInlineError('auth-error');
       appData.reporterInfo = { name: student.name, role: student.role }; violations = { vangCoPhep: [], vangKhongPhep: [], boTietNames: [], khongDTNames: [], treNames: [] };
-      const role = student.role ? student.role.toLowerCase() : "";
-      const allowedRoles = ["lớp trưởng", "lớp phó", "bí thư", "giám thị phân công"];
-      const isAllowedToReport = allowedRoles.some(r => role.includes(r));
+      // MỌI HỌC SINH (KỂ CẢ CÁN SỰ LỚP: LỚP TRƯỞNG, LỚP PHÓ, BÍ THƯ) ĐỀU VÀO GIAO DIỆN THÔNG BÁO CÁ NHÂN ĐỂ TRA CỨU LỊCH SỬ VÀ NỘP PHÉP
+      showStudentNotice(student);
+    }
 
-      if (isAllowedToReport) {
-          document.getElementById("toggle-all-present").checked = true; toggleAllPresent(); updateAvailableStudentsDatalist();
-          
-          if (appData.isEditMode) {
-             document.getElementById("qr-module-card").classList.add("hidden");
-             Swal.fire({ title: 'Chế độ Sửa thủ công', text: 'Vì đã từng nộp báo cáo, tính năng quét QR tạm thời bị khóa. Vui lòng thêm/xóa vi phạm bằng tay.', icon: 'info', toast: true, position: 'top' });
-          } else {
-             document.getElementById("qr-module-card").classList.remove("hidden");
-          }
-          changeStep('2');
-      } else {
-          showStudentNotice(student); // HIỂN THỊ THÔNG BÁO, LỊCH SỬ, VÀ NỘP PHÉP CHO HỌC SINH THƯỜNG
-      }
+    function openReporterDashboard() {
+        document.getElementById("toggle-all-present").checked = true; toggleAllPresent(); updateAvailableStudentsDatalist();
+        if (appData.isEditMode) {
+           document.getElementById("qr-module-card").classList.add("hidden");
+           Swal.fire({ title: 'Chế độ Sửa thủ công', text: 'Vì đã từng nộp báo cáo, tính năng quét QR tạm thời bị khóa. Vui lòng thêm/xóa vi phạm bằng tay.', icon: 'info', toast: true, position: 'top' });
+        } else {
+           document.getElementById("qr-module-card").classList.remove("hidden");
+        }
+        changeStep('2');
     }
 
     function showStudentNotice(student) {
         document.getElementById("personal-info-section").classList.add("opacity-50", "pointer-events-none");
+        
+        const role = student.role ? student.role.toLowerCase() : "";
+        const allowedRoles = ["lớp trưởng", "lớp phó", "bí thư", "giám thị phân công"];
+        const isAllowedToReport = allowedRoles.some(r => role.includes(r));
+
+        let reportButtonHtml = '';
+        if (isAllowedToReport) {
+            reportButtonHtml = `<button type="button" onclick="openReporterDashboard()" class="mt-3 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition shadow-md flex items-center justify-center space-x-2">
+                <i class="fas fa-clipboard-list text-lg"></i><span>Vào Giao Diện Điểm Danh Lớp</span>
+            </button>`;
+        }
         
         let noticeHtml = `<div class="glass-card p-6 rounded-2xl shadow-xl max-w-md w-full mx-auto mt-4 border border-blue-100">
             <h2 class="text-xl font-bold text-blue-700 text-center mb-4"><i class="fas fa-bullhorn mr-2"></i> THÔNG BÁO DÀNH CHO HỌC SINH</h2>
             <div class="text-left text-sm text-slate-700 space-y-3">
                 <div class="flex justify-between border-b pb-2"><span class="font-semibold">Họ và tên:</span><span class="font-bold text-blue-600">${student.name}</span></div>
                 <div class="flex justify-between border-b pb-2"><span class="font-semibold">Mã học sinh:</span><span class="font-bold">${student.maHS || "Chưa có"}</span></div>
+                <div class="flex justify-between border-b pb-2"><span class="font-semibold">Chức vụ:</span><span class="font-bold text-purple-600">${student.role || "Học sinh"}</span></div>
                 ${appData.subject ? `<div class="flex justify-between border-b pb-2"><span class="font-semibold">Môn học:</span><span class="font-bold text-emerald-600">${appData.subject}</span></div>` : ''}
             </div>
             
@@ -796,7 +801,9 @@
                 <input type="file" id="student-leave-uploader" accept="image/*, .pdf" class="hidden" onchange="submitStudentLeave(event, '${student.maHS || ''}', '${student.name}', '${appData.className}')">
             </div>
 
-            <button type="button" onclick="changeStep('0')" class="mt-5 w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition shadow-sm">
+            ${reportButtonHtml}
+
+            <button type="button" onclick="changeStep('0')" class="mt-3 w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition shadow-sm">
                 Quay Lại Cổng Chính
             </button>
         </div>`;
@@ -808,39 +815,6 @@
         document.querySelector("#step-1 > div:first-child").classList.add("hidden");
     }
     
-    // NỘP PHÉP CÁ NHÂN TỪ HỌC SINH
-    function submitStudentLeave(event, maHS, name, className) {
-       const file = event.target.files[0]; if(!file) return;
-       const validExts = ['image/jpeg', 'image/png', 'application/pdf'];
-       if(!validExts.includes(file.type) && !file.name.toLowerCase().endsWith('.pdf')) {
-          Swal.fire('Sai định dạng', 'Vui lòng chọn ảnh (JPG, PNG) hoặc file PDF', 'error');
-          event.target.value = ''; return;
-       }
-       if(file.size > 3 * 1024 * 1024) {
-          Swal.fire('File quá lớn', 'Kích thước file không được vượt quá 3MB', 'error');
-          event.target.value = ''; return;
-       }
-       
-       Swal.fire({
-          title: 'Gửi Đơn Xin Phép',
-          html: `Bạn đang nộp minh chứng xin phép cho: <b>${name}</b> - Lớp: <b>${className}</b>`,
-          icon: 'info', showCancelButton: true, confirmButtonText: 'Xác nhận gửi'
-       }).then(res => {
-          if(res.isConfirmed) {
-             showLoading("Đang tải file lên hệ thống...");
-             const reader = new FileReader();
-             reader.onload = function(e) {
-                const base64Data = e.target.result.split(',')[1];
-                callBackendApi('submitStudentLeaveProof', base64Data, file.name, maHS, name, className)
-                   .then(msg => { hideLoading(); Swal.fire('Thành công', 'Đơn xin phép của bạn đã được gửi đến Giáo viên chủ nhiệm để chờ duyệt.', 'success'); })
-                   .catch(err => { hideLoading(); Swal.fire('Lỗi', err.message || err, 'error'); });
-             };
-             reader.readAsDataURL(file);
-          }
-          event.target.value = '';
-       });
-    }
-
     // GỌI API ĐỂ LẤY LỊCH SỬ HỌC SINH
     function fetchStudentHistory(maHS, name) {
         let start = document.getElementById("search-start-date").value; let end = document.getElementById("search-end-date").value;
@@ -1015,7 +989,7 @@
           showLoading("Đang mã hóa...");
           callBackendApi('saveAttendance', p)
             .then(r => {
-              appData.isEditMode = false; // Reset cờ Edit
+              appData.isEditMode = false;
               Swal.fire({ title: 'Hoàn Tất', html: 'Dữ liệu báo cáo điểm danh đã được nộp và khóa chốt sổ thành công!', icon: 'success' }).then(() => {
                  document.getElementById("auth-class").value = ""; document.getElementById("auth-subject").value = "";
                  document.querySelectorAll('.subj-checkbox').forEach(cb => cb.checked = false);

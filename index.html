@@ -5,17 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Cổng Điểm Danh Ngô Quyền</title>
   
-  <!-- FAVICON ICON HỆ THỐNG -->
   <link rel="icon" type="image/png" href="icon (1).png">
   <link rel="apple-touch-icon" href="icon (1).png">
 
-  <!-- TỰ ĐỘNG CẬP NHẬT HỆ THỐNG -->
   <script src="version.js"></script>
-
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <!-- Thư viện Html5-Qrcode cho tính năng quét QR camera -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   
   <style>
@@ -35,7 +31,7 @@
 
   <div class="w-full max-w-5xl min-h-screen flex flex-col relative pb-24">
     
-    <!-- HEADER HIỂN THỊ ICON NỔI BẬT -->
+    <!-- HEADER -->
     <header class="glass-header text-slate-800 p-4 sticky top-0 z-50 flex items-center justify-between max-w-md w-full mx-auto rounded-b-2xl">
       <div class="flex items-center space-x-2.5">
         <img src="icon (1).png" alt="Logo" class="w-8 h-8 object-contain drop-shadow" onerror="this.src='https://img.icons8.com/fluency/512/book.png'">
@@ -65,7 +61,7 @@
       </div>
     </div>
 
-    <!-- CỔNG ĐĂNG NHẬP CHÍNH CÓ LOGO TRỰC QUAN -->
+    <!-- CỔNG CHÍNH -->
     <div id="step-0" class="hidden flex-1 flex flex-col items-center justify-center p-6 max-w-md w-full mx-auto">
       <div class="glass-card p-8 rounded-3xl w-full text-center">
         <div class="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-5 p-2 shadow-inner border border-blue-100">
@@ -118,20 +114,33 @@
       <div class="glass-card p-4 rounded-2xl mb-4 text-center">
         <h3 class="font-bold text-indigo-600 mb-1 uppercase text-sm"><i class="fas fa-cogs mr-2"></i> CÀI ĐẶT HỆ THỐNG</h3>
       </div>
+      
       <div class="glass-card p-4 rounded-xl border-t-4 border-t-blue-500 mb-4">
-        <label class="flex items-center space-x-3 mb-4 cursor-pointer"><input type="checkbox" id="cfg-require-subject" class="w-5 h-5 text-blue-600"><span class="font-bold text-sm">Bật tính năng chọn Môn học</span></label>
+        <label class="flex items-center space-x-3 mb-4 cursor-pointer">
+          <input type="checkbox" id="cfg-require-subject" class="w-5 h-5 text-blue-600">
+          <span class="font-bold text-sm">Bật tính năng chọn Môn học</span>
+        </label>
         <label class="block text-xs font-bold text-slate-500 mb-1">Môn học CA SÁNG (Cách nhau dấu phẩy)</label>
-        <textarea id="cfg-subj-sang" rows="2" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-xs mb-3"></textarea>
+        <textarea id="cfg-subj-sang" rows="3" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-xs mb-3"></textarea>
         <label class="block text-xs font-bold text-slate-500 mb-1">Môn học CA CHIỀU (Cách nhau dấu phẩy)</label>
-        <textarea id="cfg-subj-chieu" rows="2" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-xs"></textarea>
+        <textarea id="cfg-subj-chieu" rows="3" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-xs"></textarea>
       </div>
+      
       <div class="glass-card p-4 rounded-xl border-t-4 border-t-indigo-500 mb-20">
-        <h4 class="font-bold text-sm mb-3">Khóa thời gian điểm danh</h4>
-        <div class="flex space-x-2 mb-4"><button type="button" onclick="syncTime('Sang')" class="flex-1 bg-indigo-50 text-indigo-700 py-2 rounded-lg text-xs font-bold">Đồng bộ Sáng</button><button type="button" onclick="syncTime('Chieu')" class="flex-1 bg-indigo-50 text-indigo-700 py-2 rounded-lg text-xs font-bold">Đồng bộ Chiều</button></div>
-        <div class="grid grid-cols-2 gap-3" id="time-grid"></div>
+        <div class="flex justify-between items-center mb-3 border-b pb-2">
+            <h4 class="font-bold text-sm">Khóa thời gian điểm danh</h4>
+            <button type="button" onclick="restoreDefaultConfig()" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold hover:bg-red-200 transition"><i class="fas fa-sync-alt mr-1"></i>Mặc định</button>
+        </div>
+        <div class="flex space-x-2 mb-4">
+          <button type="button" onclick="syncTime('Sang')" class="flex-1 bg-indigo-50 text-indigo-700 py-2 rounded-lg text-xs font-bold">Đồng bộ Ca Sáng</button>
+          <button type="button" onclick="syncTime('Chieu')" class="flex-1 bg-indigo-50 text-indigo-700 py-2 rounded-lg text-xs font-bold">Đồng bộ Ca Chiều</button>
+        </div>
+        <!-- Vùng hiển thị cấu hình từng ngày (thêm Chủ nhật) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="time-grid"></div>
       </div>
+
       <div class="fixed bottom-0 left-0 right-0 p-4 glass-header flex justify-center z-40">
-        <button type="button" onclick="saveAdminConfigData()" class="w-full max-w-md bg-indigo-600 text-white font-bold py-3 rounded-xl shadow-lg">LƯU CÀI ĐẶT</button>
+        <button type="button" onclick="saveAdminConfigData()" class="w-full max-w-md bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition"><i class="fas fa-save mr-1"></i> LƯU CÀI ĐẶT</button>
       </div>
     </div>
 
@@ -204,7 +213,9 @@
           <button type="button" onclick="toggleSelect('dropdown-subject')" class="w-full flex justify-between p-3.5 bg-white border border-slate-300 rounded-xl font-bold text-sm"><span id="label-subject" class="text-slate-400">-- Bấm chọn --</span><i class="fas fa-chevron-down text-slate-400"></i></button>
           <ul id="dropdown-subject" class="hidden absolute z-50 w-full mt-1 bg-white border rounded-xl max-h-[260px] overflow-y-auto custom-scrollbar shadow-xl"></ul>
         </div>
+        
         <div id="auth-loading-text" class="hidden text-center text-blue-500 text-xs font-bold mb-4 animate-pulse">Đang tải dữ liệu...</div>
+        
         <div id="personal-info-section" class="opacity-50 pointer-events-none bg-slate-50 p-4 rounded-xl border border-slate-200">
           <div class="mb-4 relative select-custom" id="wrapper-name">
             <label class="block text-xs font-bold text-slate-500 mb-2">2. Họ và tên người báo cáo</label>
@@ -217,7 +228,7 @@
               <input type="password" id="auth-pin" maxlength="6" inputmode="numeric" pattern="[0-9]*" onkeypress="return event.charCode >= 48 && event.charCode <= 57" oninput="clearInlineError('auth-error')" placeholder="Password 6 số..." class="w-full p-3 bg-white border rounded-xl font-mono text-center text-lg tracking-widest">
               <p id="auth-error" class="text-red-500 text-xs font-bold mt-2 text-center hidden"></p>
           </div>
-          <button type="button" id="btn-submit-hs" onclick="verifyStudentLogin()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg">MỞ KHÓA ĐIỂM DANH</button>
+          <button type="button" id="btn-submit-hs" onclick="verifyStudentLogin()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg">TIẾP TỤC</button>
         </div>
       </div>
     </div>
@@ -380,31 +391,76 @@
     let isScannerActive = false;
     let currentCameraId = null;
 
+    // RENDER LẠI BẢNG THỜI GIAN CÓ ĐỦ BẮT ĐẦU VÀ KẾT THÚC
     function renderTimeGrid() {
-       let grid = document.getElementById("time-grid"); let days = ["T2","T3","T4","T5","T6","T7"]; grid.innerHTML = "";
+       let grid = document.getElementById("time-grid"); 
+       let days = ["T2","T3","T4","T5","T6","T7", "CN"]; 
+       grid.innerHTML = "";
+       
        days.forEach(d => {
-          grid.innerHTML += `<div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
-             <div class="font-bold text-indigo-600 text-xs mb-2 border-b pb-1">${d}</div>
-             <div class="flex justify-between items-center mb-2">
-                <span class="text-[10px] font-bold w-8">Sáng</span>
-                <label class="flex items-center space-x-1 cursor-pointer text-[10px] mr-1"><input type="checkbox" id="cfg-${d}_Sang_Unlock" onchange="toggleLockInput('${d}_Sang')" class="w-3 h-3 text-indigo-600"> <span class="font-bold text-indigo-600">Bỏ khóa</span></label>
-                <input type="time" id="cfg-${d}_Sang" class="text-xs p-1 border rounded w-20 text-center font-mono">
+          grid.innerHTML += `
+          <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+             <div class="font-bold text-indigo-600 text-xs mb-2 border-b pb-1 flex justify-between items-center">
+                <span>${d === 'CN' ? 'Chủ nhật' : d}</span>
+                <label class="flex items-center space-x-1 cursor-pointer text-[10px]">
+                   <input type="checkbox" id="cfg-${d}_Unlock" onchange="toggleDayLock('${d}')" class="w-3 h-3 text-indigo-600"> 
+                   <span class="font-bold text-indigo-600">Bỏ khóa (Mở cả ngày)</span>
+                </label>
              </div>
-             <div class="flex justify-between items-center">
-                <span class="text-[10px] font-bold w-8">Chiều</span>
-                <label class="flex items-center space-x-1 cursor-pointer text-[10px] mr-1"><input type="checkbox" id="cfg-${d}_Chieu_Unlock" onchange="toggleLockInput('${d}_Chieu')" class="w-3 h-3 text-indigo-600"> <span class="font-bold text-indigo-600">Bỏ khóa</span></label>
-                <input type="time" id="cfg-${d}_Chieu" class="text-xs p-1 border rounded w-20 text-center font-mono">
+             
+             <!-- Khung Sáng -->
+             <div class="mb-2 bg-white p-2 rounded border border-slate-100 shadow-sm">
+                 <div class="text-[10px] font-bold text-slate-500 mb-1">Ca Sáng</div>
+                 <div class="flex items-center justify-between space-x-2">
+                     <div class="flex flex-col flex-1">
+                        <span class="text-[9px] text-slate-400">Từ giờ:</span>
+                        <input type="time" id="cfg-${d}_Sang_Start" class="time-inp-${d} text-xs p-1 border rounded text-center font-mono">
+                     </div>
+                     <span class="text-slate-400 font-bold">-</span>
+                     <div class="flex flex-col flex-1">
+                        <span class="text-[9px] text-slate-400">Đến giờ:</span>
+                        <input type="time" id="cfg-${d}_Sang" class="time-inp-${d} text-xs p-1 border rounded text-center font-mono">
+                     </div>
+                 </div>
+             </div>
+             
+             <!-- Khung Chiều -->
+             <div class="bg-white p-2 rounded border border-slate-100 shadow-sm">
+                 <div class="text-[10px] font-bold text-slate-500 mb-1">Ca Chiều</div>
+                 <div class="flex items-center justify-between space-x-2">
+                     <div class="flex flex-col flex-1">
+                        <span class="text-[9px] text-slate-400">Từ giờ:</span>
+                        <input type="time" id="cfg-${d}_Chieu_Start" class="time-inp-${d} text-xs p-1 border rounded text-center font-mono">
+                     </div>
+                     <span class="text-slate-400 font-bold">-</span>
+                     <div class="flex flex-col flex-1">
+                        <span class="text-[9px] text-slate-400">Đến giờ:</span>
+                        <input type="time" id="cfg-${d}_Chieu" class="time-inp-${d} text-xs p-1 border rounded text-center font-mono">
+                     </div>
+                 </div>
              </div>
          </div>`;
        });
     }
     
-    function toggleLockInput(key) {
-       let cb = document.getElementById(`cfg-${key}_Unlock`); let inp = document.getElementById(`cfg-${key}`);
-       if (cb.checked) { inp.disabled = true; inp.classList.add("opacity-50", "bg-slate-200"); } else { inp.disabled = false; inp.classList.remove("opacity-50", "bg-slate-200"); }
+    function toggleDayLock(day) {
+       let cb = document.getElementById(`cfg-${day}_Unlock`); 
+       let inputs = document.querySelectorAll(`.time-inp-${day}`);
+       
+       inputs.forEach(inp => {
+           if (cb.checked) { 
+               inp.disabled = true; 
+               inp.classList.add("opacity-50", "bg-slate-200"); 
+           } else { 
+               inp.disabled = false; 
+               inp.classList.remove("opacity-50", "bg-slate-200"); 
+           }
+       });
     }
+
     renderTimeGrid();
 
+    // SỰ KIỆN CLICKS VÀ DROPDOWNS
     document.addEventListener('click', function(e) {
       if (!e.target.closest('.select-custom')) {
         document.querySelectorAll('ul[id^="dropdown-"]').forEach(el => {
@@ -412,18 +468,21 @@
         });
       }
     });
+    
     function toggleSelect(id) {
       document.querySelectorAll('ul[id^="dropdown-"]').forEach(el => {
         if(el.id !== id && !el.classList.contains('hidden')) { el.classList.add('hidden'); if (el.id === 'dropdown-subject') triggerFetchStudents(); }
       });
       document.getElementById(id).classList.toggle('hidden');
     }
+    
     function chooseOption(inputId, labelId, dropdownId, value, text, isTriggerFetch = false, isAutoFillRole = false) {
       document.getElementById(inputId).value = value; document.getElementById(labelId).innerText = text;
       document.getElementById(labelId).classList.replace('text-slate-400', 'text-slate-800'); document.getElementById(dropdownId).classList.add('hidden');
       if(isTriggerFetch) triggerFetchStudents(); if(isAutoFillRole) autoFillRole();
     }
 
+    // ON LOAD
     document.addEventListener("DOMContentLoaded", () => {
       callBackendApi('getAppInitData').then(initUI).catch(showError);
     });
@@ -603,27 +662,94 @@
       showLoading("Đang tải cài đặt...");
       callBackendApi('getAdminConfig').then(config => {
           hideLoading();
-          ["T2","T3","T4","T5","T6","T7"].forEach(d => { 
-             if(config[`${d}_Sang`] === "NONE") { document.getElementById(`cfg-${d}_Sang_Unlock`).checked = true; document.getElementById(`cfg-${d}_Sang`).value = "07:30"; } else { document.getElementById(`cfg-${d}_Sang_Unlock`).checked = false; document.getElementById(`cfg-${d}_Sang`).value = config[`${d}_Sang`]; } toggleLockInput(`${d}_Sang`);
-             if(config[`${d}_Chieu`] === "NONE") { document.getElementById(`cfg-${d}_Chieu_Unlock`).checked = true; document.getElementById(`cfg-${d}_Chieu`).value = "13:30"; } else { document.getElementById(`cfg-${d}_Chieu_Unlock`).checked = false; document.getElementById(`cfg-${d}_Chieu`).value = config[`${d}_Chieu`]; } toggleLockInput(`${d}_Chieu`);
+          
+          ["T2","T3","T4","T5","T6","T7", "CN"].forEach(d => { 
+             
+             // Ca Sáng
+             if(config[`${d}_Sang`] === "NONE" || config[`${d}_Sang_Start`] === "NONE") { 
+                 document.getElementById(`cfg-${d}_Unlock`).checked = true; 
+                 document.getElementById(`cfg-${d}_Sang_Start`).value = "06:30"; 
+                 document.getElementById(`cfg-${d}_Sang`).value = "08:30"; 
+             } else { 
+                 document.getElementById(`cfg-${d}_Unlock`).checked = false; 
+                 document.getElementById(`cfg-${d}_Sang_Start`).value = config[`${d}_Sang_Start`]; 
+                 document.getElementById(`cfg-${d}_Sang`).value = config[`${d}_Sang`]; 
+             }
+             
+             // Ca Chiều
+             if(config[`${d}_Chieu`] === "NONE" || config[`${d}_Chieu_Start`] === "NONE") { 
+                 document.getElementById(`cfg-${d}_Unlock`).checked = true; // Lock dùng chung cho cả ngày
+                 document.getElementById(`cfg-${d}_Chieu_Start`).value = "13:00"; 
+                 document.getElementById(`cfg-${d}_Chieu`).value = "17:30"; 
+             } else { 
+                 document.getElementById(`cfg-${d}_Unlock`).checked = false; 
+                 document.getElementById(`cfg-${d}_Chieu_Start`).value = config[`${d}_Chieu_Start`]; 
+                 document.getElementById(`cfg-${d}_Chieu`).value = config[`${d}_Chieu`]; 
+             }
+             
+             toggleDayLock(`${d}`);
           });
-          document.getElementById("cfg-require-subject").checked = config.requireSubject; document.getElementById("cfg-subj-sang").value = config.subjectList_Sang; document.getElementById("cfg-subj-chieu").value = config.subjectList_Chieu;
+          
+          document.getElementById("cfg-require-subject").checked = config.requireSubject; 
+          document.getElementById("cfg-subj-sang").value = config.subjectList_Sang; 
+          document.getElementById("cfg-subj-chieu").value = config.subjectList_Chieu;
+          
           changeStep('admin-config');
         }).catch(showError);
     }
     
+    // Nút khôi phục mặc định
+    function restoreDefaultConfig(){
+         ["T2","T3","T4","T5","T6","T7", "CN"].forEach(d => { 
+             let isCN = (d === 'CN');
+             
+             document.getElementById(`cfg-${d}_Unlock`).checked = isCN; 
+             
+             document.getElementById(`cfg-${d}_Sang_Start`).value = "06:30"; 
+             document.getElementById(`cfg-${d}_Sang`).value = "08:30"; 
+             
+             document.getElementById(`cfg-${d}_Chieu_Start`).value = "13:00"; 
+             document.getElementById(`cfg-${d}_Chieu`).value = "17:30"; 
+             
+             toggleDayLock(`${d}`);
+          });
+          
+          document.getElementById("cfg-require-subject").checked = false; 
+          document.getElementById("cfg-subj-sang").value = "Toán, Lý, Hóa, Sinh, Văn, Anh, Giáo dục quốc phòng & an ninh, Giáo dục thể chất"; 
+          document.getElementById("cfg-subj-chieu").value = "Toán, Lý, Hóa, Sinh, Văn, Anh, Giáo dục quốc phòng & an ninh, Giáo dục thể chất";
+          
+          Swal.fire('Thành công', 'Đã khôi phục các thông số về mặc định. Bấm LƯU CÀI ĐẶT để áp dụng.', 'success');
+    }
+
     function syncTime(session) { 
-       const val = document.getElementById(`cfg-T2_${session}`).value; const isUnlocked = document.getElementById(`cfg-T2_${session}_Unlock`).checked;
-       ["T3","T4","T5","T6","T7"].forEach(d => { document.getElementById(`cfg-${d}_${session}`).value = val; document.getElementById(`cfg-${d}_${session}_Unlock`).checked = isUnlocked; toggleLockInput(`${d}_${session}`); }); 
+       const startVal = document.getElementById(`cfg-T2_${session}_Start`).value; 
+       const endVal = document.getElementById(`cfg-T2_${session}`).value; 
+       const isUnlocked = document.getElementById(`cfg-T2_Unlock`).checked;
+       
+       ["T3","T4","T5","T6","T7"].forEach(d => { 
+           document.getElementById(`cfg-${d}_${session}_Start`).value = startVal; 
+           document.getElementById(`cfg-${d}_${session}`).value = endVal; 
+           document.getElementById(`cfg-${d}_Unlock`).checked = isUnlocked; 
+           toggleDayLock(`${d}`); 
+       }); 
     }
     
     function saveAdminConfigData() {
       let configData = {};
-      ["T2","T3","T4","T5","T6","T7"].forEach(d => { 
-         configData[`${d}_Sang`] = document.getElementById(`cfg-${d}_Sang_Unlock`).checked ? "NONE" : document.getElementById(`cfg-${d}_Sang`).value; 
-         configData[`${d}_Chieu`] = document.getElementById(`cfg-${d}_Chieu_Unlock`).checked ? "NONE" : document.getElementById(`cfg-${d}_Chieu`).value; 
+      ["T2","T3","T4","T5","T6","T7", "CN"].forEach(d => { 
+         let isUnlocked = document.getElementById(`cfg-${d}_Unlock`).checked;
+         
+         configData[`${d}_Sang_Start`] = isUnlocked ? "NONE" : document.getElementById(`cfg-${d}_Sang_Start`).value; 
+         configData[`${d}_Sang`] = isUnlocked ? "NONE" : document.getElementById(`cfg-${d}_Sang`).value; 
+         
+         configData[`${d}_Chieu_Start`] = isUnlocked ? "NONE" : document.getElementById(`cfg-${d}_Chieu_Start`).value; 
+         configData[`${d}_Chieu`] = isUnlocked ? "NONE" : document.getElementById(`cfg-${d}_Chieu`).value; 
       });
-      configData.requireSubject = document.getElementById("cfg-require-subject").checked ? "true" : "false"; configData.subjectList_Sang = document.getElementById("cfg-subj-sang").value; configData.subjectList_Chieu = document.getElementById("cfg-subj-chieu").value;
+      
+      configData.requireSubject = document.getElementById("cfg-require-subject").checked ? "true" : "false"; 
+      configData.subjectList_Sang = document.getElementById("cfg-subj-sang").value; 
+      configData.subjectList_Chieu = document.getElementById("cfg-subj-chieu").value;
+      
       showLoading("Đang lưu..."); callBackendApi('saveAdminConfig', configData).then(msg => { hideLoading(); Swal.fire('Xong', msg, 'success').then(() => reloadAppData()); }).catch(showError);
     }
 
@@ -713,37 +839,17 @@
     function onClassDataReady(res) {
       document.getElementById("auth-loading-text").classList.add("hidden"); clearInlineError('auth-error');
       
-      // LOGIC MỚI: Bất cứ ai cũng có thể vào (nếu lớp chưa bị khoá bởi cán sự)
       appData.isEditMode = false;
       appData.hasOfficialReport = false;
       
+      // Cho phép lấy danh sách bất chấp đã điểm danh chưa để mọi người đều đăng nhập xem thông tin được
+      appData.students = res.students;
+      
       if (res.status === "LOCKED") {
-          // Kiểm tra xem báo cáo đó CÓ PHẢI của 1 trong 4 chức vụ hay không (dữ liệu này cần được trả về từ Backend qua biến res.reporterRole)
-          // Tạm thời giả lập bằng cách mặc định nếu LOCKED thì tức là đã có người điểm danh
           appData.hasOfficialReport = true;
-          
-          Swal.fire({ 
-              title: 'Lớp Đã Điểm Danh', 
-              html: `Lớp <b>${appData.className}</b> đã nộp báo cáo điểm danh.<br><br>Bạn có muốn <b>yêu cầu sửa điểm danh</b> (chỉ thực hiện 1 lần duy nhất, tắt quét QR và chuyển sang nhập thủ công)?`, 
-              icon: 'warning', showCancelButton: true, confirmButtonText: 'Yêu cầu sửa (1 lần)', cancelButtonText: 'Đóng'
-          }).then(r => {
-              if (r.isConfirmed) {
-                  appData.isEditMode = true;
-                  appData.rowIndex = res.rowIndex; appData.students = res.students;
-                  const ulName = document.getElementById("dropdown-name"); ulName.innerHTML = '';
-                  res.students.forEach((s, i) => {
-                    let li = document.createElement("li"); li.className = "px-4 py-3 hover:bg-blue-50 cursor-pointer font-bold border-b"; li.innerText = s.name;
-                    li.onclick = () => chooseOption('auth-name', 'label-name', 'dropdown-name', i, s.name, false, true); ulName.appendChild(li);
-                  });
-                  document.getElementById("personal-info-section").classList.remove("opacity-50", "pointer-events-none");
-              } else {
-                  document.getElementById("auth-class").value = "";
-              }
-          });
-          return; 
+          appData.rowIndex = res.rowIndex;
       }
       
-      appData.rowIndex = res.rowIndex; appData.students = res.students;
       const ulName = document.getElementById("dropdown-name"); ulName.innerHTML = '';
       res.students.forEach((s, i) => {
         let li = document.createElement("li"); li.className = "px-4 py-3 hover:bg-blue-50 cursor-pointer font-bold border-b"; li.innerText = s.name;
@@ -761,16 +867,33 @@
       hsPinFails = 0; clearInlineError('auth-error');
       appData.reporterInfo = { name: student.name, role: student.role }; violations = { vangCoPhep: [], vangKhongPhep: [], boTietNames: [], khongDTNames: [], treNames: [] };
       
-      // KIỂM TRA CHỨC VỤ ĐỂ MỞ/KHOÁ NÚT BÁO CÁO
+      // KIỂM TRA QUYỀN ĐIỂM DANH DỰA TRÊN CHỨC VỤ
       const role = student.role ? student.role.toLowerCase() : "";
       const allowedRoles = ["lớp trưởng", "lớp phó", "bí thư", "giám thị phân công"];
       const isAllowedToReport = allowedRoles.some(r => role.includes(r));
       
-      if (appData.hasOfficialReport && !appData.isEditMode) {
-          // Lớp đã chốt bởi cán sự và học sinh này không bấm nút Yêu cầu sửa
-           showStudentNotice(student, false); 
+      if (appData.hasOfficialReport) {
+           // Nếu lớp đã điểm danh VÀ người này CÓ QUYỀN
+           if (isAllowedToReport) {
+               Swal.fire({ 
+                  title: 'Lớp Đã Điểm Danh', 
+                  html: `Lớp <b>${appData.className}</b> đã nộp báo cáo điểm danh.<br><br>Bạn có muốn <b>yêu cầu sửa điểm danh</b> (chỉ thực hiện 1 lần duy nhất, tắt quét QR và chuyển sang nhập thủ công)?`, 
+                  icon: 'warning', showCancelButton: true, confirmButtonText: 'Yêu cầu sửa (1 lần)', cancelButtonText: 'Không, chỉ xem thông tin'
+              }).then(r => {
+                  if (r.isConfirmed) {
+                      appData.isEditMode = true; // Kích hoạt chế độ chỉnh sửa
+                      showStudentNotice(student, true);
+                  } else {
+                      // Không sửa, chỉ cho xem thông tin cá nhân
+                      showStudentNotice(student, false);
+                  }
+              });
+           } else {
+               // Không có quyền thì chỉ xem thông tin
+               showStudentNotice(student, false); 
+           }
       } else {
-           // Lớp chưa chốt, hoặc lớp đã chốt nhưng học sinh này đang ở chế độ Edit
+           // Lớp chưa có báo cáo điểm danh -> Người có quyền được thấy nút báo cáo, người không có quyền không thấy
            showStudentNotice(student, isAllowedToReport);
       }
     }
@@ -844,20 +967,12 @@
                     <input type="text" id="online-leave-reason" placeholder="Lý do xin nghỉ..." class="w-full p-2 text-xs border rounded-lg bg-white mb-2">
                     <button type="button" onclick="submitOnlineLeave('${student.maHS || ''}', '${student.name}', '${appData.className}')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-lg text-xs shadow-sm transition"><i class="fas fa-paper-plane mr-1"></i> Gửi Đơn Trực Tuyến</button>
                 </div>
-
-                <!-- Mục 2: Nộp / Bổ sung phép -->
-                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                    <label class="block text-xs font-bold text-slate-700 mb-1">2. Nộp / Bổ Sung Phép (File / Ảnh đơn)</label>
-                    <p class="text-[11px] text-slate-500 mb-2">Tải lên ảnh chụp đơn giấy hoặc file PDF minh chứng để GVCN duyệt.</p>
-                    <button type="button" onclick="document.getElementById('student-leave-uploader').click()" class="w-full bg-white hover:bg-slate-100 text-slate-700 font-bold py-2 rounded-lg text-xs transition border border-slate-300 shadow-sm"><i class="fas fa-upload mr-1 text-purple-600"></i> Chọn file / ảnh đơn xin phép</button>
-                    <input type="file" id="student-leave-uploader" accept="image/*, .pdf" class="hidden" onchange="submitStudentLeave(event, '${student.maHS || ''}', '${student.name}', '${appData.className}')">
-                </div>
             </div>
 
             ${reportButtonHtml}
 
             <button type="button" onclick="changeStep('0')" class="mt-3 w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition shadow-sm">
-                Quay Lại Cổng Chính
+                Đăng Xuất
             </button>
         </div>`;
         
@@ -933,7 +1048,7 @@
       } else { proceedStudentLogin(student, pin); }
     }
 
-    /* MODULE QR (GIỮ NGUYÊN) */
+    /* MODULE QR */
     function toggleQRScanner() {
       const wrapper = document.getElementById("qr-reader-wrapper"); const btnText = document.getElementById("btn-qr-text"); const btn = document.getElementById("btn-toggle-qr");
       if (isScannerActive) { stopQRScanner(); } else {

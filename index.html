@@ -139,6 +139,17 @@
     <div id="step-admin-data" class="hidden flex-1 flex flex-col p-4 max-w-md w-full mx-auto pb-24">
       <div class="glass-card p-4 rounded-2xl mb-4 text-center"><h3 class="font-bold text-emerald-600 mb-1 uppercase text-sm"><i class="fas fa-database mr-2"></i> QUẢN LÝ DỮ LIỆU</h3></div>
       
+      <!-- NẠP FILE QUÉT PHÉP -->
+      <div class="glass-card p-4 rounded-xl border-t-4 border-t-purple-500 mb-4">
+         <h4 class="font-bold text-sm mb-3 text-purple-700"><i class="fas fa-file-signature mr-1"></i> Bổ Sung & Duyệt Phép</h4>
+         <p class="text-xs text-slate-500 mb-3 leading-relaxed">Nạp file <b class="text-purple-600">Excel</b> hoặc <b class="text-red-500">PDF</b> danh sách xin phép để hệ thống quét ngày tháng năm, họ tên, lớp và tự động duyệt phép chính xác.</p>
+         <div class="flex gap-2">
+             <button type="button" onclick="downloadLeaveTemplate()" class="flex-1 bg-slate-50 text-slate-600 py-2.5 rounded-lg text-xs font-bold border border-slate-300 hover:bg-slate-100 transition"><i class="fas fa-download mb-1 block text-lg"></i>Tải File Mẫu</button>
+             <button type="button" onclick="document.getElementById('leave-uploader').click()" class="flex-1 bg-purple-50 text-purple-700 py-2.5 rounded-lg shadow-sm border border-purple-200 font-bold text-xs hover:bg-purple-100 transition"><i class="fas fa-upload mb-1 block text-lg"></i>Nạp File Phép</button>
+             <input type="file" id="leave-uploader" accept=".xlsx, .xls, .pdf, .csv" class="hidden" onchange="handleLeaveUpload(event)">
+         </div>
+      </div>
+
       <div class="glass-card p-4 rounded-xl border-t-4 border-t-emerald-500 mb-4 grid grid-cols-2 gap-3">
          <button type="button" onclick="document.getElementById('csv-uploader').click()" class="bg-emerald-50 text-emerald-700 py-3 rounded-xl shadow-sm border border-emerald-200 font-bold text-sm"><i class="fas fa-upload mb-1 block text-lg"></i>Nạp File CSV</button>
          <input type="file" id="csv-uploader" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
@@ -215,7 +226,7 @@
     <div id="step-2" class="hidden flex-1 flex flex-col p-4 w-full items-center">
       
       <!-- MÔ-ĐUN QUÉT MÃ QR HỌC SINH -->
-      <div class="glass-card p-5 rounded-2xl mb-5 shadow-xl border border-blue-100 max-w-md w-full">
+      <div id="qr-module-card" class="glass-card p-5 rounded-2xl mb-5 shadow-xl border border-blue-100 max-w-md w-full">
         <div class="flex items-center justify-between border-b pb-3 mb-4">
           <div class="flex items-center space-x-2">
             <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center font-bold">
@@ -338,37 +349,28 @@
     // URL WEB APP GOOGLE APPS SCRIPT BACKEND
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxYDm51fvs_fNToHqnNMQ4dV7hZLIggWFB2BjD0i3dMoRhlB7k48dhG5vNblVxtetkBfw/exec";
 
-    // Nút mở Trạm AI
-    function openTramDiemDanh() { 
-      window.location.href = "ai.html"; 
-    }
+    function openTramDiemDanh() { window.location.href = "ai.html"; }
 
     // BỘ ĐIỀU HÀNH API HYBRID
     function callBackendApi(fnName, ...args) {
       return new Promise((resolve, reject) => {
         if (window.google && google.script && google.script.run) {
-          google.script.run
-            .withSuccessHandler(resolve)
-            .withFailureHandler(reject)[fnName](...args);
+          google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[fnName](...args);
         } else {
           fetch(WEB_APP_URL, {
-            method: "POST",
-            mode: "cors",
+            method: "POST", mode: "cors",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify({ action: fnName, args: args })
           })
           .then(res => res.json())
-          .then(data => {
-            if (data && data.status === "error") reject(data.msg);
-            else resolve(data);
-          })
+          .then(data => { if (data && data.status === "error") reject(data.msg); else resolve(data); })
           .catch(reject);
         }
       });
     }
 
     let currentStep = '0';
-    let appData = { session: "", dateStr: "", className: "", subject: "", rowIndex: null, requireSubject: false, students: [], reporterInfo: null, giaoVienList: [], subjectList: [] };
+    let appData = { session: "", dateStr: "", className: "", subject: "", rowIndex: null, requireSubject: false, students: [], reporterInfo: null, giaoVienList: [], subjectList: [], isEditMode: false };
     let violations = { vangCoPhep: [], vangKhongPhep: [], boTietNames: [], khongDTNames: [], treNames: [] };
     
     let hsPinFails = 0;
@@ -379,9 +381,7 @@
     let currentCameraId = null;
 
     function renderTimeGrid() {
-       let grid = document.getElementById("time-grid");
-       let days = ["T2","T3","T4","T5","T6","T7"];
-       grid.innerHTML = "";
+       let grid = document.getElementById("time-grid"); let days = ["T2","T3","T4","T5","T6","T7"]; grid.innerHTML = "";
        days.forEach(d => {
           grid.innerHTML += `<div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
              <div class="font-bold text-indigo-600 text-xs mb-2 border-b pb-1">${d}</div>
@@ -400,10 +400,8 @@
     }
     
     function toggleLockInput(key) {
-       let cb = document.getElementById(`cfg-${key}_Unlock`);
-       let inp = document.getElementById(`cfg-${key}`);
-       if (cb.checked) { inp.disabled = true; inp.classList.add("opacity-50", "bg-slate-200"); } 
-       else { inp.disabled = false; inp.classList.remove("opacity-50", "bg-slate-200"); }
+       let cb = document.getElementById(`cfg-${key}_Unlock`); let inp = document.getElementById(`cfg-${key}`);
+       if (cb.checked) { inp.disabled = true; inp.classList.add("opacity-50", "bg-slate-200"); } else { inp.disabled = false; inp.classList.remove("opacity-50", "bg-slate-200"); }
     }
     renderTimeGrid();
 
@@ -427,9 +425,7 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      callBackendApi('getAppInitData')
-        .then(initUI)
-        .catch(showError);
+      callBackendApi('getAppInitData').then(initUI).catch(showError);
     });
 
     function renderDataDropdowns(data) {
@@ -475,13 +471,7 @@
 
     function reloadAppData() {
       showLoading("Đang đồng bộ dữ liệu mới...");
-      callBackendApi('getAppInitData')
-        .then(data => {
-          appData = { ...appData, ...data };
-          renderDataDropdowns(data);
-          hideLoading();
-        })
-        .catch(showError);
+      callBackendApi('getAppInitData').then(data => { appData = { ...appData, ...data }; renderDataDropdowns(data); hideLoading(); }).catch(showError);
     }
 
     function handleSubjectCheck(cb) {
@@ -490,8 +480,7 @@
           if (cb.value.startsWith("Tất cả")) { allCbs.forEach(c => { if(c !== cb) c.checked = false; }); } 
           else { allCbs.forEach(c => { if(c.value.startsWith("Tất cả")) c.checked = false; }); }
        }
-       let selected = Array.from(allCbs).filter(c => c.checked).map(c => c.value);
-       const label = document.getElementById('label-subject');
+       let selected = Array.from(allCbs).filter(c => c.checked).map(c => c.value); const label = document.getElementById('label-subject');
        if(selected.length === 0) { label.innerText = "-- Bấm chọn --"; label.classList.replace('text-slate-800', 'text-slate-400'); document.getElementById('auth-subject').value = ""; } 
        else { label.innerText = selected.join(", "); label.classList.replace('text-slate-400', 'text-slate-800'); document.getElementById('auth-subject').value = selected.join(", "); }
     }
@@ -504,10 +493,8 @@
       let outEl = document.getElementById("out-of-time-screen"); if(outEl) outEl.classList.add("hidden");
       document.getElementById(`step-${step}`).classList.remove("hidden");
       if(step === '1') {
-          let mainCard = document.querySelector("#step-1 > div:first-child");
-          if (mainCard) mainCard.classList.remove("hidden");
-          let noticeDiv = document.getElementById("student-notice-view");
-          if (noticeDiv) noticeDiv.classList.add("hidden");
+          let mainCard = document.querySelector("#step-1 > div:first-child"); if (mainCard) mainCard.classList.remove("hidden");
+          let noticeDiv = document.getElementById("student-notice-view"); if (noticeDiv) noticeDiv.classList.add("hidden");
       }
       
       const btnBack = document.getElementById("btn-back"); const infoBox = document.getElementById("session-info");
@@ -519,77 +506,46 @@
       if (currentStep === '1' || currentStep === 'gv-login' || currentStep === 'admin') changeStep('0');
       else if (currentStep === 'admin-config' || currentStep === 'admin-data') changeStep('admin');
       else if (currentStep === '2') {
-        Swal.fire({ title: 'Quay lại?', text: 'Dữ liệu vi phạm sẽ bị xóa.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Đồng ý' }).then((res) => {
+        Swal.fire({ title: 'Quay lại?', text: 'Dữ liệu vi phạm chưa nộp sẽ bị xóa.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Đồng ý' }).then((res) => {
           if (res.isConfirmed) { document.getElementById("personal-info-section").classList.add("opacity-50", "pointer-events-none"); changeStep('1'); }
         });
       }
     }
 
-    function showInlineError(id, message) {
-       let el = document.getElementById(id);
-       el.innerText = message;
-       el.classList.remove("hidden");
-    }
-    function clearInlineError(id) {
-       let el = document.getElementById(id);
-       el.innerText = "";
-       el.classList.add("hidden");
-    }
+    function showInlineError(id, message) { let el = document.getElementById(id); el.innerText = message; el.classList.remove("hidden"); }
+    function clearInlineError(id) { let el = document.getElementById(id); el.innerText = ""; el.classList.add("hidden"); }
 
-    // Modal Đổi Mật Khẩu Chung (Dùng cho cả HS và GV khi đăng nhập lần đầu)
     function promptChangePin(type, className, nameOrId, oldPin, callback) {
       Swal.fire({
         title: '🔒 Yêu Cầu Đổi Mã PIN',
         html: `<div class="text-left text-xs text-slate-600 mb-3">Vì lý do bảo mật, bạn cần đổi mã PIN mặc định (123456) trước khi tiếp tục sử dụng hệ thống.</div>
                <input type="password" id="swal-new-pin" class="swal2-input !text-center !font-mono !tracking-widest" placeholder="Mã PIN mới (bắt buộc 6 số)" maxlength="6" inputmode="numeric">`,
-        confirmButtonText: 'Xác nhận đổi',
-        allowOutsideClick: false,
+        confirmButtonText: 'Xác nhận đổi', allowOutsideClick: false,
         preConfirm: () => {
           const newPin = document.getElementById('swal-new-pin').value;
-          if (!newPin || newPin.length !== 6) {
-            Swal.showValidationMessage('Mã PIN mới phải có đúng 6 số!');
-            return false;
-          }
-          if (newPin === oldPin) {
-            Swal.showValidationMessage('Mã PIN mới không được trùng với mã PIN cũ!');
-            return false;
-          }
-          if (newPin === '123456') {
-            Swal.showValidationMessage('Mã PIN mới không được trùng với mật khẩu mặc định (123456)!');
-            return false;
-          }
+          if (!newPin || newPin.length !== 6) { Swal.showValidationMessage('Mã PIN mới phải có đúng 6 số!'); return false; }
+          if (newPin === oldPin) { Swal.showValidationMessage('Mã PIN mới không được trùng với mã PIN cũ!'); return false; }
+          if (newPin === '123456') { Swal.showValidationMessage('Mã PIN mới không được trùng với mật khẩu mặc định (123456)!'); return false; }
           return newPin;
         }
       }).then((result) => {
         if (result.isConfirmed) {
-          const newPin = result.value;
           showLoading("Đang cập nhật mã PIN...");
-          callBackendApi('changeUserPin', type, className, nameOrId, oldPin, newPin)
-            .then(res => {
-              hideLoading();
-              if (res.status === 'success') {
-                Swal.fire('Thành công!', 'Đổi mã PIN thành công! Hệ thống đã cập nhật trạng thái.', 'success').then(() => {
-                  if (callback) callback();
-                });
-              } else {
-                Swal.fire('Lỗi', res.msg, 'error');
-              }
-            })
+          callBackendApi('changeUserPin', type, className, nameOrId, oldPin, result.value)
+            .then(res => { hideLoading(); if (res.status === 'success') { Swal.fire('Thành công!', 'Đổi mã PIN thành công!', 'success').then(() => { if (callback) callback(); }); } else { Swal.fire('Lỗi', res.msg, 'error'); } })
             .catch(showError);
         }
       });
     }
 
     function chooseGiaoVienOption(index, name) {
-      clearInlineError('gv-auth-error');
-      document.getElementById('gv-auth-name').value = name; document.getElementById('label-gv-name').innerText = name; document.getElementById('label-gv-name').classList.replace('text-slate-400', 'text-slate-800');
-      document.getElementById('dropdown-gv-name').classList.add('hidden'); document.getElementById('gv-auth-role').value = appData.giaoVienList[index].role; document.getElementById('gv-auth-pin').focus();
+      clearInlineError('gv-auth-error'); document.getElementById('gv-auth-name').value = name; document.getElementById('label-gv-name').innerText = name; 
+      document.getElementById('label-gv-name').classList.replace('text-slate-400', 'text-slate-800'); document.getElementById('dropdown-gv-name').classList.add('hidden'); 
+      document.getElementById('gv-auth-role').value = appData.giaoVienList[index].role; document.getElementById('gv-auth-pin').focus();
     }
 
     function proceedAdminLogin(res) {
-        gvPinFails = 0;
-        clearInlineError('gv-auth-error');
-        document.getElementById('admin-welcome-text').innerText = `Xin chào, ${res.adminName} (${res.role})`;
+        gvPinFails = 0; clearInlineError('gv-auth-error'); document.getElementById('admin-welcome-text').innerText = `Xin chào, ${res.adminName} (${res.role})`;
         document.getElementById("btn-open-sheets-data").onclick = () => window.open(res.url, "_blank");
         if (res.role.toLowerCase().includes("quản lý") || res.role.toLowerCase().includes("admin")) {
             document.getElementById("btn-admin-config").classList.remove("hidden"); document.getElementById("btn-admin-config").classList.add("flex");
@@ -606,45 +562,27 @@
       if (!pin) { showInlineError('gv-auth-error', '❌ Vui lòng nhập mật khẩu!'); return; }
       
       showLoading("Đang xác thực...");
-      callBackendApi('verifyGiaoVien', name, pin)
-        .then(res => {
+      callBackendApi('verifyGiaoVien', name, pin).then(res => {
           hideLoading();
           if (res.success) {
-            if (res.isFirstLogin) {
-              promptChangePin('GV', '', res.adminName, pin, () => {
-                proceedAdminLogin(res);
-              });
-            } else {
-              proceedAdminLogin(res);
-            }
+            if (res.isFirstLogin) { promptChangePin('GV', '', res.adminName, pin, () => { proceedAdminLogin(res); }); } else { proceedAdminLogin(res); }
           } else {
             gvPinFails++;
             if(gvPinFails >= 3) {
                 showInlineError('gv-auth-error', '🔒 Nhập sai 3 lần! Đang quay về cổng chính...');
-                document.getElementById('gv-auth-pin').disabled = true;
-                document.getElementById('btn-submit-gv').disabled = true;
-                setTimeout(() => {
-                   document.getElementById('gv-auth-pin').value = "";
-                   document.getElementById('gv-auth-pin').disabled = false;
-                   document.getElementById('btn-submit-gv').disabled = false;
-                   gvPinFails = 0; clearInlineError('gv-auth-error'); changeStep('0');
-                }, 1500);
-            } else {
-                showInlineError('gv-auth-error', `❌ Mật khẩu không đúng! Bạn còn ${3 - gvPinFails} lần thử.`);
-            }
+                document.getElementById('gv-auth-pin').disabled = true; document.getElementById('btn-submit-gv').disabled = true;
+                setTimeout(() => { document.getElementById('gv-auth-pin').value = ""; document.getElementById('gv-auth-pin').disabled = false; document.getElementById('btn-submit-gv').disabled = false; gvPinFails = 0; clearInlineError('gv-auth-error'); changeStep('0'); }, 1500);
+            } else { showInlineError('gv-auth-error', `❌ Mật khẩu không đúng! Bạn còn ${3 - gvPinFails} lần thử.`); }
           }
-        })
-        .catch(showError);
+        }).catch(showError);
     }
 
     function adminCheckStats() {
        showLoading("Đang kiểm tra...");
-       callBackendApi('getAdminStatsWeb', appData.session, appData.dateStr)
-        .then(res => {
+       callBackendApi('getAdminStatsWeb', appData.session, appData.dateStr).then(res => {
           hideLoading();
           Swal.fire({title: `Thống kê`, html: `<div class="text-left text-sm p-4 bg-slate-50 border"><div class="flex justify-between border-b pb-2 mb-2"><span>Tổng số lớp:</span><span class="font-bold">${res.total}</span></div><div class="flex justify-between border-b pb-2 mb-2"><span>Đã nộp:</span><span class="text-emerald-600 font-bold">${res.submitted}</span></div><div class="flex justify-between border-b pb-2 mb-2"><span>Chưa nộp:</span><span class="text-red-600 font-bold">${res.missing.length}</span></div>${res.missing.length > 0 ? `<div class="mt-4"><p class="text-red-600 font-bold mb-1">Chưa nộp:</p><p class="text-xs leading-relaxed">${res.missing.join(", ")}</p></div>` : ``}</div>`});
-        })
-        .catch(showError);
+        }).catch(showError);
     }
 
     function adminLockData() {
@@ -655,40 +593,20 @@
 
     function adminOpenConfig() {
       showLoading("Đang tải cài đặt...");
-      callBackendApi('getAdminConfig')
-        .then(config => {
+      callBackendApi('getAdminConfig').then(config => {
           hideLoading();
           ["T2","T3","T4","T5","T6","T7"].forEach(d => { 
-             if(config[`${d}_Sang`] === "NONE") {
-                document.getElementById(`cfg-${d}_Sang_Unlock`).checked = true; document.getElementById(`cfg-${d}_Sang`).value = "07:30";
-             } else {
-                document.getElementById(`cfg-${d}_Sang_Unlock`).checked = false; document.getElementById(`cfg-${d}_Sang`).value = config[`${d}_Sang`];
-             }
-             toggleLockInput(`${d}_Sang`);
-             
-             if(config[`${d}_Chieu`] === "NONE") {
-                document.getElementById(`cfg-${d}_Chieu_Unlock`).checked = true; document.getElementById(`cfg-${d}_Chieu`).value = "13:30";
-             } else {
-                document.getElementById(`cfg-${d}_Chieu_Unlock`).checked = false; document.getElementById(`cfg-${d}_Chieu`).value = config[`${d}_Chieu`];
-             }
-             toggleLockInput(`${d}_Chieu`);
+             if(config[`${d}_Sang`] === "NONE") { document.getElementById(`cfg-${d}_Sang_Unlock`).checked = true; document.getElementById(`cfg-${d}_Sang`).value = "07:30"; } else { document.getElementById(`cfg-${d}_Sang_Unlock`).checked = false; document.getElementById(`cfg-${d}_Sang`).value = config[`${d}_Sang`]; } toggleLockInput(`${d}_Sang`);
+             if(config[`${d}_Chieu`] === "NONE") { document.getElementById(`cfg-${d}_Chieu_Unlock`).checked = true; document.getElementById(`cfg-${d}_Chieu`).value = "13:30"; } else { document.getElementById(`cfg-${d}_Chieu_Unlock`).checked = false; document.getElementById(`cfg-${d}_Chieu`).value = config[`${d}_Chieu`]; } toggleLockInput(`${d}_Chieu`);
           });
-          document.getElementById("cfg-require-subject").checked = config.requireSubject;
-          document.getElementById("cfg-subj-sang").value = config.subjectList_Sang;
-          document.getElementById("cfg-subj-chieu").value = config.subjectList_Chieu;
+          document.getElementById("cfg-require-subject").checked = config.requireSubject; document.getElementById("cfg-subj-sang").value = config.subjectList_Sang; document.getElementById("cfg-subj-chieu").value = config.subjectList_Chieu;
           changeStep('admin-config');
-        })
-        .catch(showError);
+        }).catch(showError);
     }
     
     function syncTime(session) { 
-       const val = document.getElementById(`cfg-T2_${session}`).value; 
-       const isUnlocked = document.getElementById(`cfg-T2_${session}_Unlock`).checked;
-       ["T3","T4","T5","T6","T7"].forEach(d => { 
-          document.getElementById(`cfg-${d}_${session}`).value = val; 
-          document.getElementById(`cfg-${d}_${session}_Unlock`).checked = isUnlocked;
-          toggleLockInput(`${d}_${session}`);
-       }); 
+       const val = document.getElementById(`cfg-T2_${session}`).value; const isUnlocked = document.getElementById(`cfg-T2_${session}_Unlock`).checked;
+       ["T3","T4","T5","T6","T7"].forEach(d => { document.getElementById(`cfg-${d}_${session}`).value = val; document.getElementById(`cfg-${d}_${session}_Unlock`).checked = isUnlocked; toggleLockInput(`${d}_${session}`); }); 
     }
     
     function saveAdminConfigData() {
@@ -697,45 +615,71 @@
          configData[`${d}_Sang`] = document.getElementById(`cfg-${d}_Sang_Unlock`).checked ? "NONE" : document.getElementById(`cfg-${d}_Sang`).value; 
          configData[`${d}_Chieu`] = document.getElementById(`cfg-${d}_Chieu_Unlock`).checked ? "NONE" : document.getElementById(`cfg-${d}_Chieu`).value; 
       });
-      configData.requireSubject = document.getElementById("cfg-require-subject").checked ? "true" : "false";
-      configData.subjectList_Sang = document.getElementById("cfg-subj-sang").value; configData.subjectList_Chieu = document.getElementById("cfg-subj-chieu").value;
-      showLoading("Đang lưu...");
-      callBackendApi('saveAdminConfig', configData)
-        .then(msg => { hideLoading(); Swal.fire('Xong', msg, 'success').then(() => reloadAppData()); })
-        .catch(showError);
+      configData.requireSubject = document.getElementById("cfg-require-subject").checked ? "true" : "false"; configData.subjectList_Sang = document.getElementById("cfg-subj-sang").value; configData.subjectList_Chieu = document.getElementById("cfg-subj-chieu").value;
+      showLoading("Đang lưu..."); callBackendApi('saveAdminConfig', configData).then(msg => { hideLoading(); Swal.fire('Xong', msg, 'success').then(() => reloadAppData()); }).catch(showError);
+    }
+
+    /* MÔ ĐUN DUYỆT PHÉP TỰ ĐỘNG TỪ FILE */
+    function downloadLeaveTemplate() {
+       // Tạo mẫu CSV tự động và cho tải về
+       const csvContent = "\uFEFFHọ và tên,Lớp,Ngày bắt đầu nghỉ (YYYY-MM-DD),Số ngày nghỉ,Lý do\nNguyễn Văn A,10A1,2026-11-15,1,Sốt cao\nTrần Thị B,11B2,2026-11-16,2,Việc gia đình";
+       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+       const link = document.createElement("a");
+       if (link.download !== undefined) {
+          const url = URL.createObjectURL(blob);
+          link.setAttribute("href", url);
+          link.setAttribute("download", "Mau_Duyet_Phep_Tu_Dong.csv");
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+       }
+    }
+
+    function handleLeaveUpload(event) {
+       const file = event.target.files[0]; if(!file) return;
+       const validExts = ['.xlsx', '.xls', '.pdf', '.csv'];
+       if(!validExts.some(ext => file.name.toLowerCase().endsWith(ext))) {
+          Swal.fire('Định dạng không hợp lệ', 'Hệ thống chỉ hỗ trợ duyệt phép qua file Excel (.xlsx, .csv) hoặc PDF', 'error');
+          event.target.value = ''; return;
+       }
+       Swal.fire({
+          title: 'Bắt đầu quét & duyệt phép?',
+          html: `Hệ thống sẽ quét dữ liệu từ file <b>${file.name}</b> và tự động duyệt vào sổ điểm danh cho những học sinh có tên.`,
+          icon: 'info', showCancelButton: true, confirmButtonText: 'Bắt đầu duyệt', cancelButtonText: 'Hủy'
+       }).then(res => {
+          if(res.isConfirmed) {
+             showLoading("Đang phân tích dữ liệu và duyệt phép...");
+             const reader = new FileReader();
+             reader.onload = function(e) {
+                // Chuyển file thành chuỗi Base64 đẩy lên Apps Script xử lý
+                const base64Data = e.target.result.split(',')[1];
+                callBackendApi('importLeaveFile', base64Data, file.name)
+                   .then(msg => { hideLoading(); Swal.fire('Hoàn tất!', msg || 'Đã duyệt phép thành công.', 'success'); })
+                   .catch(err => { hideLoading(); Swal.fire('Lỗi duyệt phép', err.message || err, 'error'); });
+             };
+             reader.readAsDataURL(file);
+          }
+          event.target.value = '';
+       });
     }
 
     function reqAddGiamThi() {
        let name = document.getElementById("add-gt-name").value; let role = document.getElementById("add-gt-role").value;
        if(!name) return Swal.fire('Lỗi','Vui lòng nhập Tên', 'error');
-       showLoading("Đang tạo tài khoản...");
-       callBackendApi('adminAddGiamThi', name, role)
-        .then(msg => { hideLoading(); Swal.fire('Thành công', msg, 'success').then(() => { document.getElementById("add-gt-name").value=""; document.getElementById("add-gt-role").value=""; reloadAppData(); }); })
-        .catch(showError);
+       showLoading("Đang tạo tài khoản..."); callBackendApi('adminAddGiamThi', name, role).then(msg => { hideLoading(); Swal.fire('Thành công', msg, 'success').then(() => { document.getElementById("add-gt-name").value=""; document.getElementById("add-gt-role").value=""; reloadAppData(); }); }).catch(showError);
     }
     
     function reqAddHocSinh() {
-       let cls = document.getElementById("add-hs-class").value; let name = document.getElementById("add-hs-name").value; 
-       let role = document.getElementById("add-hs-role").value; let dob = document.getElementById("add-hs-dob").value; let id = document.getElementById("add-hs-id").value;
+       let cls = document.getElementById("add-hs-class").value; let name = document.getElementById("add-hs-name").value; let role = document.getElementById("add-hs-role").value; let dob = document.getElementById("add-hs-dob").value; let id = document.getElementById("add-hs-id").value;
        if(!cls || !name) return Swal.fire('Lỗi','Nhập tối thiểu Lớp và Tên', 'error');
-       showLoading("Đang tạo HS...");
-       callBackendApi('adminAddHocSinh', cls, name, role, dob, id)
-        .then(res => { 
-          hideLoading(); 
-          if(res.error) Swal.fire('Lỗi', res.error, 'error'); else { Swal.fire('Thành công', res, 'success').then(() => { document.getElementById("add-hs-name").value=""; document.getElementById("add-hs-id").value=""; document.getElementById("add-hs-dob").value=""; reloadAppData(); }); }
-        })
-        .catch(showError);
+       showLoading("Đang tạo HS..."); callBackendApi('adminAddHocSinh', cls, name, role, dob, id).then(res => { hideLoading(); if(res.error) Swal.fire('Lỗi', res.error, 'error'); else { Swal.fire('Thành công', res, 'success').then(() => { document.getElementById("add-hs-name").value=""; document.getElementById("add-hs-id").value=""; document.getElementById("add-hs-dob").value=""; reloadAppData(); }); } }).catch(showError);
     }
     
     function reqResetPin() {
        let type = document.getElementById("reset-type").value; let cls = document.getElementById("reset-class").value; let name = document.getElementById("reset-name").value;
        if(!name || (type==='HS' && !cls)) return Swal.fire('Lỗi', 'Nhập đủ thông tin cần thiết', 'error');
-       showLoading("Đang cấp lại PIN...");
-       callBackendApi('adminResetPassword', type, cls, name)
-        .then(res => {
-          hideLoading(); if(res.error) Swal.fire('Lỗi', res.error, 'error'); else { Swal.fire('Thành công', res, 'success').then(() => { document.getElementById("reset-name").value=""; }); }
-        })
-        .catch(showError);
+       showLoading("Đang cấp lại PIN..."); callBackendApi('adminResetPassword', type, cls, name).then(res => { hideLoading(); if(res.error) Swal.fire('Lỗi', res.error, 'error'); else { Swal.fire('Thành công', res, 'success').then(() => { document.getElementById("reset-name").value=""; }); } }).catch(showError);
     }
 
     function handleCSVUpload(event) {
@@ -745,11 +689,7 @@
         if(res.isConfirmed) {
           showLoading("Đang nạp và làm mới...");
           const reader = new FileReader();
-          reader.onload = function(e) {
-            callBackendApi('importDataFile', e.target.result)
-              .then(msg => { hideLoading(); Swal.fire('Xuất sắc!', msg, 'success').then(()=> reloadAppData()); })
-              .catch(showError);
-          };
+          reader.onload = function(e) { callBackendApi('importDataFile', e.target.result).then(msg => { hideLoading(); Swal.fire('Xuất sắc!', msg, 'success').then(()=> reloadAppData()); }).catch(showError); };
           reader.readAsText(file);
         }
         event.target.value = ''; 
@@ -761,15 +701,35 @@
       personalSection.classList.add("opacity-50", "pointer-events-none"); document.getElementById("auth-name").value = ""; document.getElementById("auth-pin").value = "";
       if (!cls || (appData.requireSubject && !subj)) return;
       appData.className = cls; appData.subject = subj; document.getElementById("auth-loading-text").classList.remove("hidden");
-      callBackendApi('getClassData', cls, appData.session, appData.dateStr, subj)
-        .then(onClassDataReady)
-        .catch(showError);
+      callBackendApi('getClassData', cls, appData.session, appData.dateStr, subj).then(onClassDataReady).catch(showError);
     }
     
     function onClassDataReady(res) {
-      document.getElementById("auth-loading-text").classList.add("hidden");
-      clearInlineError('auth-error');
-      if (res.status === "LOCKED") { Swal.fire({ title: 'Khóa sổ', html: `Lớp <b>${appData.className}</b> đã nộp.`, icon: 'error' }); document.getElementById("auth-class").value = ""; return; }
+      document.getElementById("auth-loading-text").classList.add("hidden"); clearInlineError('auth-error');
+      // KIỂM TRA LỚP ĐÃ CHỐT SỔ HAY CHƯA VÀ CẤP QUYỀN MỞ KHÓA SỬA 1 LẦN
+      if (res.status === "LOCKED") { 
+          Swal.fire({ 
+              title: 'Lớp Đã Điểm Danh', 
+              html: `Lớp <b>${appData.className}</b> đã nộp báo cáo điểm danh.<br><br>Bạn có muốn <b>yêu cầu sửa điểm danh</b> (chỉ thực hiện 1 lần duy nhất, tắt quét QR và chuyển sang nhập thủ công)?`, 
+              icon: 'warning', showCancelButton: true, confirmButtonText: 'Yêu cầu sửa (1 lần)', cancelButtonText: 'Đóng'
+          }).then(r => {
+              if (r.isConfirmed) {
+                  appData.isEditMode = true; // Bật cờ chỉnh sửa
+                  appData.rowIndex = res.rowIndex; appData.students = res.students;
+                  const ulName = document.getElementById("dropdown-name"); ulName.innerHTML = '';
+                  res.students.forEach((s, i) => {
+                    let li = document.createElement("li"); li.className = "px-4 py-3 hover:bg-blue-50 cursor-pointer font-bold border-b"; li.innerText = s.name;
+                    li.onclick = () => chooseOption('auth-name', 'label-name', 'dropdown-name', i, s.name, false, true); ulName.appendChild(li);
+                  });
+                  document.getElementById("personal-info-section").classList.remove("opacity-50", "pointer-events-none");
+              } else {
+                  document.getElementById("auth-class").value = "";
+              }
+          });
+          return; 
+      }
+      
+      appData.isEditMode = false;
       appData.rowIndex = res.rowIndex; appData.students = res.students;
       const ulName = document.getElementById("dropdown-name"); ulName.innerHTML = '';
       res.students.forEach((s, i) => {
@@ -780,357 +740,186 @@
     }
     
     function autoFillRole() {
-      clearInlineError('auth-error');
-      const idx = document.getElementById("auth-name").value; if (idx === "") return;
+      clearInlineError('auth-error'); const idx = document.getElementById("auth-name").value; if (idx === "") return;
       document.getElementById("auth-role").value = appData.students[idx].role; document.getElementById("auth-pin").focus();
     }
 
     function proceedStudentLogin(student, pin) {
       hsPinFails = 0; clearInlineError('auth-error');
       appData.reporterInfo = { name: student.name, role: student.role }; violations = { vangCoPhep: [], vangKhongPhep: [], boTietNames: [], khongDTNames: [], treNames: [] };
-      
       const role = student.role ? student.role.toLowerCase() : "";
       const allowedRoles = ["lớp trưởng", "lớp phó", "bí thư", "giám thị phân công"];
       const isAllowedToReport = allowedRoles.some(r => role.includes(r));
 
       if (isAllowedToReport) {
-          document.getElementById("toggle-all-present").checked = true; toggleAllPresent(); updateAvailableStudentsDatalist(); changeStep('2');
+          document.getElementById("toggle-all-present").checked = true; toggleAllPresent(); updateAvailableStudentsDatalist();
+          
+          if (appData.isEditMode) {
+             document.getElementById("qr-module-card").classList.add("hidden");
+             Swal.fire({ title: 'Chế độ Sửa thủ công', text: 'Vì đã từng nộp báo cáo, tính năng quét QR tạm thời bị khóa. Vui lòng thêm/xóa vi phạm bằng tay.', icon: 'info', toast: true, position: 'top' });
+          } else {
+             document.getElementById("qr-module-card").classList.remove("hidden");
+          }
+          changeStep('2');
       } else {
-          // Hiển thị thông báo (View Only)
-          showStudentNotice(student);
+          showStudentNotice(student); // HIỂN THỊ THÔNG BÁO VÀ LỊCH SỬ CHO HỌC SINH THƯỜNG
       }
     }
 
     function showStudentNotice(student) {
         document.getElementById("personal-info-section").classList.add("opacity-50", "pointer-events-none");
         
-        // Tạo màn hình thông báo
         let noticeHtml = `<div class="glass-card p-6 rounded-2xl shadow-xl max-w-md w-full mx-auto mt-4 border border-blue-100">
             <h2 class="text-xl font-bold text-blue-700 text-center mb-4"><i class="fas fa-bullhorn mr-2"></i> THÔNG BÁO DÀNH CHO HỌC SINH</h2>
             <div class="text-left text-sm text-slate-700 space-y-3">
-                <div class="flex justify-between border-b pb-2">
-                    <span class="font-semibold">Họ và tên:</span>
-                    <span class="font-bold text-blue-600">${student.name}</span>
-                </div>
-                <div class="flex justify-between border-b pb-2">
-                    <span class="font-semibold">Ngày tháng năm:</span>
-                    <span class="font-bold text-slate-800">${appData.dateStr}</span>
-                </div>
-                <div class="flex justify-between border-b pb-2">
-                    <span class="font-semibold">Vắng:</span>
-                    <span class="font-bold text-red-500">Chưa có dữ liệu</span>
-                </div>
-                <div class="flex justify-between border-b pb-2">
-                    <span class="font-semibold">Trễ:</span>
-                    <span class="font-bold text-orange-500">Chưa có dữ liệu</span>
-                </div>
-                <div class="flex justify-between border-b pb-2">
-                    <span class="font-semibold">Môn học:</span>
-                    <span class="font-bold text-emerald-600">${appData.subject || "N/A"}</span>
-                </div>
-                <div class="flex justify-between border-b pb-2">
-                    <span class="font-semibold">Mang điện thoại:</span>
-                    <span class="font-bold text-purple-600">Chưa có dữ liệu</span>
-                </div>
+                <div class="flex justify-between border-b pb-2"><span class="font-semibold">Họ và tên:</span><span class="font-bold text-blue-600">${student.name}</span></div>
+                <div class="flex justify-between border-b pb-2"><span class="font-semibold">Mã học sinh:</span><span class="font-bold">${student.maHS || "Chưa có"}</span></div>
+                <div class="flex justify-between border-b pb-2"><span class="font-semibold">Môn học:</span><span class="font-bold text-emerald-600">${appData.subject || "N/A"}</span></div>
             </div>
+            
+            <!-- MODULE TRA CỨU LỊCH SỬ -->
+            <div class="mt-5 border-t pt-4">
+                <h3 class="font-bold text-slate-800 mb-3 text-sm flex items-center"><i class="fas fa-history text-blue-600 mr-2"></i> Tra Cứu Lịch Sử Điểm Danh</h3>
+                <div class="flex space-x-2 mb-3">
+                    <div class="flex-1"><label class="text-[10px] font-bold text-slate-500 uppercase">Từ ngày</label><input type="date" id="search-start-date" class="w-full p-2 text-xs border rounded-lg outline-none focus:border-blue-500 font-bold bg-slate-50"></div>
+                    <div class="flex-1"><label class="text-[10px] font-bold text-slate-500 uppercase">Đến ngày</label><input type="date" id="search-end-date" class="w-full p-2 text-xs border rounded-lg outline-none focus:border-blue-500 font-bold bg-slate-50"></div>
+                </div>
+                <button type="button" onclick="fetchStudentHistory('${student.maHS || ''}', '${student.name}')" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold py-2 rounded-lg text-xs transition border border-blue-200"><i class="fas fa-search mr-1"></i> Tìm Dữ Liệu</button>
+                <div id="student-history-result" class="mt-3 hidden max-h-56 overflow-y-auto custom-scrollbar text-xs border rounded-lg p-1 bg-white"></div>
+            </div>
+
             <button type="button" onclick="changeStep('0')" class="mt-5 w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition shadow-sm">
-                Quay Lại Màn Hình Chính
+                Quay Lại Cổng Chính
             </button>
         </div>`;
         
         let step1 = document.getElementById("step-1");
-        // Kiểm tra xem đã có notice chưa để không add nhiều lần
         let existingNotice = document.getElementById("student-notice-view");
-        if (existingNotice) {
-            existingNotice.innerHTML = noticeHtml;
-            existingNotice.classList.remove("hidden");
-        } else {
-            let noticeDiv = document.createElement("div");
-            noticeDiv.id = "student-notice-view";
-            noticeDiv.innerHTML = noticeHtml;
-            step1.appendChild(noticeDiv);
-        }
-        
-        // Ẩn form xác thực
+        if (existingNotice) { existingNotice.innerHTML = noticeHtml; existingNotice.classList.remove("hidden"); } 
+        else { let noticeDiv = document.createElement("div"); noticeDiv.id = "student-notice-view"; noticeDiv.innerHTML = noticeHtml; step1.appendChild(noticeDiv); }
         document.querySelector("#step-1 > div:first-child").classList.add("hidden");
     }
+    
+    // GỌI API ĐỂ LẤY LỊCH SỬ HỌC SINH
+    function fetchStudentHistory(maHS, name) {
+        let start = document.getElementById("search-start-date").value; let end = document.getElementById("search-end-date").value;
+        if(!start || !end) { Swal.fire('Chú ý', 'Vui lòng chọn Từ ngày và Đến ngày', 'warning'); return; }
 
+        let resDiv = document.getElementById("student-history-result");
+        resDiv.innerHTML = '<div class="text-center text-slate-500 py-4"><i class="fas fa-spinner fa-spin text-xl mb-2 block"></i> Đang tải dữ liệu...</div>';
+        resDiv.classList.remove("hidden");
+
+        callBackendApi('getStudentHistory', maHS, name, start, end).then(data => {
+            if(!data || data.length === 0) { resDiv.innerHTML = '<div class="text-center text-emerald-600 font-bold py-4"><i class="fas fa-check-circle mr-1"></i> Rất tốt! Không có vi phạm nào trong thời gian này.</div>'; return; }
+            let html = '<table class="w-full text-left border-collapse bg-white"><thead><tr class="bg-slate-100"><th class="p-2 border font-bold">Ngày</th><th class="p-2 border font-bold">Buổi</th><th class="p-2 border font-bold">Lỗi vi phạm</th></tr></thead><tbody>';
+            data.forEach(row => { html += `<tr><td class="p-2 border font-semibold">${row.date}</td><td class="p-2 border">${row.session}</td><td class="p-2 border text-red-600 font-bold">${row.violation}</td></tr>`; });
+            html += '</tbody></table>';
+            resDiv.innerHTML = html;
+        }).catch(err => { resDiv.innerHTML = `<div class="text-center text-red-500 py-3 font-bold"><i class="fas fa-exclamation-triangle"></i> Lỗi: ${err}</div>`; });
+    }
 
     function verifyStudentLogin() {
       const idx = document.getElementById("auth-name").value; const pin = document.getElementById("auth-pin").value;
       if (idx === "") { showInlineError('auth-error', '❌ Vui lòng chọn Tên của bạn!'); return; }
       if (!pin) { showInlineError('auth-error', '❌ Vui lòng nhập mật khẩu!'); return; }
-      
       const student = appData.students[idx]; 
       if (student.pin.toString() !== pin.toString()) {
           hsPinFails++;
           if(hsPinFails >= 3) {
               showInlineError('auth-error', '🔒 Nhập sai 3 lần! Đang quay về cổng chính...');
-              document.getElementById("auth-pin").disabled = true;
-              document.getElementById("btn-submit-hs").disabled = true;
-              setTimeout(() => {
-                  document.getElementById("auth-pin").value = ""; 
-                  document.getElementById("auth-pin").disabled = false;
-                  document.getElementById("btn-submit-hs").disabled = false;
-                  hsPinFails = 0; 
-                  clearInlineError('auth-error');
-                  document.getElementById("personal-info-section").classList.add("opacity-50", "pointer-events-none");
-                  changeStep('0');
-              }, 1500);
-          } else {
-              showInlineError('auth-error', `❌ Mật khẩu không đúng! Bạn còn ${3 - hsPinFails} lần thử.`);
-          }
+              document.getElementById("auth-pin").disabled = true; document.getElementById("btn-submit-hs").disabled = true;
+              setTimeout(() => { document.getElementById("auth-pin").value = ""; document.getElementById("auth-pin").disabled = false; document.getElementById("btn-submit-hs").disabled = false; hsPinFails = 0; clearInlineError('auth-error'); document.getElementById("personal-info-section").classList.add("opacity-50", "pointer-events-none"); changeStep('0'); }, 1500);
+          } else { showInlineError('auth-error', `❌ Mật khẩu không đúng! Bạn còn ${3 - hsPinFails} lần thử.`); }
           return;
       }
-      
-      // Kiểm tra nếu là lần đăng nhập đầu tiên (isFirstLogin = true)
       if (student.isFirstLogin) {
-          promptChangePin('HS', appData.className, student.name, pin, () => {
-              student.isFirstLogin = false; // Đã đổi thành công
-              student.pin = pin; // Cập nhật lại phiên (Backend đã cập nhật Sheet)
-              proceedStudentLogin(student, pin);
-          });
-      } else {
-          proceedStudentLogin(student, pin);
-      }
+          promptChangePin('HS', appData.className, student.name, pin, () => { student.isFirstLogin = false; student.pin = pin; proceedStudentLogin(student, pin); });
+      } else { proceedStudentLogin(student, pin); }
     }
 
+    /* MODULE QR (GIỮ NGUYÊN) */
     function toggleQRScanner() {
-      const wrapper = document.getElementById("qr-reader-wrapper");
-      const btnText = document.getElementById("btn-qr-text");
-      const btn = document.getElementById("btn-toggle-qr");
-
-      if (isScannerActive) {
-        stopQRScanner();
-      } else {
-        wrapper.classList.remove("hidden");
-        btnText.innerText = "Tắt Camera";
-        if (btn) btn.classList.replace("bg-blue-600", "bg-red-600");
-
-        if (!html5QrCode) {
-          html5QrCode = new Html5Qrcode("qr-reader");
-        }
-
+      const wrapper = document.getElementById("qr-reader-wrapper"); const btnText = document.getElementById("btn-qr-text"); const btn = document.getElementById("btn-toggle-qr");
+      if (isScannerActive) { stopQRScanner(); } else {
+        wrapper.classList.remove("hidden"); btnText.innerText = "Tắt Camera"; if (btn) btn.classList.replace("bg-blue-600", "bg-red-600");
+        if (!html5QrCode) { html5QrCode = new Html5Qrcode("qr-reader"); }
         Html5Qrcode.getCameras().then(cameras => {
           if (cameras && cameras.length > 0) {
-            const selectBox = document.getElementById("qr-camera-select-box");
-            const selectEl = document.getElementById("qr-camera-select");
-            
-            if (cameras.length > 1) {
-              selectBox.classList.remove("hidden");
-              selectEl.innerHTML = cameras.map((c, i) => 
-                `<option value="${c.id}">${c.label || 'Camera ' + (i + 1)}</option>`
-              ).join('');
-            }
-            
+            const selectBox = document.getElementById("qr-camera-select-box"); const selectEl = document.getElementById("qr-camera-select");
+            if (cameras.length > 1) { selectBox.classList.remove("hidden"); selectEl.innerHTML = cameras.map((c, i) => `<option value="${c.id}">${c.label || 'Camera ' + (i + 1)}</option>`).join(''); }
             const backCam = cameras.find(c => c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('rear'));
-            currentCameraId = backCam ? backCam.id : cameras[0].id;
-            if (selectEl) selectEl.value = currentCameraId;
-
+            currentCameraId = backCam ? backCam.id : cameras[0].id; if (selectEl) selectEl.value = currentCameraId;
             startScanning(currentCameraId);
-          } else {
-            startScanning({ facingMode: "environment" });
-          }
-        }).catch(err => {
-          startScanning({ facingMode: "user" });
-        });
+          } else { startScanning({ facingMode: "environment" }); }
+        }).catch(err => { startScanning({ facingMode: "user" }); });
       }
     }
 
     function startScanning(cameraConfig) {
       const config = { fps: 15, qrbox: { width: 200, height: 200 }, aspectRatio: 1.0 };
-      
-      html5QrCode.start(cameraConfig, config, onScanSuccess, onScanFailure)
-        .then(() => {
-          isScannerActive = true;
-        })
-        .catch(err => {
-          console.error("Camera Error:", err);
-          Swal.fire({
-            icon: 'error',
-            title: 'Chưa mở được Camera',
-            html: 'Bấm nút <b>Cho phép (Allow)</b> Camera trên thanh địa chỉ trình duyệt để kích hoạt.',
-            confirmButtonText: 'Đã hiểu'
-          });
-          resetQRScannerState();
-        });
+      html5QrCode.start(cameraConfig, config, onScanSuccess, onScanFailure).then(() => { isScannerActive = true; })
+        .catch(err => { Swal.fire({ icon: 'error', title: 'Chưa mở được Camera', html: 'Bấm nút <b>Cho phép (Allow)</b> Camera trên thanh địa chỉ trình duyệt để kích hoạt.', confirmButtonText: 'Đã hiểu' }); resetQRScannerState(); });
     }
 
     function changeCamera(cameraId) {
-      if (html5QrCode && isScannerActive) {
-        html5QrCode.stop().then(() => {
-          currentCameraId = cameraId;
-          startScanning(cameraId);
-        }).catch(err => console.error(err));
-      }
+      if (html5QrCode && isScannerActive) { html5QrCode.stop().then(() => { currentCameraId = cameraId; startScanning(cameraId); }).catch(err => console.error(err)); }
     }
 
     function stopQRScanner() {
-      if (html5QrCode && isScannerActive) {
-        html5QrCode.stop().then(() => {
-          resetQRScannerState();
-        }).catch(err => {
-          resetQRScannerState();
-        });
-      } else {
-        resetQRScannerState();
-      }
+      if (html5QrCode && isScannerActive) { html5QrCode.stop().then(() => { resetQRScannerState(); }).catch(err => { resetQRScannerState(); }); } else { resetQRScannerState(); }
     }
 
     function resetQRScannerState() {
-      const wrapper = document.getElementById("qr-reader-wrapper");
-      if (wrapper) wrapper.classList.add("hidden");
-      const btnText = document.getElementById("btn-qr-text");
-      if (btnText) btnText.innerText = "Bật Camera";
-      const btn = document.getElementById("btn-toggle-qr");
-      if (btn) btn.classList.replace("bg-red-600", "bg-blue-600");
+      const wrapper = document.getElementById("qr-reader-wrapper"); if (wrapper) wrapper.classList.add("hidden");
+      const btnText = document.getElementById("btn-qr-text"); if (btnText) btnText.innerText = "Bật Camera";
+      const btn = document.getElementById("btn-toggle-qr"); if (btn) btn.classList.replace("bg-red-600", "bg-blue-600");
       isScannerActive = false;
     }
 
     function onScanSuccess(decodedText) {
-      if (!isScannerActive) return;
-      html5QrCode.pause(true);
-      playBeepSound();
-
-      let student = null;
-      let detectionType = "Mã QR";
-      try {
-        let data = JSON.parse(decodedText);
-        student = appData.students.find(s => (data.maHS && s.maHS === data.maHS) || (data.name && s.name.toLowerCase() === data.name.toLowerCase()) || (data.image && s.image && data.image === s.image));
-        if (data.type === 'FACE' || data.image) { detectionType = "Khuôn mặt (Mã hoá ảnh)"; }
-      } catch (e) {
+      if (!isScannerActive) return; html5QrCode.pause(true); playBeepSound();
+      let student = null; let detectionType = "Mã QR";
+      try { let data = JSON.parse(decodedText); student = appData.students.find(s => (data.maHS && s.maHS === data.maHS) || (data.name && s.name.toLowerCase() === data.name.toLowerCase()) || (data.image && s.image && data.image === s.image)); if (data.type === 'FACE' || data.image) { detectionType = "Khuôn mặt (Mã hoá ảnh)"; } } catch (e) {
         let textVal = decodedText.trim().toLowerCase();
-        student = appData.students.find(s => {
-          let nameMatch = s.name && s.name.toLowerCase() === textVal;
-          let idMatch = s.maHS && s.maHS.toString().toLowerCase() === textVal;
-          let faceMatch = s.image && s.image.toLowerCase().includes(textVal);
-          if (faceMatch) detectionType = "Khuôn mặt (Mã hoá ảnh)";
-          return nameMatch || idMatch || faceMatch;
-        });
+        student = appData.students.find(s => { let nameMatch = s.name && s.name.toLowerCase() === textVal; let idMatch = s.maHS && s.maHS.toString().toLowerCase() === textVal; let faceMatch = s.image && s.image.toLowerCase().includes(textVal); if (faceMatch) detectionType = "Khuôn mặt (Mã hoá ảnh)"; return nameMatch || idMatch || faceMatch; });
       }
-
       if (student) {
-        const toggleAll = document.getElementById("toggle-all-present");
-        if (toggleAll && toggleAll.checked) {
-          toggleAll.checked = false;
-          toggleAllPresent();
-        }
-
+        const toggleAll = document.getElementById("toggle-all-present"); if (toggleAll && toggleAll.checked) { toggleAll.checked = false; toggleAllPresent(); }
         Swal.fire({
           title: `<span class="text-blue-700">${student.name}</span>`,
           html: `<div class="text-xs text-slate-500 font-bold mb-1">Mã HS: ${student.maHS || 'N/A'} - Lớp ${appData.className}</div>
                  <div class="text-[11px] text-emerald-600 font-semibold mb-2"><i class="fas fa-check-circle mr-1"></i> Nhận diện qua: ${detectionType}</div>`,
-          icon: 'success',
-          input: 'select',
-          inputOptions: {
-            'vangCoPhep': '🔴 Vắng có phép',
-            'vangKhongPhep': '❌ Vắng không phép',
-            'tre': '⏰ Đi trễ',
-            'boTietNames': '⚠️ Bỏ tiết',
-            'khongDTNames': '📱 Không ĐT / Đồng phục'
-          },
-          inputPlaceholder: '-- Chọn hình thức ghi nhận --',
-          showCancelButton: true,
-          confirmButtonText: 'Ghi Nhận',
-          cancelButtonText: 'Bỏ qua',
-          customClass: { popup: 'rounded-2xl' }
+          icon: 'success', input: 'select',
+          inputOptions: { 'vangCoPhep': '🔴 Vắng có phép', 'vangKhongPhep': '❌ Vắng không phép', 'tre': '⏰ Đi trễ', 'boTietNames': '⚠️ Bỏ tiết', 'khongDTNames': '📱 Không ĐT / Đồng phục' },
+          inputPlaceholder: '-- Chọn hình thức ghi nhận --', showCancelButton: true, confirmButtonText: 'Ghi Nhận', cancelButtonText: 'Bỏ qua', customClass: { popup: 'rounded-2xl' }
         }).then((res) => {
           if (res.isConfirmed && res.value) {
             const type = res.value;
             if (type === 'tre') {
-              Swal.fire({
-                title: 'Nhập số phút trễ',
-                input: 'number',
-                inputValue: 5,
-                inputAttributes: { min: 1, max: 45 },
-                showCancelButton: true,
-                confirmButtonText: 'Lưu'
-              }).then((minRes) => {
-                if (minRes.isConfirmed && minRes.value) {
-                  const treStr = `${student.name} trễ ${minRes.value} phút`;
-                  if (!violations.treNames.includes(treStr)) {
-                    violations.treNames.push(treStr);
-                    renderChips('treNames', 'tre');
-                    updateAvailableStudentsDatalist();
-                  }
-                }
+              Swal.fire({ title: 'Nhập số phút trễ', input: 'number', inputValue: 5, inputAttributes: { min: 1, max: 45 }, showCancelButton: true, confirmButtonText: 'Lưu' }).then((minRes) => {
+                if (minRes.isConfirmed && minRes.value) { const treStr = `${student.name} trễ ${minRes.value} phút`; if (!violations.treNames.includes(treStr)) { violations.treNames.push(treStr); renderChips('treNames', 'tre'); updateAvailableStudentsDatalist(); } }
                 resumeScanner();
               });
-            } else {
-              if (!violations[type].includes(student.name)) {
-                violations[type].push(student.name);
-                renderChips(type);
-                updateAvailableStudentsDatalist();
-              }
-              resumeScanner();
-            }
-          } else {
-            resumeScanner();
-          }
+            } else { if (!violations[type].includes(student.name)) { violations[type].push(student.name); renderChips(type); updateAvailableStudentsDatalist(); } resumeScanner(); }
+          } else { resumeScanner(); }
         });
-      } else {
-        Swal.fire({ toast: true, position: 'top', icon: 'warning', title: 'Không tìm thấy dữ liệu học sinh trong lớp ' + appData.className, showConfirmButton: false, timer: 2000 });
-        setTimeout(resumeScanner, 1500);
-      }
+      } else { Swal.fire({ toast: true, position: 'top', icon: 'warning', title: 'Không tìm thấy dữ liệu học sinh trong lớp ' + appData.className, showConfirmButton: false, timer: 2000 }); setTimeout(resumeScanner, 1500); }
     }
 
-    function resumeScanner() {
-      if (html5QrCode && isScannerActive) {
-        try { html5QrCode.resume(); } catch(e) {}
-      }
-    }
-
+    function resumeScanner() { if (html5QrCode && isScannerActive) { try { html5QrCode.resume(); } catch(e) {} } }
     function onScanFailure(error) {}
-
-    function playBeepSound() {
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(1000, ctx.currentTime);
-        gain.gain.setValueAtTime(0.1, ctx.currentTime);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.12);
-      } catch(e) {}
-    }
+    function playBeepSound() { try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = "sine"; osc.frequency.setValueAtTime(1000, ctx.currentTime); gain.gain.setValueAtTime(0.1, ctx.currentTime); osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.12); } catch(e) {} }
 
     function getAlreadyMarkedStudents() {
-      let marked = [
-        ...violations.vangCoPhep,
-        ...violations.vangKhongPhep,
-        ...violations.boTietNames,
-        ...violations.khongDTNames,
-        ...violations.treNames.map(t => t.split(' trễ ')[0].trim())
-      ];
+      let marked = [ ...violations.vangCoPhep, ...violations.vangKhongPhep, ...violations.boTietNames, ...violations.khongDTNames, ...violations.treNames.map(t => t.split(' trễ ')[0].trim()) ];
       return Array.from(new Set(marked));
     }
 
     function updateAvailableStudentsDatalist() {
-      const dlGlobal = document.getElementById("student-list-global");
-      if (!dlGlobal) return;
-      dlGlobal.innerHTML = "";
-      const marked = getAlreadyMarkedStudents();
-      const totalStudents = appData.students ? appData.students.length : 0;
-      let remainingCount = 0;
-
-      if (appData.students) {
-        appData.students.forEach(s => {
-          if (!marked.includes(s.name)) {
-            let opt = document.createElement("option");
-            opt.value = s.name;
-            dlGlobal.appendChild(opt);
-            remainingCount++;
-          }
-        });
-      }
-
-      const badge = document.getElementById("badge-remaining-students");
-      if (badge) {
-        badge.innerHTML = `Còn lại: <span class="text-blue-800 font-extrabold">${remainingCount}</span>/${totalStudents}`;
-      }
+      const dlGlobal = document.getElementById("student-list-global"); if (!dlGlobal) return; dlGlobal.innerHTML = "";
+      const marked = getAlreadyMarkedStudents(); const totalStudents = appData.students ? appData.students.length : 0; let remainingCount = 0;
+      if (appData.students) { appData.students.forEach(s => { if (!marked.includes(s.name)) { let opt = document.createElement("option"); opt.value = s.name; dlGlobal.appendChild(opt); remainingCount++; } }); }
+      const badge = document.getElementById("badge-remaining-students"); if (badge) { badge.innerHTML = `Còn lại: <span class="text-blue-800 font-extrabold">${remainingCount}</span>/${totalStudents}`; }
     }
 
     function toggleAllPresent() {
@@ -1139,9 +928,7 @@
       if (isAllPresent) {
         section.classList.add("hidden"); boxAllPresent.classList.replace("bg-white", "bg-emerald-50"); textAllPresent.innerText = "LỚP ĐI ĐỦ"; textAllPresent.classList.replace("text-slate-600", "text-emerald-700");
         violations = { vangCoPhep: [], vangKhongPhep: [], boTietNames: [], khongDTNames: [], treNames: [] }; renderAllChips(); updateAvailableStudentsDatalist();
-      } else {
-        section.classList.remove("hidden"); boxAllPresent.classList.replace("bg-emerald-50", "bg-white"); textAllPresent.innerText = "GHI NHẬN VI PHẠM"; textAllPresent.classList.replace("text-emerald-700", "text-slate-600");
-      }
+      } else { section.classList.remove("hidden"); boxAllPresent.classList.replace("bg-emerald-50", "bg-white"); textAllPresent.innerText = "GHI NHẬN VI PHẠM"; textAllPresent.classList.replace("text-emerald-700", "text-slate-600"); }
     }
 
     function addViolation(inputEl, arrayName) {
@@ -1172,53 +959,45 @@
       });
     }
 
-    function removeChip(aN, idx, rId) { 
-      violations[aN].splice(idx, 1); 
-      renderChips(aN, rId); 
-      updateAvailableStudentsDatalist(); 
-    }
+    function removeChip(aN, idx, rId) { violations[aN].splice(idx, 1); renderChips(aN, rId); updateAvailableStudentsDatalist(); }
 
     function previewAttendance() {
-      let p = { session: appData.session, subject: appData.subject, className: appData.className, reporterName: appData.reporterInfo.name, reporterRole: appData.reporterInfo.role, rowIndex: appData.rowIndex, vangCoPhep: violations.vangCoPhep, vangKhongPhep: violations.vangKhongPhep, treNames: violations.treNames, boTietNames: violations.boTietNames, khongDTNames: violations.khongDTNames };
+      let p = { session: appData.session, subject: appData.subject, className: appData.className, reporterName: appData.reporterInfo.name, reporterRole: appData.reporterInfo.role, rowIndex: appData.rowIndex, vangCoPhep: violations.vangCoPhep, vangKhongPhep: violations.vangKhongPhep, treNames: violations.treNames, boTietNames: violations.boTietNames, khongDTNames: violations.khongDTNames, isEditMode: appData.isEditMode };
       let presentCount = appData.students.length - (p.vangCoPhep.length + p.vangKhongPhep.length);
-      Swal.fire({ title: 'Xác Nhận Nộp', html: `<div class="text-sm text-left bg-slate-50 p-4 border rounded-xl mt-2"><div class="flex justify-between border-b pb-2 mb-2 font-bold"><span>Tổng sĩ số: ${appData.students.length}</span><span class="text-emerald-600">Đi học: ${presentCount}</span></div><div class="flex justify-between py-1 border-b"><span>Vắng phép:</span><span class="font-bold text-amber-600">${p.vangCoPhep.length}</span></div><div class="flex justify-between py-1 border-b"><span>Không phép:</span><span class="font-bold text-red-600">${p.vangKhongPhep.length}</span></div><div class="flex justify-between py-1 border-b"><span>Đi trễ:</span><span class="font-bold text-orange-600">${p.treNames.length}</span></div></div>`, showCancelButton: true, confirmButtonText: 'ĐỒNG Ý NỘP' }).then((res) => {
+      Swal.fire({ 
+         title: 'Tổng Hợp Thông Tin', 
+         html: `<div class="text-sm text-left bg-slate-50 p-4 border rounded-xl mt-2"><div class="flex justify-between border-b pb-2 mb-2 font-bold"><span>Tổng sĩ số: ${appData.students.length}</span><span class="text-emerald-600">Đi học: ${presentCount}</span></div><div class="flex justify-between py-1 border-b"><span>Vắng phép:</span><span class="font-bold text-amber-600">${p.vangCoPhep.length}</span></div><div class="flex justify-between py-1 border-b"><span>Không phép:</span><span class="font-bold text-red-600">${p.vangKhongPhep.length}</span></div><div class="flex justify-between py-1 border-b"><span>Đi trễ:</span><span class="font-bold text-orange-600">${p.treNames.length}</span></div></div>`, 
+         showCancelButton: true, confirmButtonText: 'ĐỒNG Ý NỘP (CHỐT SỔ)', cancelButtonText: 'SỬA LẠI',
+         confirmButtonColor: '#2563eb', cancelButtonColor: '#94a3b8'
+      }).then((res) => {
         if (res.isConfirmed) {
           showLoading("Đang mã hóa...");
           callBackendApi('saveAttendance', p)
             .then(r => {
-              Swal.fire('Thành công!', r, 'success').then(() => {
+              appData.isEditMode = false; // Reset cờ Edit
+              Swal.fire({ title: 'Hoàn Tất', html: 'Dữ liệu báo cáo điểm danh đã được nộp và khóa chốt sổ thành công!', icon: 'success' }).then(() => {
                  document.getElementById("auth-class").value = ""; document.getElementById("auth-subject").value = "";
                  document.querySelectorAll('.subj-checkbox').forEach(cb => cb.checked = false);
                  document.getElementById("personal-info-section").classList.add("opacity-50", "pointer-events-none");
                  hideLoading(); changeStep('0');
               });
-            })
-            .catch(showError);
+            }).catch(showError);
         }
       });
     }
 
     function showLoading(t) { 
         document.getElementById("loading-msg").innerText = t || "KẾT NỐI HỆ THỐNG..."; 
-        document.getElementById("loading-screen").classList.remove("hidden"); 
-        document.getElementById("loading-screen").classList.add("flex"); 
-        ["step-0", "step-1", "step-2", "step-admin", "step-admin-config", "step-admin-data", "step-gv-login"].forEach(id => { 
-            let el = document.getElementById(id); if(el) el.classList.add("hidden"); 
-        }); 
-        document.getElementById("btn-back").classList.add("hidden"); 
-        document.getElementById("session-info").classList.add("hidden"); 
+        document.getElementById("loading-screen").classList.remove("hidden"); document.getElementById("loading-screen").classList.add("flex"); 
+        ["step-0", "step-1", "step-2", "step-admin", "step-admin-config", "step-admin-data", "step-gv-login"].forEach(id => { let el = document.getElementById(id); if(el) el.classList.add("hidden"); }); 
+        document.getElementById("btn-back").classList.add("hidden"); document.getElementById("session-info").classList.add("hidden"); 
     }
     
     function hideLoading() { 
-        document.getElementById("loading-screen").classList.add("hidden"); 
-        document.getElementById("loading-screen").classList.remove("flex");
-        changeStep(currentStep); 
+        document.getElementById("loading-screen").classList.add("hidden"); document.getElementById("loading-screen").classList.remove("flex"); changeStep(currentStep); 
     }
     
-    function showError(err) { 
-        hideLoading(); 
-        Swal.fire('Lỗi', err.message || err, 'error'); 
-    }
+    function showError(err) { hideLoading(); Swal.fire('Lỗi', err.message || err, 'error'); }
   </script>
 </body>
 </html>

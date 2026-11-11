@@ -370,7 +370,7 @@
     }
 
     let currentStep = '0';
-    let appData = { session: "", dateStr: "", className: "", subject: "", rowIndex: null, requireSubject: false, students: [], reporterInfo: null, giaoVienList: [], subjectList: [], isEditMode: false };
+    let appData = { session: "", dateStr: "", className: "", subject: "", rowIndex: null, requireSubject: false, students: [], reporterInfo: null, giaoVienList: [], subjectList: [], isEditMode: false, hasOfficialReport: false };
     let violations = { vangCoPhep: [], vangKhongPhep: [], boTietNames: [], khongDTNames: [], treNames: [] };
     
     let hsPinFails = 0;
@@ -712,7 +712,16 @@
     
     function onClassDataReady(res) {
       document.getElementById("auth-loading-text").classList.add("hidden"); clearInlineError('auth-error');
-      if (res.status === "LOCKED") { 
+      
+      // LOGIC MỚI: Bất cứ ai cũng có thể vào (nếu lớp chưa bị khoá bởi cán sự)
+      appData.isEditMode = false;
+      appData.hasOfficialReport = false;
+      
+      if (res.status === "LOCKED") {
+          // Kiểm tra xem báo cáo đó CÓ PHẢI của 1 trong 4 chức vụ hay không (dữ liệu này cần được trả về từ Backend qua biến res.reporterRole)
+          // Tạm thời giả lập bằng cách mặc định nếu LOCKED thì tức là đã có người điểm danh
+          appData.hasOfficialReport = true;
+          
           Swal.fire({ 
               title: 'Lớp Đã Điểm Danh', 
               html: `Lớp <b>${appData.className}</b> đã nộp báo cáo điểm danh.<br><br>Bạn có muốn <b>yêu cầu sửa điểm danh</b> (chỉ thực hiện 1 lần duy nhất, tắt quét QR và chuyển sang nhập thủ công)?`, 
@@ -734,7 +743,6 @@
           return; 
       }
       
-      appData.isEditMode = false;
       appData.rowIndex = res.rowIndex; appData.students = res.students;
       const ulName = document.getElementById("dropdown-name"); ulName.innerHTML = '';
       res.students.forEach((s, i) => {
@@ -752,7 +760,19 @@
     function proceedStudentLogin(student, pin) {
       hsPinFails = 0; clearInlineError('auth-error');
       appData.reporterInfo = { name: student.name, role: student.role }; violations = { vangCoPhep: [], vangKhongPhep: [], boTietNames: [], khongDTNames: [], treNames: [] };
-      showStudentNotice(student);
+      
+      // KIỂM TRA CHỨC VỤ ĐỂ MỞ/KHOÁ NÚT BÁO CÁO
+      const role = student.role ? student.role.toLowerCase() : "";
+      const allowedRoles = ["lớp trưởng", "lớp phó", "bí thư", "giám thị phân công"];
+      const isAllowedToReport = allowedRoles.some(r => role.includes(r));
+      
+      if (appData.hasOfficialReport && !appData.isEditMode) {
+          // Lớp đã chốt bởi cán sự và học sinh này không bấm nút Yêu cầu sửa
+           showStudentNotice(student, false); 
+      } else {
+           // Lớp chưa chốt, hoặc lớp đã chốt nhưng học sinh này đang ở chế độ Edit
+           showStudentNotice(student, isAllowedToReport);
+      }
     }
 
     function openReporterDashboard() {
@@ -766,15 +786,9 @@
         changeStep('2');
     }
 
-    function showStudentNotice(student) {
-        document.getElementById("personal-info-section").classList.add("opacity-50", "pointer-events-none");
-        
-        const role = student.role ? student.role.toLowerCase() : "";
-        const allowedRoles = ["lớp trưởng", "lớp phó", "bí thư", "giám thị phân công"];
-        const isAllowedToReport = allowedRoles.some(r => role.includes(r));
-
+    function showStudentNotice(student, showReportButton) {
         let reportButtonHtml = '';
-        if (isAllowedToReport) {
+        if (showReportButton) {
             reportButtonHtml = `<button type="button" onclick="openReporterDashboard()" class="mt-3 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition shadow-md flex items-center justify-center space-x-2">
                 <i class="fas fa-clipboard-list text-lg"></i><span>Vào Giao Diện Điểm Danh Lớp</span>
             </button>`;

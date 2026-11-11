@@ -506,8 +506,16 @@
       if (currentStep === '1' || currentStep === 'gv-login' || currentStep === 'admin') changeStep('0');
       else if (currentStep === 'admin-config' || currentStep === 'admin-data') changeStep('admin');
       else if (currentStep === '2') {
-        Swal.fire({ title: 'Quay lại?', text: 'Dữ liệu vi phạm chưa nộp sẽ bị xóa.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Đồng ý' }).then((res) => {
-          if (res.isConfirmed) { document.getElementById("personal-info-section").classList.add("opacity-50", "pointer-events-none"); changeStep('1'); }
+        Swal.fire({ title: 'Quay lại?', text: 'Dữ liệu vi phạm chưa nộp sẽ bị xóa. Trở về màn hình thông tin cá nhân?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Đồng ý' }).then((res) => {
+          if (res.isConfirmed) { 
+             stopQRScanner();
+             document.getElementById("step-2").classList.add("hidden");
+             document.getElementById("student-notice-view").classList.remove("hidden");
+             document.getElementById("step-1").classList.remove("hidden");
+             currentStep = '1';
+             document.getElementById("btn-back").classList.remove("hidden");
+             document.getElementById("session-info").classList.add("hidden");
+          }
         });
       }
     }
@@ -744,7 +752,6 @@
     function proceedStudentLogin(student, pin) {
       hsPinFails = 0; clearInlineError('auth-error');
       appData.reporterInfo = { name: student.name, role: student.role }; violations = { vangCoPhep: [], vangKhongPhep: [], boTietNames: [], khongDTNames: [], treNames: [] };
-      // MỌI HỌC SINH (KỂ CẢ CÁN SỰ LỚP: LỚP TRƯỞNG, LỚP PHÓ, BÍ THƯ) ĐỀU VÀO GIAO DIỆN THÔNG BÁO CÁ NHÂN ĐỂ TRA CỨU LỊCH SỬ VÀ NỘP PHÉP
       showStudentNotice(student);
     }
 
@@ -774,7 +781,7 @@
         }
         
         let noticeHtml = `<div class="glass-card p-6 rounded-2xl shadow-xl max-w-md w-full mx-auto mt-4 border border-blue-100">
-            <h2 class="text-xl font-bold text-blue-700 text-center mb-4"><i class="fas fa-bullhorn mr-2"></i> THÔNG BÁO DÀNH CHO HỌC SINH</h2>
+            <h2 class="text-xl font-bold text-blue-700 text-center mb-4"><i class="fas fa-bullhorn mr-2"></i> THÔNG BÁO HỌC SINH</h2>
             <div class="text-left text-sm text-slate-700 space-y-3">
                 <div class="flex justify-between border-b pb-2"><span class="font-semibold">Họ và tên:</span><span class="font-bold text-blue-600">${student.name}</span></div>
                 <div class="flex justify-between border-b pb-2"><span class="font-semibold">Mã học sinh:</span><span class="font-bold">${student.maHS || "Chưa có"}</span></div>
@@ -786,19 +793,51 @@
             <div class="mt-5 border-t pt-4">
                 <h3 class="font-bold text-slate-800 mb-3 text-sm flex items-center"><i class="fas fa-history text-blue-600 mr-2"></i> Tra Cứu Lịch Sử Điểm Danh</h3>
                 <div class="flex space-x-2 mb-3">
-                    <div class="flex-1"><label class="text-[10px] font-bold text-slate-500 uppercase">Từ ngày</label><input type="date" id="search-start-date" class="w-full p-2 text-xs border rounded-lg outline-none focus:border-blue-500 font-bold bg-slate-50"></div>
-                    <div class="flex-1"><label class="text-[10px] font-bold text-slate-500 uppercase">Đến ngày</label><input type="date" id="search-end-date" class="w-full p-2 text-xs border rounded-lg outline-none focus:border-blue-500 font-bold bg-slate-50"></div>
+                    <div class="flex-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">Từ ngày (DD/MM/YYYY)</label>
+                        <input type="date" id="search-start-date" class="w-full p-2 text-xs border rounded-lg outline-none focus:border-blue-500 font-bold bg-slate-50">
+                    </div>
+                    <div class="flex-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">Đến ngày (DD/MM/YYYY)</label>
+                        <input type="date" id="search-end-date" class="w-full p-2 text-xs border rounded-lg outline-none focus:border-blue-500 font-bold bg-slate-50">
+                    </div>
                 </div>
                 <button type="button" onclick="fetchStudentHistory('${student.maHS || ''}', '${student.name}')" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold py-2 rounded-lg text-xs transition border border-blue-200"><i class="fas fa-search mr-1"></i> Tìm Dữ Liệu</button>
                 <div id="student-history-result" class="mt-3 hidden max-h-56 overflow-y-auto custom-scrollbar text-xs border rounded-lg p-1 bg-white"></div>
             </div>
 
-            <!-- MODULE NỘP PHÉP -->
+            <!-- MODULE NỘP / XIN PHÉP (2 MỤC RÕ RÀNG) -->
             <div class="mt-4 border-t pt-4">
-                <h3 class="font-bold text-slate-800 mb-3 text-sm flex items-center"><i class="fas fa-envelope-open-text text-purple-600 mr-2"></i> Nộp / Bổ Sung Phép</h3>
-                <p class="text-[11px] text-slate-500 mb-2">Tải lên đơn xin phép (Ảnh, PDF) hoặc minh chứng để GVCN phê duyệt.</p>
-                <button type="button" onclick="document.getElementById('student-leave-uploader').click()" class="w-full bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold py-2 rounded-lg text-xs transition border border-purple-200 shadow-sm"><i class="fas fa-upload mr-1"></i> Chọn file xin phép</button>
-                <input type="file" id="student-leave-uploader" accept="image/*, .pdf" class="hidden" onchange="submitStudentLeave(event, '${student.maHS || ''}', '${student.name}', '${appData.className}')">
+                <h3 class="font-bold text-slate-800 mb-3 text-sm flex items-center"><i class="fas fa-envelope-open-text text-purple-600 mr-2"></i> Đăng Ký & Nộp Phép</h3>
+                
+                <!-- Mục 1: Online -->
+                <div class="mb-3 bg-purple-50/50 p-3 rounded-xl border border-purple-100">
+                    <label class="block text-xs font-bold text-purple-700 mb-1">1. Xin Phép Online (Trực tuyến)</label>
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        <div>
+                            <span class="text-[10px] font-semibold text-slate-500">Ngày xin nghỉ</span>
+                            <input type="date" id="online-leave-date" class="w-full p-1.5 text-xs border rounded-lg bg-white font-bold">
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-semibold text-slate-500">Buổi / Thời gian</span>
+                            <select id="online-leave-session" class="w-full p-1.5 text-xs border rounded-lg bg-white font-bold">
+                                <option value="Cả ngày">Cả ngày</option>
+                                <option value="Buổi Sáng">Buổi Sáng</option>
+                                <option value="Buổi Chiều">Buổi Chiều</option>
+                            </select>
+                        </div>
+                    </div>
+                    <input type="text" id="online-leave-reason" placeholder="Lý do xin nghỉ..." class="w-full p-2 text-xs border rounded-lg bg-white mb-2">
+                    <button type="button" onclick="submitOnlineLeave('${student.maHS || ''}', '${student.name}', '${appData.className}')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-lg text-xs shadow-sm transition"><i class="fas fa-paper-plane mr-1"></i> Gửi Đơn Trực Tuyến</button>
+                </div>
+
+                <!-- Mục 2: Nộp / Bổ sung phép -->
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">2. Nộp / Bổ Sung Phép (File / Ảnh đơn)</label>
+                    <p class="text-[11px] text-slate-500 mb-2">Tải lên ảnh chụp đơn giấy hoặc file PDF minh chứng để GVCN duyệt.</p>
+                    <button type="button" onclick="document.getElementById('student-leave-uploader').click()" class="w-full bg-white hover:bg-slate-100 text-slate-700 font-bold py-2 rounded-lg text-xs transition border border-slate-300 shadow-sm"><i class="fas fa-upload mr-1 text-purple-600"></i> Chọn file / ảnh đơn xin phép</button>
+                    <input type="file" id="student-leave-uploader" accept="image/*, .pdf" class="hidden" onchange="submitStudentLeave(event, '${student.maHS || ''}', '${student.name}', '${appData.className}')">
+                </div>
             </div>
 
             ${reportButtonHtml}
@@ -813,6 +852,34 @@
         if (existingNotice) { existingNotice.innerHTML = noticeHtml; existingNotice.classList.remove("hidden"); } 
         else { let noticeDiv = document.createElement("div"); noticeDiv.id = "student-notice-view"; noticeDiv.innerHTML = noticeHtml; step1.appendChild(noticeDiv); }
         document.querySelector("#step-1 > div:first-child").classList.add("hidden");
+    }
+
+    // GỬI ĐƠN XIN PHÉP ONLINE TRỰC TUYẾN
+    function submitOnlineLeave(maHS, name, className) {
+        let dateVal = document.getElementById("online-leave-date").value;
+        let sessionVal = document.getElementById("online-leave-session").value;
+        let reasonVal = document.getElementById("online-leave-reason").value.trim();
+
+        if(!dateVal || !reasonVal) {
+            Swal.fire('Thiếu thông tin', 'Vui lòng chọn ngày nghỉ và nhập lý do xin phép!', 'warning');
+            return;
+        }
+
+        // Chuyển định dạng yyyy-mm-dd thành dd/mm/yyyy hiển thị chuẩn số tiếng Việt
+        let parts = dateVal.split('-');
+        let formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+
+        showLoading("Đang gửi đơn xin phép online...");
+        callBackendApi('submitOnlineLeaveRequest', { maHS: maHS, name: name, className: className, date: formattedDate, session: sessionVal, reason: reasonVal })
+            .then(res => {
+                hideLoading();
+                Swal.fire('Thành công!', 'Đơn xin phép online đã được gửi đến GVCN phê duyệt.', 'success');
+                document.getElementById("online-leave-reason").value = "";
+            })
+            .catch(err => {
+                hideLoading();
+                Swal.fire('Lỗi', err.message || err, 'error');
+            });
     }
     
     // GỌI API ĐỂ LẤY LỊCH SỬ HỌC SINH

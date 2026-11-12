@@ -1200,7 +1200,7 @@
     function hideLoading() { document.getElementById("loading-screen").classList.add("hidden"); document.getElementById("loading-screen").classList.remove("flex"); changeStep(currentStep); }
     function showError(err) { hideLoading(); Swal.fire('Lỗi hệ thống', err.message || err, 'error'); }
   </script>
-<!-- ================= TRỢ LÝ AI CHATBOX WIDGET (SÁNG/TỐI & GIỌNG NÓI) ================= -->
+<!-- ================= TRỢ LÝ AI CHATBOX WIDGET (FULL - SÁNG/TỐI & GIỌNG NÓI) ================= -->
 <style>
   @keyframes chatPopIn {
     0% { opacity: 0; transform: translateY(16px) scale(0.95); }
@@ -1249,7 +1249,7 @@
         <div class="relative w-10 h-10 rounded-full bg-white p-0.5 shadow-lg flex-shrink-0 flex items-center justify-center overflow-hidden ring-2 ring-cyan-300/80">
           <img src="bot-avatar.jpg" alt="AI" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
           <div style="display:none;" class="w-full h-full bg-gradient-to-tr from-cyan-500 to-indigo-600 rounded-full items-center justify-center text-white">
-            <i class="fas fa-robot text-base"></i>
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5a2.5 2.5 0 0 0-2.5-2.5Z"/></svg>
           </div>
           <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-white rounded-full"></span>
         </div>
@@ -1289,7 +1289,7 @@
       </div>
     </div>
 
-    <!-- Thanh trạng thái ghi âm giọng nói (Ẩn khi chưa bật mic) -->
+    <!-- Thanh trạng thái ghi âm giọng nói -->
     <div id="voice-status-bar" class="hidden flex-shrink-0 px-3 py-1.5 bg-gradient-to-r from-rose-500 to-orange-500 text-white text-[11px] font-bold flex items-center justify-between">
       <span class="flex items-center"><i class="fas fa-wave-square mr-2 animate-pulse"></i> Đang nghe giọng nói của bạn...</span>
       <button type="button" onclick="stopVoiceRecognition()" class="underline text-[10px] hover:text-rose-100">Dừng</button>
@@ -1327,7 +1327,7 @@
     <div class="w-full h-full rounded-full bg-white overflow-hidden flex items-center justify-center">
       <img src="bot-avatar.jpg" alt="AI Bot" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
       <div style="display:none;" class="w-full h-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white items-center justify-center">
-        <i class="fas fa-robot text-xl"></i>
+        <svg class="w-7 h-7 fill-current" viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5a2.5 2.5 0 0 0-2.5-2.5Z"/></svg>
       </div>
     </div>
     <span class="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 border-2 border-white rounded-full shadow"></span>
@@ -1335,15 +1335,38 @@
 </div>
 
 <script>
+  // Dán link Web App (/exec) của project Apps Script Chatbot vào đây
+  const CHAT_APP_URL = "DAN_LINK_WEB_APP_CHATBOT_CUA_BAN_VAO_DAY";
+
   let isChatDarkMode = localStorage.getItem('ai_chat_theme') === 'dark';
   let speechRecognition = null;
   let isRecordingVoice = false;
 
-  // Khởi tạo giao diện Sáng/Tối khi tải trang
   document.addEventListener("DOMContentLoaded", () => {
     applyChatTheme(isChatDarkMode);
     initSpeechRecognition();
   });
+
+  function callChatBackendApi(fnName, ...args) {
+    return new Promise((resolve, reject) => {
+      if (!CHAT_APP_URL || CHAT_APP_URL.includes("DAN_LINK_WEB_APP")) {
+        reject("Chưa cấu hình CHAT_APP_URL");
+        return;
+      }
+      fetch(CHAT_APP_URL, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: fnName, args: args })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.status === "error") reject(data.msg);
+        else resolve(data);
+      })
+      .catch(reject);
+    });
+  }
 
   function toggleChatTheme() {
     isChatDarkMode = !isChatDarkMode;
@@ -1364,12 +1387,10 @@
     if (!win) return;
 
     if (dark) {
-      // Giao diện TỐI (Dark Neon Mode)
       win.classList.remove("bg-white/95", "border-indigo-200/80");
       win.classList.add("bg-slate-900/95", "border-indigo-500/40");
 
       msgArea.className = "p-3.5 flex-1 min-h-[160px] max-h-[260px] overflow-y-auto custom-scrollbar space-y-3 text-xs bg-gradient-to-b from-slate-900 via-slate-900 to-indigo-950/60 transition-colors duration-300";
-      
       quickBar.className = "flex-shrink-0 px-3 py-2 bg-slate-900 border-t border-slate-800 flex gap-1.5 overflow-x-auto no-scrollbar transition-colors duration-300";
       inputBar.className = "flex-shrink-0 p-2.5 bg-slate-900 border-t border-slate-800 flex items-center space-x-1.5 transition-colors duration-300";
 
@@ -1379,17 +1400,15 @@
       }
 
       botBubbles.forEach(b => {
-        b.className = "bot-bubble bg-slate-800/95 p-3 rounded-2xl rounded-tl-none border border-indigo-500/30 text-slate-100 shadow-md leading-relaxed";
+        b.className = "bot-bubble bg-slate-800/95 p-3 rounded-2xl rounded-tl-none border border-indigo-500/30 text-slate-100 shadow-md max-w-[82%] leading-relaxed";
       });
 
       themeIcon.className = "fas fa-sun text-amber-300";
     } else {
-      // Giao diện SÁNG (Vibrant Light Mode)
       win.classList.remove("bg-slate-900/95", "border-indigo-500/40");
       win.classList.add("bg-white/95", "border-indigo-200/80");
 
       msgArea.className = "p-3.5 flex-1 min-h-[160px] max-h-[260px] overflow-y-auto custom-scrollbar space-y-3 text-xs bg-gradient-to-b from-sky-50/70 via-indigo-50/40 to-white transition-colors duration-300";
-      
       quickBar.className = "flex-shrink-0 px-3 py-2 bg-white border-t border-slate-100 flex gap-1.5 overflow-x-auto no-scrollbar transition-colors duration-300";
       inputBar.className = "flex-shrink-0 p-2.5 bg-white border-t border-slate-200/80 flex items-center space-x-1.5 transition-colors duration-300";
 
@@ -1399,14 +1418,13 @@
       }
 
       botBubbles.forEach(b => {
-        b.className = "bot-bubble bg-white p-3 rounded-2xl rounded-tl-none border border-indigo-100 text-slate-700 shadow-sm leading-relaxed";
+        b.className = "bot-bubble bg-white p-3 rounded-2xl rounded-tl-none border border-indigo-100 text-slate-700 shadow-sm max-w-[82%] leading-relaxed";
       });
 
       themeIcon.className = "fas fa-moon";
     }
   }
 
-  // Khởi tạo Nhận diện Giọng Nói Tiếng Việt (Web Speech API)
   function initSpeechRecognition() {
     const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRec) return;
@@ -1427,8 +1445,7 @@
       for (let i = event.resultIndex; i < event.results.length; i++) {
         transcript += event.results[i][0].transcript;
       }
-      const inputEl = document.getElementById("ai-chat-input");
-      inputEl.value = transcript;
+      document.getElementById("ai-chat-input").value = transcript;
     };
 
     speechRecognition.onerror = (event) => {
@@ -1441,7 +1458,6 @@
     speechRecognition.onend = () => {
       const hasText = document.getElementById("ai-chat-input").value.trim().length > 0;
       stopVoiceRecognition();
-      // Tự động gửi tin nhắn sau khi ngừng nói nếu đã nhận diện được chữ
       if (hasText) {
         setTimeout(() => sendAIChatMessage(), 350);
       }
@@ -1487,8 +1503,8 @@
   function clearChatHistory() {
     const box = document.getElementById("ai-chat-messages");
     const bubbleClass = isChatDarkMode
-      ? "bot-bubble bg-slate-800/95 p-3 rounded-2xl rounded-tl-none border border-indigo-500/30 text-slate-100 shadow-md leading-relaxed"
-      : "bot-bubble bg-white p-3 rounded-2xl rounded-tl-none border border-indigo-100 text-slate-700 shadow-sm leading-relaxed";
+      ? "bot-bubble bg-slate-800/95 p-3 rounded-2xl rounded-tl-none border border-indigo-500/30 text-slate-100 shadow-md max-w-[82%] leading-relaxed"
+      : "bot-bubble bg-white p-3 rounded-2xl rounded-tl-none border border-indigo-100 text-slate-700 shadow-sm max-w-[82%] leading-relaxed";
 
     box.innerHTML = `
       <div class="flex items-start space-x-2">
@@ -1522,7 +1538,6 @@
     const box = document.getElementById("ai-chat-messages");
     const safeUserMsg = msg.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-    // Bong bóng tin nhắn người dùng rực rỡ
     box.innerHTML += `
       <div class="flex justify-end">
         <div class="bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 text-white p-3 rounded-2xl rounded-tr-none max-w-[82%] font-medium shadow-md shadow-indigo-500/20 leading-relaxed">
@@ -1540,7 +1555,6 @@
       ? "bg-slate-800 px-3.5 py-2.5 rounded-2xl rounded-tl-none border border-indigo-500/30 shadow-sm flex space-x-1 items-center"
       : "bg-white px-3.5 py-2.5 rounded-2xl rounded-tl-none border border-indigo-100 shadow-sm flex space-x-1 items-center";
 
-    // Hiệu ứng AI đang gõ
     const typingId = "ai-typing-" + Date.now();
     box.innerHTML += `
       <div id="${typingId}" class="flex items-start space-x-2">
@@ -1557,7 +1571,7 @@
     const currentName = (typeof appData !== "undefined" && appData.reporterInfo?.name) ? appData.reporterInfo.name : "Người dùng";
     const currentClass = (typeof appData !== "undefined" && appData.className) ? appData.className : "";
 
-    callBackendApi('handleChatbotQuery', msg, currentRole, currentName, currentClass)
+    callChatBackendApi('handleChatbotQuery', msg, currentRole, currentName, currentClass)
       .then(res => {
         const typingEl = document.getElementById(typingId);
         if (typingEl) typingEl.remove();
@@ -1571,13 +1585,13 @@
           </div>`;
         box.scrollTop = box.scrollHeight;
       })
-      .catch(() => {
+      .catch(err => {
         const typingEl = document.getElementById(typingId);
         if (typingEl) typingEl.remove();
         box.innerHTML += `
           <div class="flex items-start space-x-2">
             <div class="bg-rose-500/10 text-rose-500 p-3 rounded-2xl rounded-tl-none border border-rose-500/30 font-semibold max-w-[82%]">
-              ⚠️ Chưa kết nối được máy chủ AI. Hãy kiểm tra lại hàm <code>handleChatbotQuery</code> trên Google Apps Script nhé!
+              ⚠️ Lỗi kết nối Chatbot (${err}). Kiểm tra lại <code>CHAT_APP_URL</code> nhé!
             </div>
           </div>`;
         box.scrollTop = box.scrollHeight;

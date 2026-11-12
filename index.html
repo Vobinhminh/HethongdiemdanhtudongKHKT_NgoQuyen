@@ -1200,33 +1200,35 @@
     function hideLoading() { document.getElementById("loading-screen").classList.add("hidden"); document.getElementById("loading-screen").classList.remove("flex"); changeStep(currentStep); }
     function showError(err) { hideLoading(); Swal.fire('Lỗi hệ thống', err.message || err, 'error'); }
   </script>
-  <!-- ================= TRỢ LÝ AI CHATBOX WIDGET ================= -->
+<!-- ================= TRỢ LÝ AI CHATBOX WIDGET (ĐÃ TỐI ƯU HIỂN THỊ) ================= -->
 <style>
   @keyframes chatPopIn {
-    0% { opacity: 0; transform: translateY(16px) scale(0.95); }
+    0% { opacity: 0; transform: translateY(14px) scale(0.96); }
     100% { opacity: 1; transform: translateY(0) scale(1); }
   }
-  .chatbox-pop { animation: chatPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .chatbox-pop { animation: chatPopIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
   .ai-typing-dot { animation: aiBounce 1.4s infinite ease-in-out both; }
   .ai-typing-dot:nth-child(1) { animation-delay: -0.32s; }
   .ai-typing-dot:nth-child(2) { animation-delay: -0.16s; }
   @keyframes aiBounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+  /* Ẩn thanh cuộn ngang ở dải gợi ý nhanh */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 
-<!-- Đặt vị trí bottom-24 để không che khuất thanh nút Nộp báo cáo ở đáy màn hình -->
-<div id="ai-chatbot-container" class="fixed bottom-24 right-4 z-50 flex flex-col items-end">
+<div id="ai-chatbot-container" class="fixed bottom-20 right-3 sm:right-5 z-[9999] flex flex-col items-end">
   
-  <!-- Cửa sổ Chat -->
-  <div id="ai-chat-window" class="hidden chatbox-pop mb-3 w-[330px] sm:w-[370px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-indigo-100 flex flex-col overflow-hidden">
+  <!-- Cửa sổ Chat: Dùng max-h-[calc(100vh-110px)] để không bao giờ bị tràn mép trên -->
+  <div id="ai-chat-window" class="hidden chatbox-pop mb-2.5 w-[320px] sm:w-[360px] max-w-[calc(100vw-24px)] max-h-[calc(100vh-115px)] bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-indigo-200 flex flex-col overflow-hidden">
     
-    <!-- Header Chatbox -->
-    <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 p-3.5 text-white flex items-center justify-between shadow-sm">
+    <!-- Header Chatbox (Cố định không bị co) -->
+    <div class="flex-shrink-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 px-3.5 py-2.5 text-white flex items-center justify-between shadow-sm">
       <div class="flex items-center space-x-2.5">
-        <div class="relative w-10 h-10 rounded-full bg-white p-0.5 shadow-md overflow-hidden flex-shrink-0">
-          <!-- Ảnh Mascot 3D (Tự động dự phòng icon nếu chưa tải ảnh lên) -->
-          <img src="bot-avatar.jpg" alt="Trợ lý AI" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-          <div style="display:none;" class="w-full h-full bg-indigo-100 text-indigo-600 rounded-full items-center justify-center font-bold text-lg">
-            <i class="fas fa-robot"></i>
+        <div class="relative w-9 h-9 rounded-full bg-white p-0.5 shadow-md flex-shrink-0 flex items-center justify-center overflow-hidden">
+          <!-- Nếu có file bot-avatar.jpg trên GitHub sẽ tự hiện, nếu chưa có sẽ hiện Robot SVG sắc nét -->
+          <img src="bot-avatar.jpg" alt="AI" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div style="display:none;" class="w-full h-full bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full items-center justify-center text-white">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5a2.5 2.5 0 0 0-2.5-2.5Z"/></svg>
           </div>
           <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-white rounded-full"></span>
         </div>
@@ -1238,28 +1240,30 @@
         </div>
       </div>
       <div class="flex items-center space-x-1">
-        <button type="button" onclick="clearChatHistory()" title="Xóa đoạn chat" class="text-white/80 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition text-xs">
+        <button type="button" onclick="clearChatHistory()" title="Làm mới đoạn chat" class="text-white/80 hover:text-white w-7 h-7 rounded-lg hover:bg-white/15 flex items-center justify-center transition text-xs">
           <i class="fas fa-rotate-right"></i>
         </button>
-        <button type="button" onclick="toggleAIChat()" title="Thu gọn" class="text-white/80 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition text-sm">
-          <i class="fas fa-chevron-down"></i>
+        <button type="button" onclick="toggleAIChat()" title="Đóng chatbox" class="text-white/90 hover:text-white w-7 h-7 rounded-lg hover:bg-red-500/80 flex items-center justify-center transition text-sm">
+          <i class="fas fa-times"></i>
         </button>
       </div>
     </div>
 
-    <!-- Khu vực hiển thị tin nhắn -->
-    <div id="ai-chat-messages" class="p-3.5 h-72 overflow-y-auto custom-scrollbar space-y-3 text-xs bg-slate-50/70">
+    <!-- Khu vực hiển thị tin nhắn (Tự co giãn theo chiều cao màn hình) -->
+    <div id="ai-chat-messages" class="p-3 flex-1 min-h-[140px] max-h-[250px] overflow-y-auto custom-scrollbar space-y-2.5 text-xs bg-slate-50/80">
       <div class="flex items-start space-x-2">
-        <img src="bot-avatar.jpg" class="w-7 h-7 rounded-full object-cover border border-indigo-200 flex-shrink-0 mt-0.5" onerror="this.style.display='none'">
-        <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-slate-200/80 text-slate-700 shadow-sm leading-relaxed">
-          Chào bạn! Mình là <b>Trợ lý AI - THPT</b> 🤖.<br>
+        <div class="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+          <i class="fas fa-robot text-[10px]"></i>
+        </div>
+        <div class="bg-white p-2.5 rounded-2xl rounded-tl-none border border-slate-200/80 text-slate-700 shadow-sm leading-relaxed">
+          Chào bạn! Mình là <b>Trợ lý AI - THPT</b>.<br>
           Bạn có thể nhắn nhanh để <b>xin nghỉ phép</b>, <b>tra cứu vi phạm</b> hoặc <b>kiểm tra sĩ số lớp</b> nhé!
         </div>
       </div>
     </div>
 
-    <!-- Gợi ý lệnh nhanh -->
-    <div class="px-3 py-2 bg-white border-t border-slate-100 flex gap-1.5 overflow-x-auto custom-scrollbar">
+    <!-- Gợi ý lệnh nhanh (Gọn gàng, không hiện thanh cuộn xám) -->
+    <div class="flex-shrink-0 px-2.5 py-2 bg-white border-t border-slate-100 flex gap-1.5 overflow-x-auto no-scrollbar">
       <button type="button" onclick="sendQuickPrompt('Xin nghỉ phép ngày mai vì bị sốt')" class="whitespace-nowrap bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-[10px] px-2.5 py-1 rounded-full border border-indigo-200/70 transition">
         📝 Xin nghỉ phép
       </button>
@@ -1271,24 +1275,26 @@
       </button>
     </div>
 
-    <!-- Ô nhập tin nhắn -->
-    <div class="p-2.5 bg-white border-t border-slate-200 flex items-center space-x-2">
+    <!-- Ô nhập tin nhắn (Cố định ở đáy khung chat) -->
+    <div class="flex-shrink-0 p-2 bg-white border-t border-slate-200 flex items-center space-x-2">
       <input type="text" id="ai-chat-input" autocomplete="off" placeholder="Nhập yêu cầu của bạn..." 
              onkeypress="if(event.key==='Enter') sendAIChatMessage()" 
-             class="flex-1 px-3 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:border-indigo-500 transition">
-      <button type="button" onclick="sendAIChatMessage()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white w-9 h-9 rounded-xl flex items-center justify-center shadow-md transition">
+             class="flex-1 px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:border-indigo-500 transition">
+      <button type="button" onclick="sendAIChatMessage()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white w-9 h-9 rounded-xl flex items-center justify-center shadow-md transition flex-shrink-0">
         <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>
     </div>
   </div>
 
   <!-- Nút tròn mở Chatbox -->
-  <button type="button" id="ai-chat-trigger" onclick="toggleAIChat()" class="group relative w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-xl shadow-indigo-500/30 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 border-2 border-white">
-    <img src="bot-avatar.jpg" alt="AI Bot" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-    <!-- Vector SVG dự phòng -->
-    <svg style="display:none;" class="w-7 h-7 fill-current" viewBox="0 0 24 24">
-      <path d="M12 2A10 10 0 0 0 2 12c0 1.77.46 3.44 1.28 4.9L2 22l5.25-1.21A9.94 9.94 0 0 0 12 22a10 10 0 0 0 10-10A10 10 0 0 0 12 2zm-1.5 5h3l.75 2.25L16.5 10l-2.25.75L13.5 13l-.75-2.25L10.5 10l2.25-.75L10.5 7zm-4.5 5h2l.5 1.5L9.5 14l-1.5.5L7.5 16l-.5-1.5L5.5 14l1.5-.5L7.5 12z"/>
-    </svg>
+  <button type="button" id="ai-chat-trigger" onclick="toggleAIChat()" class="group relative w-13 h-13 w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-xl shadow-indigo-500/30 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 border-2 border-white">
+    <img src="bot-avatar.jpg" alt="AI Bot" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+    <!-- Vector Robot AI đa chi tiết (Tự động hiện khi chưa có file ảnh) -->
+    <div style="display:none;" class="w-full h-full rounded-full items-center justify-center">
+      <svg class="w-7 h-7 fill-current" viewBox="0 0 24 24">
+        <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5a2.5 2.5 0 0 0-2.5-2.5Z"/>
+      </svg>
+    </div>
     <span class="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 border-2 border-white rounded-full"></span>
   </button>
 </div>
@@ -1306,8 +1312,10 @@
     const box = document.getElementById("ai-chat-messages");
     box.innerHTML = `
       <div class="flex items-start space-x-2">
-        <img src="bot-avatar.jpg" class="w-7 h-7 rounded-full object-cover border border-indigo-200 flex-shrink-0 mt-0.5" onerror="this.style.display='none'">
-        <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-slate-200/80 text-slate-700 shadow-sm leading-relaxed">
+        <div class="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+          <i class="fas fa-robot text-[10px]"></i>
+        </div>
+        <div class="bg-white p-2.5 rounded-2xl rounded-tl-none border border-slate-200/80 text-slate-700 shadow-sm leading-relaxed">
           Đã làm mới cuộc trò chuyện! Bạn cần hỗ trợ gì tiếp theo?
         </div>
       </div>`;
@@ -1336,22 +1344,22 @@
     const box = document.getElementById("ai-chat-messages");
     const safeUserMsg = msg.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-    // 1. Hiển thị tin nhắn của người dùng
     box.innerHTML += `
       <div class="flex justify-end">
-        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-3 rounded-2xl rounded-tr-none max-w-[82%] font-medium shadow-sm leading-relaxed">
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-2.5 rounded-2xl rounded-tr-none max-w-[82%] font-medium shadow-sm leading-relaxed">
           ${safeUserMsg}
         </div>
       </div>`;
     input.value = "";
     box.scrollTop = box.scrollHeight;
 
-    // 2. Hiển thị hiệu ứng AI đang gõ
     const typingId = "ai-typing-" + Date.now();
     box.innerHTML += `
       <div id="${typingId}" class="flex items-start space-x-2">
-        <img src="bot-avatar.jpg" class="w-7 h-7 rounded-full object-cover border border-indigo-200 flex-shrink-0 mt-0.5" onerror="this.style.display='none'">
-        <div class="bg-white px-3.5 py-2.5 rounded-2xl rounded-tl-none border border-slate-200/80 shadow-sm flex space-x-1 items-center">
+        <div class="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+          <i class="fas fa-robot text-[10px]"></i>
+        </div>
+        <div class="bg-white px-3 py-2 rounded-2xl rounded-tl-none border border-slate-200/80 shadow-sm flex space-x-1 items-center">
           <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full ai-typing-dot"></span>
           <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full ai-typing-dot"></span>
           <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full ai-typing-dot"></span>
@@ -1359,7 +1367,6 @@
       </div>`;
     box.scrollTop = box.scrollHeight;
 
-    // 3. Lấy ngữ cảnh người dùng hiện tại và gọi Backend Apps Script
     const currentRole = (typeof appData !== "undefined" && appData.reporterInfo?.role) ? appData.reporterInfo.role : "Khách / Học sinh";
     const currentName = (typeof appData !== "undefined" && appData.reporterInfo?.name) ? appData.reporterInfo.name : "Người dùng";
     const currentClass = (typeof appData !== "undefined" && appData.className) ? appData.className : "";
@@ -1371,8 +1378,10 @@
         const replyHtml = formatBotReply(res?.text || "Mình đã ghi nhận yêu cầu của bạn!");
         box.innerHTML += `
           <div class="flex items-start space-x-2">
-            <img src="bot-avatar.jpg" class="w-7 h-7 rounded-full object-cover border border-indigo-200 flex-shrink-0 mt-0.5" onerror="this.style.display='none'">
-            <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-slate-200/80 text-slate-700 shadow-sm max-w-[82%] leading-relaxed">
+            <div class="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+              <i class="fas fa-robot text-[10px]"></i>
+            </div>
+            <div class="bg-white p-2.5 rounded-2xl rounded-tl-none border border-slate-200/80 text-slate-700 shadow-sm max-w-[82%] leading-relaxed">
               ${replyHtml}
             </div>
           </div>`;
@@ -1383,8 +1392,8 @@
         if (typingEl) typingEl.remove();
         box.innerHTML += `
           <div class="flex items-start space-x-2">
-            <div class="bg-red-50 text-red-600 p-3 rounded-2xl rounded-tl-none border border-red-200 font-semibold max-w-[82%]">
-              ⚠️ Chưa kết nối được với máy chủ AI. Bạn kiểm tra lại hàm <code>handleChatbotQuery</code> trên Google Apps Script nhé!
+            <div class="bg-red-50 text-red-600 p-2.5 rounded-2xl rounded-tl-none border border-red-200 font-semibold max-w-[82%]">
+              ⚠️ Chưa kết nối được máy chủ AI. Hãy kiểm tra hàm <code>handleChatbotQuery</code> trên Apps Script nhé!
             </div>
           </div>`;
         box.scrollTop = box.scrollHeight;

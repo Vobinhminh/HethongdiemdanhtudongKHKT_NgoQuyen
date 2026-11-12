@@ -1200,7 +1200,7 @@
     function hideLoading() { document.getElementById("loading-screen").classList.add("hidden"); document.getElementById("loading-screen").classList.remove("flex"); changeStep(currentStep); }
     function showError(err) { hideLoading(); Swal.fire('Lỗi hệ thống', err.message || err, 'error'); }
   </script>
-<!-- ================= TRỢ LÝ AI CHATBOX WIDGET (FULL - SÁNG/TỐI & GIỌNG NÓI) ================= -->
+<!-- ================= TRỢ LÝ AI CHATBOX WIDGET ================= -->
 <style>
   @keyframes chatPopIn {
     0% { opacity: 0; transform: translateY(16px) scale(0.95); }
@@ -1284,24 +1284,24 @@
         <img src="bot-avatar.jpg" class="w-7 h-7 rounded-full object-cover border-2 border-indigo-400 flex-shrink-0 mt-0.5 shadow-sm" onerror="this.style.display='none'">
         <div class="bot-bubble bg-white p-3 rounded-2xl rounded-tl-none border border-indigo-100 text-slate-700 shadow-sm leading-relaxed">
           Xin chào! Mình là <b class="text-indigo-600">Trợ lý AI - THPT</b> ✨.<br>
-          Bạn có thể <b>nhập chữ</b> hoặc <b>bấm biểu tượng Micro 🎙️</b> để xin nghỉ phép, tra cứu vi phạm hay xem sĩ số lớp nhé!
+          Bạn có thể <b>nhập chữ</b> hoặc <b>bấm biểu tượng Micro 🎙️</b> (hỗ trợ nói dài liên tục) để được hỗ trợ ngay nhé!
         </div>
       </div>
     </div>
 
     <!-- Thanh trạng thái ghi âm giọng nói -->
     <div id="voice-status-bar" class="hidden flex-shrink-0 px-3 py-1.5 bg-gradient-to-r from-rose-500 to-orange-500 text-white text-[11px] font-bold flex items-center justify-between">
-      <span class="flex items-center"><i class="fas fa-wave-square mr-2 animate-pulse"></i> Đang nghe giọng nói của bạn...</span>
-      <button type="button" onclick="stopVoiceRecognition()" class="underline text-[10px] hover:text-rose-100">Dừng</button>
+      <span class="flex items-center"><i class="fas fa-wave-square mr-2 animate-pulse"></i> Đang nghe (nói xong bấm Dừng để kiểm tra)...</span>
+      <button type="button" onclick="stopVoiceRecognition()" class="bg-white/20 px-2 py-0.5 rounded text-[10px] hover:bg-white/30">Dừng</button>
     </div>
 
     <!-- Gợi ý lệnh nhanh nhiều màu sắc -->
     <div id="ai-quick-bar" class="flex-shrink-0 px-3 py-2 bg-white border-t border-slate-100 flex gap-1.5 overflow-x-auto no-scrollbar transition-colors duration-300">
+      <button type="button" onclick="sendQuickPrompt('Hướng dẫn sử dụng cổng điểm danh')" class="whitespace-nowrap bg-gradient-to-r from-amber-500/10 to-orange-500/10 hover:from-amber-500/20 hover:to-orange-500/20 text-amber-700 font-bold text-[10px] px-2.5 py-1 rounded-full border border-amber-300/60 transition">
+        📖 Hướng dẫn sử dụng
+      </button>
       <button type="button" onclick="sendQuickPrompt('Xin nghỉ phép ngày mai vì bị sốt')" class="whitespace-nowrap bg-gradient-to-r from-pink-500/10 to-rose-500/10 hover:from-pink-500/20 hover:to-rose-500/20 text-rose-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-rose-300/60 transition">
         📝 Xin nghỉ phép
-      </button>
-      <button type="button" onclick="sendQuickPrompt('Tra cứu vi phạm của tôi tháng này')" class="whitespace-nowrap bg-gradient-to-r from-cyan-500/10 to-blue-500/10 hover:from-cyan-500/20 hover:to-blue-500/20 text-blue-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-blue-300/60 transition">
-        🔍 Lịch sử vi phạm
       </button>
       <button type="button" onclick="sendQuickPrompt('Thống kê tiến độ nộp điểm danh hôm nay')" class="whitespace-nowrap bg-gradient-to-r from-emerald-500/10 to-teal-500/10 hover:from-emerald-500/20 hover:to-teal-500/20 text-emerald-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-emerald-300/60 transition">
         📊 Tiến độ điểm danh
@@ -1310,7 +1310,7 @@
 
     <!-- Khu vực nhập tin nhắn & Nút Micro -->
     <div id="ai-input-bar" class="flex-shrink-0 p-2.5 bg-white border-t border-slate-200/80 flex items-center space-x-1.5 transition-colors duration-300">
-      <button type="button" id="btn-voice-mic" onclick="toggleVoiceRecognition()" title="Nói để nhập tin nhắn" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-600 flex items-center justify-center transition flex-shrink-0 border border-slate-200/80">
+      <button type="button" id="btn-voice-mic" onclick="toggleVoiceRecognition()" title="Nói để nhập tin nhắn (hỗ trợ nói dài)" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-600 flex items-center justify-center transition flex-shrink-0 border border-slate-200/80">
         <i class="fas fa-microphone text-sm"></i>
       </button>
       <input type="text" id="ai-chat-input" autocomplete="off" placeholder="Nhập hoặc bấm mic để nói..." 
@@ -1335,12 +1335,13 @@
 </div>
 
 <script>
-  // Dán link Web App (/exec) của project Apps Script Chatbot vào đây
-  const CHAT_APP_URL = "DAN_LINK_WEB_APP_CHATBOT_CUA_BAN_VAO_DAY";
+  // URL Web App (/exec) của project Google Apps Script Chatbot độc lập
+  const CHAT_APP_URL = "https://script.google.com/macros/s/AKfycbyGQBOfj76KPZDTJ6XwKz3HajbuElCJGt-9bAntWlwERqnHaY97lW0vN_A92lIa2mzG/exec";
 
   let isChatDarkMode = localStorage.getItem('ai_chat_theme') === 'dark';
   let speechRecognition = null;
   let isRecordingVoice = false;
+  let finalVoiceText = "";
 
   document.addEventListener("DOMContentLoaded", () => {
     applyChatTheme(isChatDarkMode);
@@ -1425,6 +1426,7 @@
     }
   }
 
+  // Nhận diện giọng nói tiếng Việt nói dài liên tục, không ngắt khi lấy hơi
   function initSpeechRecognition() {
     const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRec) return;
@@ -1432,7 +1434,7 @@
     speechRecognition = new SpeechRec();
     speechRecognition.lang = 'vi-VN';
     speechRecognition.interimResults = true;
-    speechRecognition.continuous = false;
+    speechRecognition.continuous = true;
 
     speechRecognition.onstart = () => {
       isRecordingVoice = true;
@@ -1441,38 +1443,45 @@
     };
 
     speechRecognition.onresult = (event) => {
-      let transcript = "";
+      let interimTranscript = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
+        const piece = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalVoiceText += piece + " ";
+        } else {
+          interimTranscript += piece;
+        }
       }
-      document.getElementById("ai-chat-input").value = transcript;
+      const inputEl = document.getElementById("ai-chat-input");
+      inputEl.value = (finalVoiceText + interimTranscript).trim();
+      inputEl.scrollLeft = inputEl.scrollWidth;
     };
 
     speechRecognition.onerror = (event) => {
+      if (event.error === 'no-speech') return;
       stopVoiceRecognition();
       if (event.error === 'not-allowed') {
-        Swal.fire({ icon: 'warning', title: 'Chưa cấp quyền Micro', text: 'Vui lòng cho phép trình duyệt truy cập Micro để dùng tính năng giọng nói.', toast: true, position: 'top', timer: 3000, showConfirmButton: false });
+        Swal.fire({ icon: 'warning', title: 'Chưa cấp quyền Micro', text: 'Vui lòng cho phép trình duyệt truy cập Micro.', toast: true, position: 'top', timer: 3000, showConfirmButton: false });
       }
     };
 
     speechRecognition.onend = () => {
-      const hasText = document.getElementById("ai-chat-input").value.trim().length > 0;
-      stopVoiceRecognition();
-      if (hasText) {
-        setTimeout(() => sendAIChatMessage(), 350);
+      if (isRecordingVoice) {
+        try { speechRecognition.start(); } catch (e) {}
       }
     };
   }
 
   function toggleVoiceRecognition() {
     if (!speechRecognition) {
-      Swal.fire({ icon: 'info', title: 'Không hỗ trợ', text: 'Trình duyệt của bạn chưa hỗ trợ nhận diện giọng nói. Hãy dùng Chrome hoặc Edge nhé!', toast: true, position: 'top', timer: 3000, showConfirmButton: false });
+      Swal.fire({ icon: 'info', title: 'Không hỗ trợ', text: 'Hãy dùng trình duyệt Chrome hoặc Edge để bật giọng nói nhé!', toast: true, position: 'top', timer: 3000, showConfirmButton: false });
       return;
     }
     if (isRecordingVoice) {
       stopVoiceRecognition();
     } else {
-      document.getElementById("ai-chat-input").value = "";
+      finalVoiceText = document.getElementById("ai-chat-input").value.trim();
+      if (finalVoiceText) finalVoiceText += " ";
       try { speechRecognition.start(); } catch (e) {}
     }
   }
@@ -1487,6 +1496,7 @@
     if (speechRecognition) {
       try { speechRecognition.stop(); } catch (e) {}
     }
+    document.getElementById("ai-chat-input").focus();
   }
 
   function toggleAIChat() {
@@ -1530,7 +1540,28 @@
       .replace(/\n/g, "<br>");
   }
 
+  // Tự động xác định người dùng đang đứng ở thẻ/màn hình nào
+  function detectCurrentTabContext(currentRole) {
+    const activeScreen = document.querySelector('[id$="-screen"]:not(.hidden)');
+    if (activeScreen) {
+      const sid = activeScreen.id.toLowerCase();
+      if (sid.includes("student") || sid.includes("hocsinh")) return "Thẻ Học sinh";
+      if (sid.includes("teacher") || sid.includes("gvcn") || sid.includes("giamthi") || sid.includes("admin")) return "Thẻ Giáo viên/Giám thị";
+      if (sid.includes("ai") || sid.includes("tram")) return "Trạm AI";
+    }
+    if (currentRole && currentRole !== "Khách") {
+      const r = currentRole.toLowerCase();
+      if (r.includes("giáo viên") || r.includes("giám thị") || r.includes("admin")) {
+        return "Thẻ Giáo viên/Giám thị";
+      }
+      return "Thẻ Học sinh";
+    }
+    return "Cổng điểm danh";
+  }
+
   function sendAIChatMessage() {
+    if (isRecordingVoice) stopVoiceRecognition();
+
     const input = document.getElementById("ai-chat-input");
     const msg = input.value.trim();
     if (!msg) return;
@@ -1545,6 +1576,7 @@
         </div>
       </div>`;
     input.value = "";
+    finalVoiceText = "";
     box.scrollTop = box.scrollHeight;
 
     const bubbleClass = isChatDarkMode
@@ -1567,11 +1599,12 @@
       </div>`;
     box.scrollTop = box.scrollHeight;
 
-    const currentRole = (typeof appData !== "undefined" && appData.reporterInfo?.role) ? appData.reporterInfo.role : "Khách / Học sinh";
+    const currentRole = (typeof appData !== "undefined" && appData.reporterInfo?.role) ? appData.reporterInfo.role : "Khách";
     const currentName = (typeof appData !== "undefined" && appData.reporterInfo?.name) ? appData.reporterInfo.name : "Người dùng";
     const currentClass = (typeof appData !== "undefined" && appData.className) ? appData.className : "";
+    const currentTab = detectCurrentTabContext(currentRole);
 
-    callChatBackendApi('handleChatbotQuery', msg, currentRole, currentName, currentClass)
+    callChatBackendApi('handleChatbotQuery', msg, currentRole, currentName, currentClass, currentTab)
       .then(res => {
         const typingEl = document.getElementById(typingId);
         if (typingEl) typingEl.remove();
@@ -1591,7 +1624,7 @@
         box.innerHTML += `
           <div class="flex items-start space-x-2">
             <div class="bg-rose-500/10 text-rose-500 p-3 rounded-2xl rounded-tl-none border border-rose-500/30 font-semibold max-w-[82%]">
-              ⚠️ Lỗi kết nối Chatbot (${err}). Kiểm tra lại <code>CHAT_APP_URL</code> nhé!
+              ⚠️ Lỗi kết nối Chatbot (${err}). Kiểm tra lại bản triển khai Apps Script nhé!
             </div>
           </div>`;
         box.scrollTop = box.scrollHeight;

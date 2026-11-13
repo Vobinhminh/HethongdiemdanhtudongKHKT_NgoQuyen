@@ -749,6 +749,7 @@
     function proceedAdminLogin(res) {
         gvPinFails = 0; 
         clearInlineError('gv-auth-error'); 
+        appData.reporterInfo = { name: res.adminName, role: res.role };
         document.getElementById('admin-welcome-text').innerText = `Xin chào: ${res.adminName} (${res.role})`;
         
         const isFullAdmin = res.role.toLowerCase().includes("quản lý") || res.role.toLowerCase().includes("admin");
@@ -1172,8 +1173,18 @@
       
       const btnBack = document.getElementById("btn-back"); 
       const infoBox = document.getElementById("session-info");
-      if (step === '0') { btnBack.classList.add("hidden"); infoBox.classList.remove("hidden"); } 
-      else { btnBack.classList.remove("hidden"); infoBox.classList.add("hidden"); }
+      if (step === '0') { 
+        btnBack.classList.add("hidden"); 
+        infoBox.classList.remove("hidden"); 
+        appData.reporterInfo = null;
+        appData.className = "";
+      } else { 
+        btnBack.classList.remove("hidden"); 
+        infoBox.classList.add("hidden"); 
+      }
+      if (typeof updateQuickPromptsByCurrentTab === "function") {
+        updateQuickPromptsByCurrentTab();
+      }
     }
 
     function goBack() {
@@ -1500,6 +1511,7 @@
   }
 
   function clearChatHistory() {
+    updateQuickPromptsByCurrentTab();
     const box = document.getElementById("ai-chat-messages");
     const bubbleClass = isChatDarkMode
       ? "bot-bubble bg-slate-800/95 p-3 rounded-2xl rounded-tl-none border border-indigo-500/30 text-slate-100 shadow-md max-w-[82%] leading-relaxed"
@@ -1530,20 +1542,41 @@
   }
 
   function detectCurrentTabContext(currentRole) {
-    const activeScreen = document.querySelector('[id$="-screen"]:not(.hidden)');
-    if (activeScreen) {
-      const sid = activeScreen.id.toLowerCase();
-      if (sid.includes("student") || sid.includes("hocsinh")) return "Thẻ Học sinh";
-      if (sid.includes("teacher") || sid.includes("gvcn") || sid.includes("giamthi") || sid.includes("admin")) return "Thẻ Giáo viên/Giám thị";
-      if (sid.includes("ai") || sid.includes("tram")) return "Trạm AI";
+    const stepAdmin = document.getElementById("step-admin");
+    const stepAdminCfg = document.getElementById("step-admin-config");
+    const stepAdminData = document.getElementById("step-admin-data");
+    const stepGvLogin = document.getElementById("step-gv-login");
+    const step1 = document.getElementById("step-1");
+    const step2 = document.getElementById("step-2");
+
+    // 1. Kiểm tra chính xác màn hình/bước đang hiển thị (không có class hidden)
+    if ((stepAdmin && !stepAdmin.classList.contains("hidden")) ||
+        (stepAdminCfg && !stepAdminCfg.classList.contains("hidden")) ||
+        (stepAdminData && !stepAdminData.classList.contains("hidden")) ||
+        (stepGvLogin && !stepGvLogin.classList.contains("hidden"))) {
+      return "Thẻ Giáo viên/Giám thị";
     }
+
+    if (step2 && !step2.classList.contains("hidden")) {
+      return "Thẻ Học sinh";
+    }
+
+    if (step1 && !step1.classList.contains("hidden")) {
+      const noticeView = document.getElementById("student-notice-view");
+      if (noticeView && !noticeView.classList.contains("hidden")) {
+        return "Thẻ Học sinh";
+      }
+    }
+
+    // 2. Dự phòng theo vai trò đã đăng nhập trong appData
     if (currentRole && currentRole !== "Khách") {
       const r = currentRole.toLowerCase();
-      if (r.includes("giáo viên") || r.includes("giám thị") || r.includes("admin")) {
+      if (r.includes("giáo viên") || r.includes("giám thị") || r.includes("admin") || r.includes("quản lý") || r.includes("gvcn")) {
         return "Thẻ Giáo viên/Giám thị";
       }
       return "Thẻ Học sinh";
     }
+
     return "Cổng điểm danh";
   }
 
@@ -1656,8 +1689,8 @@
         if (typingEl) typingEl.remove();
         box.innerHTML += `
           <div class="flex items-start space-x-2">
-            <div class="bg-rose-500/10 text-rose-500 p-3 rounded-2xl rounded-tl-none border border-rose-500/30 font-semibold max-w-[82%]">
-              ⚠️ Lỗi kết nối Chatbot (${err}). Kiểm tra lại bản triển khai Apps Script nhé!
+            <div class="${bubbleClass}">
+              ⚠️ Hệ thống AI đang quá tải hoặc phản hồi chậm. Vui lòng thử lại sau vài giây!
             </div>
           </div>`;
         box.scrollTop = box.scrollHeight;

@@ -1513,8 +1513,7 @@
     }
 
     contextLines.push(`Hãy trả lời ngắn gọn, rõ ràng, thân thiện bằng tiếng Việt cho câu hỏi/yêu cầu sau của người dùng: "${msg}"`);
-    return contextLines.filter(Boolean).join("
-");
+    return contextLines.filter(Boolean).join("\\n");
   }
 
   function buildLocalPortalFallbackReply(msg, role, name, className, tabContext) {

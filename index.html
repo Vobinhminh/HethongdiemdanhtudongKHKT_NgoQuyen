@@ -13,6 +13,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
   
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -149,8 +152,14 @@
                <ul id="list-gvcn-class" class="hidden searchable-list custom-scrollbar"></ul>
             </div>
             <div class="flex gap-2 mb-3">
-               <input type="date" id="gvcn-start-date" class="flex-1 p-2 text-xs border rounded-lg bg-white font-bold">
-               <input type="date" id="gvcn-end-date" class="flex-1 p-2 text-xs border rounded-lg bg-white font-bold">
+               <div class="relative flex-1">
+                 <input type="text" id="gvcn-start-date" placeholder="Từ ngày (dd/mm/yyyy)" maxlength="10" inputmode="numeric" class="vn-date-input w-full p-2 pr-7 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-700 focus:border-blue-500 focus:outline-none">
+                 <i class="far fa-calendar-alt absolute right-2.5 top-2.5 text-slate-400 text-xs pointer-events-none"></i>
+               </div>
+               <div class="relative flex-1">
+                 <input type="text" id="gvcn-end-date" placeholder="Đến ngày (dd/mm/yyyy)" maxlength="10" inputmode="numeric" class="vn-date-input w-full p-2 pr-7 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-700 focus:border-blue-500 focus:outline-none">
+                 <i class="far fa-calendar-alt absolute right-2.5 top-2.5 text-slate-400 text-xs pointer-events-none"></i>
+               </div>
             </div>
             <button type="button" onclick="fetchClassAbsenceSummary()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl text-xs shadow transition"><i class="fas fa-search mr-1"></i> Xem Báo Cáo Vi Phạm Lớp</button>
             <div id="gvcn-class-summary-result" class="mt-3 hidden max-h-60 overflow-y-auto custom-scrollbar bg-white rounded-xl border p-2 text-xs"></div>
@@ -307,39 +316,42 @@
         </div>
       </div>
 
-      <div id="violation-section" class="hidden glass-card p-5 rounded-2xl mb-24 max-w-md w-full border-t-4 border-t-blue-500 shadow-xl">
+      <div id="violation-section" class="glass-card p-5 rounded-2xl mb-24 max-w-md w-full border-t-4 border-t-blue-500 shadow-xl">
         <div class="flex items-center justify-between border-b pb-3 mb-4">
-          <h4 class="font-bold text-slate-800 text-sm uppercase flex items-center"><i class="fas fa-list-check text-blue-600 mr-2"></i> Danh Sách Vi Phạm</h4>
+          <h4 id="violation-section-title" class="font-bold text-slate-800 text-sm uppercase flex items-center"><i class="fas fa-mobile-alt text-blue-600 mr-2"></i> Ghi Nhận Điện Thoại / Nề Nếp</h4>
           <span class="bg-blue-100 text-blue-700 text-xs font-extrabold px-3 py-1 rounded-full border border-blue-200" id="badge-remaining-students">Còn lại: 0/0</span>
         </div>
         
-        <div class="mb-4 bg-amber-50/50 p-3 rounded-xl border border-amber-200/60">
-          <label class="block text-xs font-bold text-amber-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-amber-500 mr-1.5"></span>Vắng Có Phép</label>
-          <input type="text" list="student-list-global" placeholder="Gõ hoặc chọn học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-amber-500 mb-2" onchange="addViolation(this, 'vangCoPhep')">
-          <div id="chip-vangCoPhep" class="flex flex-wrap gap-1.5"></div>
-        </div>
-        <div class="mb-4 bg-red-50/50 p-3 rounded-xl border border-red-200/60">
-          <label class="block text-xs font-bold text-red-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>Vắng Không Phép</label>
-          <input type="text" list="student-list-global" placeholder="Gõ hoặc chọn học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-red-500 mb-2" onchange="addViolation(this, 'vangKhongPhep')">
-          <div id="chip-vangKhongPhep" class="flex flex-wrap gap-1.5"></div>
-        </div>
-        <div class="mb-4 bg-orange-50/50 p-3 rounded-xl border border-orange-200/60">
-          <label class="block text-xs font-bold text-orange-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-orange-500 mr-1.5"></span>Đi Trễ</label>
-          <div class="flex gap-2 mb-2">
-            <input type="text" id="inp-tre-name" list="student-list-global" placeholder="Chọn tên..." class="flex-1 p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-orange-500">
-            <input type="number" id="inp-tre-min" placeholder="Phút" class="w-16 p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-center focus:outline-none focus:border-orange-500">
-            <button type="button" onclick="addTre()" class="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white px-3.5 rounded-lg font-bold text-xs shadow-sm transition-all"><i class="fas fa-plus"></i></button>
+        <div id="absence-only-boxes" class="hidden">
+          <div class="mb-4 bg-amber-50/50 p-3 rounded-xl border border-amber-200/60">
+            <label class="block text-xs font-bold text-amber-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-amber-500 mr-1.5"></span>Vắng Có Phép</label>
+            <input type="text" list="student-list-global" placeholder="Gõ hoặc chọn học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-amber-500 mb-2" onchange="addViolation(this, 'vangCoPhep')">
+            <div id="chip-vangCoPhep" class="flex flex-wrap gap-1.5"></div>
           </div>
-          <div id="chip-tre" class="flex flex-wrap gap-1.5"></div>
+          <div class="mb-4 bg-red-50/50 p-3 rounded-xl border border-red-200/60">
+            <label class="block text-xs font-bold text-red-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>Vắng Không Phép</label>
+            <input type="text" list="student-list-global" placeholder="Gõ hoặc chọn học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-red-500 mb-2" onchange="addViolation(this, 'vangKhongPhep')">
+            <div id="chip-vangKhongPhep" class="flex flex-wrap gap-1.5"></div>
+          </div>
+          <div class="mb-4 bg-orange-50/50 p-3 rounded-xl border border-orange-200/60">
+            <label class="block text-xs font-bold text-orange-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-orange-500 mr-1.5"></span>Đi Trễ</label>
+            <div class="flex gap-2 mb-2">
+              <input type="text" id="inp-tre-name" list="student-list-global" placeholder="Chọn tên..." class="flex-1 p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-orange-500">
+              <input type="number" id="inp-tre-min" placeholder="Phút" class="w-16 p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-center focus:outline-none focus:border-orange-500">
+              <button type="button" onclick="addTre()" class="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white px-3.5 rounded-lg font-bold text-xs shadow-sm transition-all"><i class="fas fa-plus"></i></button>
+            </div>
+            <div id="chip-tre" class="flex flex-wrap gap-1.5"></div>
+          </div>
+          <div class="mb-4 bg-purple-50/50 p-3 rounded-xl border border-purple-200/60">
+            <label class="block text-xs font-bold text-purple-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-purple-500 mr-1.5"></span>Bỏ Tiết</label>
+            <input type="text" list="student-list-global" placeholder="Gõ hoặc chọn học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-purple-500 mb-2" onchange="addViolation(this, 'boTietNames')">
+            <div id="chip-boTietNames" class="flex flex-wrap gap-1.5"></div>
+          </div>
         </div>
-        <div class="mb-4 bg-purple-50/50 p-3 rounded-xl border border-purple-200/60">
-          <label class="block text-xs font-bold text-purple-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-purple-500 mr-1.5"></span>Bỏ Tiết</label>
-          <input type="text" list="student-list-global" placeholder="Gõ hoặc chọn học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-purple-500 mb-2" onchange="addViolation(this, 'boTietNames')">
-          <div id="chip-boTietNames" class="flex flex-wrap gap-1.5"></div>
-        </div>
-        <div class="bg-slate-100/70 p-3 rounded-xl border border-slate-200">
-          <label class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-slate-500 mr-1.5"></span>Không ĐT / Đồng Phục</label>
-          <input type="text" list="student-list-global" placeholder="Gõ hoặc chọn học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-slate-500 mb-2" onchange="addViolation(this, 'khongDTNames')">
+
+        <div id="phone-uniform-box" class="bg-slate-100/80 p-3.5 rounded-xl border border-slate-200">
+          <label class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-blue-600 mr-1.5"></span>Học Sinh Mang Điện Thoại / Không ĐT / Đồng Phục</label>
+          <input type="text" list="student-list-global" placeholder="Gõ hoặc chọn học sinh mang ĐT / vi phạm ĐP..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-blue-500 mb-2" onchange="addViolation(this, 'khongDTNames')">
           <div id="chip-khongDTNames" class="flex flex-wrap gap-1.5"></div>
         </div>
       </div>
@@ -438,6 +450,7 @@
 
     // KHỞI TẠO DỮ LIỆU BAN ĐẦU
     document.addEventListener("DOMContentLoaded", () => {
+      initVietnameseDatePickers();
       callBackendApi('getAppInitData').then(initUI).catch(showError);
     });
 
@@ -643,8 +656,20 @@
           <div class="mt-4 border-t pt-3">
              <h3 class="font-bold text-slate-800 mb-2 text-xs flex items-center"><i class="fas fa-history text-blue-600 mr-2"></i> Tra Cứu Lịch Sử Vi Phạm Cá Nhân</h3>
              <div class="flex space-x-2 mb-2">
-                <div class="flex-1"><label class="text-[9px] font-bold text-slate-500 uppercase">Từ ngày</label><input type="date" id="search-start-date" class="w-full p-1.5 text-xs border rounded-lg bg-white font-bold"></div>
-                <div class="flex-1"><label class="text-[9px] font-bold text-slate-500 uppercase">Đến ngày</label><input type="date" id="search-end-date" class="w-full p-1.5 text-xs border rounded-lg bg-white font-bold"></div>
+                <div class="flex-1">
+                  <label class="text-[9px] font-bold text-slate-500 uppercase">Từ ngày</label>
+                  <div class="relative mt-0.5">
+                    <input type="text" id="search-start-date" placeholder="dd/mm/yyyy" maxlength="10" inputmode="numeric" class="vn-date-input w-full p-2 pr-7 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-700 focus:border-blue-500 focus:outline-none">
+                    <i class="far fa-calendar-alt absolute right-2 top-2.5 text-slate-400 text-xs pointer-events-none"></i>
+                  </div>
+                </div>
+                <div class="flex-1">
+                  <label class="text-[9px] font-bold text-slate-500 uppercase">Đến ngày</label>
+                  <div class="relative mt-0.5">
+                    <input type="text" id="search-end-date" placeholder="dd/mm/yyyy" maxlength="10" inputmode="numeric" class="vn-date-input w-full p-2 pr-7 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-700 focus:border-blue-500 focus:outline-none">
+                    <i class="far fa-calendar-alt absolute right-2 top-2.5 text-slate-400 text-xs pointer-events-none"></i>
+                  </div>
+                </div>
              </div>
              <button type="button" onclick="fetchStudentHistory('${student.maHS || ''}', '${student.name}')" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold py-2 rounded-lg text-xs border border-blue-200 transition"><i class="fas fa-search mr-1"></i> Tra cứu</button>
              <div id="student-history-result" class="mt-2 hidden max-h-48 overflow-y-auto custom-scrollbar text-xs border rounded-lg p-1 bg-white"></div>
@@ -654,10 +679,19 @@
              <h3 class="font-bold text-slate-800 mb-2 text-xs flex items-center"><i class="fas fa-paper-plane text-purple-600 mr-2"></i> Gửi Đơn Xin Phép Online</h3>
              <div class="bg-purple-50/60 p-3 rounded-xl border border-purple-100 space-y-2">
                 <div class="grid grid-cols-2 gap-2">
-                   <div><span class="text-[9px] font-semibold text-slate-500">Ngày nghỉ</span><input type="date" id="online-leave-date" class="w-full p-1.5 text-xs border rounded-lg bg-white font-bold"></div>
-                   <div><span class="text-[9px] font-semibold text-slate-500">Thời gian</span><select id="online-leave-session" class="w-full p-1.5 text-xs border rounded-lg bg-white font-bold"><option value="Cả ngày">Cả ngày</option><option value="Buổi Sáng">Buổi Sáng</option><option value="Buổi Chiều">Buổi Chiều</option></select></div>
+                   <div>
+                     <span class="text-[9px] font-semibold text-slate-500">Ngày nghỉ</span>
+                     <div class="relative mt-0.5">
+                       <input type="text" id="online-leave-date" placeholder="dd/mm/yyyy" maxlength="10" inputmode="numeric" class="vn-date-input w-full p-2 pr-7 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-700 focus:border-purple-500 focus:outline-none">
+                       <i class="far fa-calendar-alt absolute right-2 top-2.5 text-slate-400 text-xs pointer-events-none"></i>
+                     </div>
+                   </div>
+                   <div>
+                     <span class="text-[9px] font-semibold text-slate-500">Thời gian</span>
+                     <select id="online-leave-session" class="w-full mt-0.5 p-2 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-700"><option value="Cả ngày">Cả ngày</option><option value="Buổi Sáng">Buổi Sáng</option><option value="Buổi Chiều">Buổi Chiều</option></select>
+                   </div>
                 </div>
-                <input type="text" id="online-leave-reason" placeholder="Nhập lý do xin nghỉ..." class="w-full p-2 text-xs border rounded-lg bg-white">
+                <input type="text" id="online-leave-reason" placeholder="Nhập lý do xin nghỉ..." class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-white">
                 <button type="button" onclick="submitOnlineLeave('${student.maHS || ''}', '${student.name}', '${appData.className}')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-lg text-xs shadow-sm transition"><i class="fas fa-paper-plane mr-1"></i> Gửi Đơn Cho GVCN</button>
              </div>
           </div>
@@ -670,6 +704,50 @@
         if (existingNotice) { existingNotice.innerHTML = noticeHtml; existingNotice.classList.remove("hidden"); } 
         else { let noticeDiv = document.createElement("div"); noticeDiv.id = "student-notice-view"; noticeDiv.innerHTML = noticeHtml; step1.appendChild(noticeDiv); }
         document.querySelector("#step-1 > div:first-child").classList.add("hidden");
+        initVietnameseDatePickers();
+    }
+
+    // TIỆN ÍCH ĐỊNH DẠNG NGÀY TIẾNG VIỆT (dd/mm/yyyy)
+    function parseVNDateToISO(vnStr) {
+      if (!vnStr) return null;
+      const clean = vnStr.trim();
+      const match = clean.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (!match) return null;
+      const day = parseInt(match[1], 10);
+      const month = parseInt(match[2], 10);
+      const year = parseInt(match[3], 10);
+      if (month < 1 || month > 12 || day < 1 || day > 31 || year < 2000 || year > 2100) return null;
+      const d = new Date(year, month - 1, day);
+      if (d.getFullYear() !== year || d.getMonth() !== month - 1 || d.getDate() !== day) return null;
+      const dd = String(day).padStart(2, '0');
+      const mm = String(month).padStart(2, '0');
+      return { iso: `${year}-${mm}-${dd}`, vn: `${dd}/${mm}/${year}` };
+    }
+
+    function initVietnameseDatePickers() {
+      document.querySelectorAll('.vn-date-input').forEach(el => {
+        if (!el.dataset.vnMaskBound) {
+          el.dataset.vnMaskBound = "1";
+          el.addEventListener('input', function() {
+            let digits = this.value.replace(/\D/g, '').slice(0, 8);
+            if (digits.length >= 5) {
+              this.value = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+            } else if (digits.length >= 3) {
+              this.value = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+            } else {
+              this.value = digits;
+            }
+          });
+        }
+        if (typeof flatpickr !== "undefined" && !el._flatpickr) {
+          flatpickr(el, {
+            locale: "vn",
+            dateFormat: "d/m/Y",
+            allowInput: true,
+            disableMobile: true
+          });
+        }
+      });
     }
 
     function submitOnlineLeave(maHS, name, className) { 
@@ -678,8 +756,9 @@
       let reasonVal = document.getElementById("online-leave-reason").value.trim(); 
       if(!dateVal || !reasonVal) { Swal.fire('Thiếu thông tin', 'Vui lòng chọn ngày nghỉ và nhập lý do!', 'warning'); return; } 
       
-      let parts = dateVal.split('-'); 
-      let formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`; 
+      let parsed = parseVNDateToISO(dateVal);
+      if (!parsed) { Swal.fire('Sai định dạng ngày', 'Vui lòng nhập ngày nghỉ đúng định dạng dd/mm/yyyy (ví dụ: 15/11/2026)!', 'warning'); return; }
+      let formattedDate = parsed.vn; 
       showLoading("Đang gửi đơn xin phép..."); 
       
       callBackendApi('submitOnlineLeaveRequest', { maHS: maHS, name: name, className: className, date: formattedDate, session: sessionVal, reason: reasonVal }).then(res => { 
@@ -690,14 +769,17 @@
     }
 
     function fetchStudentHistory(maHS, name) { 
-      let start = document.getElementById("search-start-date").value; 
-      let end = document.getElementById("search-end-date").value; 
-      if(!start || !end) { Swal.fire('Chú ý', 'Vui lòng chọn Từ ngày và Đến ngày', 'warning'); return; } 
+      let startRaw = document.getElementById("search-start-date").value; 
+      let endRaw = document.getElementById("search-end-date").value; 
+      if(!startRaw || !endRaw) { Swal.fire('Chú ý', 'Vui lòng chọn Từ ngày và Đến ngày (dd/mm/yyyy)', 'warning'); return; } 
+      let startParsed = parseVNDateToISO(startRaw);
+      let endParsed = parseVNDateToISO(endRaw);
+      if (!startParsed || !endParsed) { Swal.fire('Sai định dạng ngày', 'Vui lòng nhập Từ ngày và Đến ngày theo dạng dd/mm/yyyy!', 'warning'); return; }
       let resDiv = document.getElementById("student-history-result"); 
       resDiv.innerHTML = '<div class="text-center text-slate-500 py-3"><i class="fas fa-spinner fa-spin text-lg mb-1 block"></i> Đang tải dữ liệu...</div>'; 
       resDiv.classList.remove("hidden"); 
       
-      callBackendApi('getStudentHistory', maHS, name, start, end).then(data => { 
+      callBackendApi('getStudentHistory', maHS, name, startParsed.iso, endParsed.iso).then(data => { 
         if(!data || data.length === 0) { 
           resDiv.innerHTML = '<div class="text-center text-emerald-600 font-bold py-3"><i class="fas fa-check-circle mr-1"></i> Không có vi phạm nào.</div>'; 
           return; 
@@ -783,15 +865,18 @@
 
     function fetchClassAbsenceSummary() {
       const cls = document.getElementById("inp-gvcn-class").value.trim();
-      const start = document.getElementById("gvcn-start-date").value;
-      const end = document.getElementById("gvcn-end-date").value;
-      if (!cls || !start || !end) return Swal.fire('Chú ý', 'Nhập đủ Lớp, Từ ngày và Đến ngày', 'warning');
+      const startRaw = document.getElementById("gvcn-start-date").value;
+      const endRaw = document.getElementById("gvcn-end-date").value;
+      if (!cls || !startRaw || !endRaw) return Swal.fire('Chú ý', 'Nhập đủ Lớp, Từ ngày và Đến ngày (dd/mm/yyyy)', 'warning');
+      const startParsed = parseVNDateToISO(startRaw);
+      const endParsed = parseVNDateToISO(endRaw);
+      if (!startParsed || !endParsed) return Swal.fire('Sai định dạng ngày', 'Vui lòng nhập ngày đúng định dạng dd/mm/yyyy!', 'warning');
       
       const resDiv = document.getElementById("gvcn-class-summary-result");
       resDiv.classList.remove("hidden");
       resDiv.innerHTML = '<p class="text-blue-500 text-center py-2"><i class="fas fa-spinner fa-spin mr-1"></i> Đang tổng hợp dữ liệu lớp ' + cls + '...</p>';
       
-      callBackendApi('getStudentHistory', '', cls, start, end).then(data => {
+      callBackendApi('getStudentHistory', '', cls, startParsed.iso, endParsed.iso).then(data => {
          if (!data || data.length === 0) {
             resDiv.innerHTML = `<p class="text-emerald-600 font-bold text-center py-2">Lớp ${cls} không có lượt vắng/trễ nào trong khoảng thời gian này!</p>`;
             return;
@@ -1008,8 +1093,6 @@
       } 
       
       if (student) { 
-        const toggleAll = document.getElementById("toggle-all-present"); 
-        if (toggleAll && toggleAll.checked) { toggleAll.checked = false; toggleAllPresent(); } 
         Swal.fire({ 
           title: `<span class="text-blue-700">${student.name}</span>`, 
           html: `<div class="text-xs text-slate-500 font-bold mb-1">Mã HS: ${student.maHS || 'N/A'} - Lớp ${appData.className}</div><div class="text-[11px] text-emerald-600 font-semibold mb-2"><i class="fas fa-check-circle mr-1"></i> Nhận diện: ${detectionType}</div>`, 
@@ -1022,6 +1105,10 @@
         }).then((res) => { 
           if (res.isConfirmed && res.value) { 
             const type = res.value; 
+            if (type !== 'khongDTNames') {
+              const toggleAll = document.getElementById("toggle-all-present");
+              if (toggleAll && toggleAll.checked) { toggleAll.checked = false; toggleAllPresent(); }
+            }
             if (type === 'tre') { 
               Swal.fire({ title: 'Nhập số phút trễ', input: 'number', inputValue: 5, showCancelButton: true, confirmButtonText: 'Lưu' }).then((minRes) => { 
                 if (minRes.isConfirmed && minRes.value) { 
@@ -1071,19 +1158,25 @@
 
     function toggleAllPresent() { 
       const isAllPresent = document.getElementById("toggle-all-present").checked; 
-      const section = document.getElementById("violation-section"); 
+      const absenceBoxes = document.getElementById("absence-only-boxes"); 
+      const sectionTitle = document.getElementById("violation-section-title");
       const boxAllPresent = document.getElementById("box-all-present"); 
       const textAllPresent = document.getElementById("text-all-present"); 
       if (isAllPresent) { 
-        section.classList.add("hidden"); 
+        absenceBoxes.classList.add("hidden"); 
+        if (sectionTitle) sectionTitle.innerHTML = '<i class="fas fa-mobile-alt text-blue-600 mr-2"></i> Ghi Nhận Điện Thoại / Đồng Phục';
         boxAllPresent.classList.replace("bg-white", "bg-emerald-50"); 
         textAllPresent.innerText = "LỚP ĐI ĐỦ"; 
         textAllPresent.classList.replace("text-slate-600", "text-emerald-700"); 
-        violations = { vangCoPhep: [], vangKhongPhep: [], boTietNames: [], khongDTNames: [], treNames: [] }; 
+        violations.vangCoPhep = [];
+        violations.vangKhongPhep = [];
+        violations.boTietNames = [];
+        violations.treNames = [];
         renderAllChips(); 
         updateAvailableStudentsDatalist(); 
       } else { 
-        section.classList.remove("hidden"); 
+        absenceBoxes.classList.remove("hidden"); 
+        if (sectionTitle) sectionTitle.innerHTML = '<i class="fas fa-list-check text-blue-600 mr-2"></i> Danh Sách Vi Phạm';
         boxAllPresent.classList.replace("bg-emerald-50", "bg-white"); 
         textAllPresent.innerText = "GHI NHẬN VI PHẠM"; 
         textAllPresent.classList.replace("text-emerald-700", "text-slate-600"); 
@@ -1127,7 +1220,7 @@
       let presentCount = appData.students.length - (p.vangCoPhep.length + p.vangKhongPhep.length); 
       Swal.fire({ 
         title: 'Xác Nhận Nộp Báo Cáo', 
-        html: `<div class="text-xs text-left bg-slate-50 p-3 border rounded-xl mt-2 space-y-1"><div class="flex justify-between border-b pb-1 font-bold"><span>Sĩ số: ${appData.students.length}</span><span class="text-emerald-600">Đi học: ${presentCount}</span></div><div class="flex justify-between py-0.5 border-b"><span>Vắng phép:</span><span class="font-bold text-amber-600">${p.vangCoPhep.length}</span></div><div class="flex justify-between py-0.5 border-b"><span>Không phép:</span><span class="font-bold text-red-600">${p.vangKhongPhep.length}</span></div><div class="flex justify-between py-0.5 border-b"><span>Đi trễ:</span><span class="font-bold text-orange-600">${p.treNames.length}</span></div></div>`, 
+        html: `<div class="text-xs text-left bg-slate-50 p-3 border rounded-xl mt-2 space-y-1"><div class="flex justify-between border-b pb-1 font-bold"><span>Sĩ số: ${appData.students.length}</span><span class="text-emerald-600">Đi học: ${presentCount}</span></div><div class="flex justify-between py-0.5 border-b"><span>Vắng phép:</span><span class="font-bold text-amber-600">${p.vangCoPhep.length}</span></div><div class="flex justify-between py-0.5 border-b"><span>Không phép:</span><span class="font-bold text-red-600">${p.vangKhongPhep.length}</span></div><div class="flex justify-between py-0.5 border-b"><span>Đi trễ:</span><span class="font-bold text-orange-600">${p.treNames.length}</span></div><div class="flex justify-between py-0.5"><span>Mang ĐT / Đồng phục:</span><span class="font-bold text-blue-600">${p.khongDTNames.length}</span></div></div>`, 
         showCancelButton: true, 
         confirmButtonText: 'ĐỒNG Ý NỘP', 
         cancelButtonText: 'SỬA LẠI' 

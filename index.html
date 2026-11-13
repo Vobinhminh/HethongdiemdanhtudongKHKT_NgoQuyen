@@ -1450,7 +1450,7 @@
     initVoiceRecognitionModule();
   });
 
-  function postGasJsonRequest(url, fnName, args, timeoutMs = 15000) {
+  function postGasJsonRequest(url, fnName, args, timeoutMs = 18000) {
     return new Promise((resolve, reject) => {
       if (!url || url.includes("DAN_LINK_WEB_APP")) {
         reject(new Error("Chưa cấu hình URL Web App"));
@@ -1492,86 +1492,159 @@
     });
   }
 
+  function isGenericPortalMenuReply(replyText, userMsg) {
+    const r = (replyText || "").toLowerCase();
+    const q = (userMsg || "").toLowerCase();
+    const isPortalMenuReply =
+      (r.includes("đang sẵn sàng hỗ trợ bạn tại") && r.includes("thẻ học sinh")) ||
+      (r.includes("hệ thống đã ghi nhận thầy/cô đang ở") && r.includes("cổng giáo viên"));
+    if (!isPortalMenuReply) return false;
+    const isAskingAboutPortal =
+      q.includes("chức năng") || q.includes("tính năng") || q.includes("hướng dẫn sử dụng") ||
+      q.includes("cổng điểm danh") || q.includes("làm được gì");
+    return !isAskingAboutPortal;
+  }
+
   function buildPortalEnrichedPrompt(msg, role, name, className, tabContext) {
     const dateStr = (typeof appData !== "undefined" && appData.dateStr) ? appData.dateStr : "";
     const sessionStr = (typeof appData !== "undefined" && appData.session) ? appData.session : "";
     const maHS = (typeof appData !== "undefined" && appData.reporterInfo?.maHS) ? appData.reporterInfo.maHS : "";
-    const totalStudents = (typeof appData !== "undefined" && Array.isArray(appData.students)) ? appData.students.length : 0;
 
     let contextLines = [
-      `[NGỮ CẢNH HỆ THỐNG ĐIỂM DANH THPT NGÔ QUYỀN]`,
-      `- Phân hệ đang truy cập: ${tabContext}`,
-      `- Người dùng: ${name} | Vai trò: ${role}${maHS ? ` | Mã HS: ${maHS}` : ""}${className ? ` | Lớp: ${className}` : ""}`,
-      dateStr ? `- Thời điểm hệ thống: ${dateStr}${sessionStr ? ` (${sessionStr})` : ""}` : ""
+      `Bạn là Trợ lý AI giáo dục thông minh của Trường THPT Ngô Quyền. Hãy trả lời TRỰC TIẾP, ĐÚNG TRỌNG TÂM câu hỏi/yêu cầu của người dùng bằng tiếng Việt (tự nhiên, rõ ràng, súc tích, không liệt kê menu giao diện nếu người dùng không hỏi về cách dùng hệ thống).`,
+      `Thông tin ngữ cảnh người dùng: ${name} | Vai trò: ${role}${maHS ? ` | Mã HS: ${maHS}` : ""}${className ? ` | Lớp: ${className}` : ""} | Khu vực: ${tabContext}${dateStr ? ` | Ngày: ${dateStr}${sessionStr ? ` (${sessionStr})` : ""}` : ""}.`,
+      `Câu hỏi/yêu cầu của người dùng: "${msg}"`
     ];
-
-    if (tabContext === "Thẻ Học sinh" && totalStudents > 0) {
-      contextLines.push(`- Sĩ số lớp ${className}: ${totalStudents} học sinh.`);
-      contextLines.push(`- Các chức năng có sẵn trên màn hình của học sinh: Tra cứu lịch sử vi phạm cá nhân (chọn Từ ngày - Đến ngày dạng dd/mm/yyyy), Gửi đơn xin phép online cho GVCN (chọn Ngày nghỉ, Buổi, Lý do)${role.toLowerCase().includes("lớp") || role.toLowerCase().includes("bí thư") ? ", và Vào Giao Diện Điểm Danh Lớp (quét QR/khuôn mặt AI hoặc chọn vi phạm/mang điện thoại)." : "."}`);
-    } else if (tabContext === "Thẻ Giáo viên/Giám thị") {
-      contextLines.push(`- Các chức năng có sẵn trên màn hình Giáo viên/Quản trị: Xem tiến độ nộp điểm danh toàn trường, Chốt sổ điểm danh, Cài đặt hệ thống, Quản lý dữ liệu/nhập file phép, Duyệt đơn xin phép online, Theo dõi báo cáo vắng/trễ theo lớp, Thêm học sinh mới và Reset mật khẩu PIN.`);
-    }
-
-    contextLines.push(`Hãy trả lời ngắn gọn, rõ ràng, thân thiện bằng tiếng Việt cho câu hỏi/yêu cầu sau của người dùng: "${msg}"`);
-    return contextLines.filter(Boolean).join("\\n");
+    return contextLines.join("\n");
   }
 
   function buildLocalPortalFallbackReply(msg, role, name, className, tabContext) {
     const q = (msg || "").toLowerCase();
+
+    // 1. Các câu hỏi nghiệp vụ trong cổng Học sinh / Giáo viên
     if (tabContext === "Thẻ Học sinh") {
-      if (q.includes("nghỉ") || q.includes("phép")) {
-        return `Chào **${name}**, để gửi đơn xin nghỉ phép ngay trên màn hình **Thẻ Học sinh**, bạn hãy kéo xuống mục **Gửi Đơn Xin Phép Online**, chọn **Ngày nghỉ (dd/mm/yyyy)**, **Thời gian (Cả ngày / Buổi Sáng / Buổi Chiều)**, nhập lý do rồi bấm **Gửi Đơn Cho GVCN** nhé! 📝`;
+      if (q.includes("xin nghỉ") || q.includes("đơn xin phép") || (q.includes("nghỉ") && q.includes("phép"))) {
+        return `Chào **${name}**, để gửi đơn xin nghỉ phép ngay trên màn hình **Thẻ Học sinh**, bạn kéo xuống mục **Gửi Đơn Xin Phép Online**, chọn **Ngày nghỉ (dd/mm/yyyy)**, **Thời gian (Cả ngày / Buổi Sáng / Buổi Chiều)**, nhập lý do rồi bấm **Gửi Đơn Cho GVCN** nhé! 📝`;
       }
       if (q.includes("vi phạm") || q.includes("tra cứu") || q.includes("lịch sử")) {
-        return `Chào **${name}**, bạn có thể xem ngay ở mục **Tra Cứu Lịch Sử Vi Phạm Cá Nhân** phía trên màn hình: chọn **Từ ngày** và **Đến ngày** (định dạng **dd/mm/yyyy**) rồi bấm nút **Tra cứu** để xem chi tiết từng buổi nhé! 🔍`;
+        return `Chào **${name}**, bạn chọn **Từ ngày** và **Đến ngày** (dạng **dd/mm/yyyy**) ở mục **Tra Cứu Lịch Sử Vi Phạm Cá Nhân** phía trên màn hình rồi bấm **Tra cứu** để xem chi tiết từng buổi nhé! 🔍`;
       }
-      return `Chào **${name}** (${role}${className ? ` - Lớp ${className}` : ""}), mình đang sẵn sàng hỗ trợ bạn tại **Thẻ Học sinh**! Bạn có thể dùng các tính năng ngay trên màn hình như **Tra cứu lịch sử vi phạm**, **Gửi đơn xin phép online**, hoặc hỏi mình về phương pháp học tập và nề nếp nhé! ✨`;
     }
+
     if (tabContext === "Thẻ Giáo viên/Giám thị") {
-      if (q.includes("tiến độ") || q.includes("nộp")) {
-        return `Thưa Thầy/Cô **${name}**, Thầy/Cô có thể bấm trực tiếp vào nút **TIẾN ĐỘ NỘP** ở bảng điều khiển **Cổng Giáo Viên & Quản Trị** để xem danh sách các lớp đã nộp và chưa nộp báo cáo điểm danh hôm nay ạ! 📊`;
+      if (q.includes("tiến độ") || q.includes("nộp điểm danh") || q.includes("chưa nộp")) {
+        return `Thưa Thầy/Cô **${name}**, Thầy/Cô bấm trực tiếp vào nút **TIẾN ĐỘ NỘP** ở bảng điều khiển **Cổng Giáo Viên & Quản Trị** để xem danh sách các lớp đã nộp và chưa nộp báo cáo hôm nay ạ! 📊`;
       }
-      if (q.includes("đơn") || q.includes("nghỉ phép") || q.includes("duyệt")) {
-        return `Thưa Thầy/Cô **${name}**, tại mục **Duyệt Đơn Xin Phép Online** trong **Khu Vực Giáo Viên Chủ Nhiệm / Bộ Môn**, Thầy/Cô bấm nút **Tải lại** để hiển thị danh sách đơn mới nhất và bấm **Duyệt Phép** cho từng học sinh ạ! 📋`;
+      if (q.includes("duyệt đơn") || (q.includes("đơn") && q.includes("nghỉ phép"))) {
+        return `Thưa Thầy/Cô **${name}**, tại mục **Duyệt Đơn Xin Phép Online** trong **Khu Vực Giáo Viên Chủ Nhiệm / Bộ Môn**, Thầy/Cô bấm **Tải lại** để cập nhật danh sách đơn mới nhất và bấm **Duyệt Phép** cho từng học sinh ạ! 📋`;
       }
-      return `Kính chào Thầy/Cô **${name}** (${role}), hệ thống đã ghi nhận Thầy/Cô đang ở **Cổng Giáo Viên & Quản Trị**. Thầy/Cô có thể thao tác nhanh **Tiến độ nộp**, **Chốt sổ**, **Duyệt đơn xin phép online**, **Theo dõi vắng/trễ lớp học**, hoặc **Reset mật khẩu** ngay trên giao diện chính ạ! ✨`;
+      if (q.includes("nề nếp") || q.includes("kỷ luật") || q.includes("quản lý lớp") || q.includes("chủ nhiệm")) {
+        return `Thưa Thầy/Cô **${name}**, để quản lý nề nếp học sinh THPT hiệu quả, Thầy/Cô có thể kết hợp 4 giải pháp trọng tâm:\n` +
+               `1. **Thống nhất nội quy & tiêu chí thi đua rõ ràng:** Công khai bảng điểm cộng/trừ theo tuần ngay đầu học kỳ để học sinh tự giác thực hiện.\n` +
+               `2. **Phát huy vai trò ban cán sự lớp:** Phân công lớp trưởng, cờ đỏ theo dõi chuyên cần, đồng phục và phản hồi kịp thời cuối mỗi buổi.\n` +
+               `3. **Theo dõi dữ liệu điểm danh hằng ngày:** Kiểm tra sớm các trường hợp đi trễ hoặc vắng không phép để trao đổi riêng với học sinh và phối hợp kịp thời với phụ huynh.\n` +
+               `4. **Động viên tích cực:** Khen thưởng nhóm/tổ có tiến bộ theo tuần thay vì chỉ nhắc nhở vi phạm.`;
+      }
     }
-    return `⚠️ Hệ thống AI đang tạm bận. Thầy/Cô và các bạn vui lòng thử gửi lại sau vài giây nhé!`;
+
+    // 2. Các câu hỏi học tập / kiến thức / phương pháp học (khi kết nối AI đang gián đoạn)
+    if (q.includes("toán")) {
+      return `Chào **${name}**, để học tốt môn **Toán** ở bậc THPT, bạn nên áp dụng 4 bước trọng tâm sau:\n` +
+             `1. **Nắm chắc định nghĩa, định lý và công thức gốc:** Hiểu bản chất và điều kiện áp dụng thay vì học thuộc máy móc.\n` +
+             `2. **Luyện bài tập theo từng dạng từ cơ bản đến vận dụng:** Làm thành thạo các dạng chuẩn trong SGK trước khi chuyển sang bài tổng hợp.\n` +
+             `3. **Ghi sổ tay lỗi sai:** Mỗi khi làm sai phép biến đổi, điều kiện xác định hoặc tính toán, hãy ghi lại nguyên nhân để tránh lặp lại.\n` +
+             `4. **Tự giải lại đề sau 2–3 ngày:** Che lời giải và tự trình bày lại trọn vẹn để rèn phản xạ phòng thi.`;
+    }
+
+    if (q.includes("lý") || q.includes("vật lý")) {
+      return `Chào **${name}**, để học tốt môn **Vật lý**, bạn hãy tập trung vào 4 bước:\n` +
+             `1. **Hiểu hiện tượng vật lý trước khi nhớ công thức:** Xác định rõ đại lượng nào không đổi, đại lượng nào biến thiên.\n` +
+             `2. **Vẽ hình, tóm tắt và đổi đơn vị chuẩn (SI):** Giúp tránh sai sót ngay từ bước đặt phương trình.\n` +
+             `3. **Phân tích mối liên hệ giữa các đại lượng:** Chú ý tỉ lệ thuận, tỉ lệ nghịch và đồ thị đặc trưng của từng chương.\n` +
+             `4. **Làm bài tập theo chuyên đề:** Luyện từ bài cơ bản đến bài vận dụng để quen cách phối hợp nhiều công thức.`;
+    }
+
+    if (q.includes("hóa")) {
+      return `Chào **${name}**, để học tốt môn **Hóa học**, bạn nên:\n` +
+             `1. **Nắm vững tính chất hóa học đặc trưng** của từng loại chất và dãy hoạt động hóa học.\n` +
+             `2. **Thành thạo các định luật bảo toàn** (bảo toàn khối lượng, bảo toàn nguyên tố, bảo toàn electron, bảo toàn điện tích) để giải nhanh bài tập.\n` +
+             `3. **Lập sơ đồ chuỗi phản ứng** theo từng chương để hệ thống hóa kiến thức.\n` +
+             `4. **Luyện viết phương trình và cân bằng chính xác** trước khi tính toán số mol.`;
+    }
+
+    if (q.includes("anh") || q.includes("tiếng anh")) {
+      return `Chào **${name}**, để học tốt môn **Tiếng Anh**, bạn hãy duy trì đều đặn mỗi ngày:\n` +
+             `1. **Học từ vựng theo cụm từ và ngữ cảnh** (collocations/phrasal verbs) thay vì học từng từ đơn lẻ.\n` +
+             `2. **Nắm chắc các chuyên đề ngữ pháp cốt lõi:** Thì động từ, câu điều kiện, mệnh đề quan hệ, câu bị động và từ loại.\n` +
+             `3. **Luyện đọc hiểu mỗi ngày 1 đoạn ngắn:** Gạch chân từ khóa và rèn kỹ năng đoán nghĩa theo ngữ cảnh.\n` +
+             `4. **Nghe – nhắc lại (Shadowing)** 10–15 phút/ngày để cải thiện phản xạ nghe và phát âm.`;
+    }
+
+    if (q.includes("văn") || q.includes("ngữ văn")) {
+      return `Chào **${name}**, để học tốt môn **Ngữ văn**, bạn nên:\n` +
+             `1. **Đọc kỹ văn bản và lập sơ đồ luận điểm** cho từng tác phẩm/chủ đề.\n` +
+             `2. **Rèn kỹ năng đọc hiểu theo cấu trúc câu hỏi** (nhận biết – thông hiểu – vận dụng) và trả lời đúng trọng tâm, đủ ý.\n` +
+             `3. **Tích lũy dẫn chứng nghị luận xã hội** ngắn gọn, thực tế và giàu tính thuyết phục.\n` +
+             `4. **Luyện viết mở bài, kết bài và đoạn văn chuẩn cấu trúc** (diễn dịch, quy nạp, tổng – phân – hợp).`;
+    }
+
+    if (q.includes("ôn thi") || q.includes("phương pháp học") || q.includes("học tốt")) {
+      return `Chào **${name}**, để ôn thi và học tập đạt hiệu quả cao, bạn có thể áp dụng 4 nguyên tắc sau:\n` +
+             `1. **Chia nhỏ mục tiêu theo tuần và học theo khung giờ tập trung (Pomodoro 25–45 phút)** để giữ sự tỉnh táo.\n` +
+             `2. **Chủ động tự kiểm tra (Active Recall):** Đóng sách lại và tự tóm tắt kiến thức hoặc làm đề thử thay vì chỉ đọc lướt.\n` +
+             `3. **Ôn tập ngắt quãng (Spaced Repetition):** Xem lại kiến thức sau 1 ngày, 3 ngày và 7 ngày để ghi nhớ dài hạn.\n` +
+             `4. **Tổng hợp sổ tay lỗi sai:** Tập trung khắc phục đúng phần kiến thức hay nhầm lẫn nhất.`;
+    }
+
+    return `⚠️ Kết nối tới máy chủ AI đang tạm gián đoạn nên mình chưa thể tra cứu sâu câu hỏi *"${msg}"* ngay lúc này. Bạn hãy thử gửi lại sau vài giây nhé!`;
   }
 
   async function callChatBackendApi(fnName, msg, currentRole, currentName, currentClass, currentTab) {
     const args = [msg, currentRole, currentName, currentClass, currentTab];
+    const enrichedPrompt = buildPortalEnrichedPrompt(msg, currentRole, currentName, currentClass, currentTab);
 
     // 1. Gọi trực tiếp Web App Chatbot chính với đầy đủ ngữ cảnh cổng hiện tại
     try {
-      return await postGasJsonRequest(CHAT_APP_URL, fnName, args, 14000);
+      const res1 = await postGasJsonRequest(CHAT_APP_URL, fnName, args, 15000);
+      if (res1 && res1.text && !isGenericPortalMenuReply(res1.text, msg)) {
+        return res1;
+      }
     } catch (primaryErr) {
-      // Nếu đang ở Cổng điểm danh mà lỗi thì ném lỗi luôn để xử lý
-      if (currentTab === "Cổng điểm danh") {
-        throw primaryErr;
-      }
+      // Chuyển sang bước dự phòng tiếp theo
+    }
 
-      // 2. Dự phòng 1: Thử gọi qua Web App Điểm danh chính (nơi liên kết trực tiếp Google Sheets)
-      if (typeof WEB_APP_URL !== "undefined" && WEB_APP_URL && WEB_APP_URL !== CHAT_APP_URL) {
-        try {
-          return await postGasJsonRequest(WEB_APP_URL, fnName, args, 12000);
-        } catch (secondaryErr) {
-          // Tiếp tục sang lớp dự phòng 2
-        }
+    // 2. Gửi câu hỏi kèm chỉ thị trả lời đúng trọng tâm qua luồng xử lý ổn định của CHAT_APP_URL
+    try {
+      const res2 = await postGasJsonRequest(
+        CHAT_APP_URL,
+        fnName,
+        [enrichedPrompt, "Khách", currentName, currentClass, "Cổng điểm danh"],
+        15000
+      );
+      if (res2 && res2.text && !isGenericPortalMenuReply(res2.text, msg)) {
+        return res2;
       }
+    } catch (relayErr) {
+      // Chuyển sang bước dự phòng tiếp theo
+    }
 
-      // 3. Dự phòng 2: Đóng gói ngữ cảnh cổng Học sinh / Giáo viên vào prompt và gửi qua luồng xử lý ổn định của CHAT_APP_URL
+    // 3. Dự phòng qua Web App Điểm danh chính nếu có
+    if (typeof WEB_APP_URL !== "undefined" && WEB_APP_URL && WEB_APP_URL !== CHAT_APP_URL) {
       try {
-        const enrichedPrompt = buildPortalEnrichedPrompt(msg, currentRole, currentName, currentClass, currentTab);
-        return await postGasJsonRequest(CHAT_APP_URL, fnName, [enrichedPrompt, "Khách", currentName, currentClass, "Cổng điểm danh"], 14000);
-      } catch (relayErr) {
-        // 4. Dự phòng 3: Phản hồi thông minh theo đúng cổng đang mở (không báo lỗi chết)
-        return {
-          status: "success",
-          text: buildLocalPortalFallbackReply(msg, currentRole, currentName, currentClass, currentTab)
-        };
+        const res3 = await postGasJsonRequest(WEB_APP_URL, fnName, args, 12000);
+        if (res3 && res3.text && !isGenericPortalMenuReply(res3.text, msg)) {
+          return res3;
+        }
+      } catch (secondaryErr) {
+        // Chuyển sang dự phòng cục bộ thông minh
       }
     }
+
+    // 4. Phản hồi cục bộ thông minh trả lời đúng trọng tâm câu hỏi
+    return {
+      status: "success",
+      text: buildLocalPortalFallbackReply(msg, currentRole, currentName, currentClass, currentTab)
+    };
   }
 
   function toggleChatTheme() {

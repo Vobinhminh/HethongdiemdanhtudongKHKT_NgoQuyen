@@ -610,7 +610,7 @@
     function proceedStudentLogin(student, pin) {
       hsPinFails = 0; 
       clearInlineError('auth-error'); 
-      appData.reporterInfo = { name: student.name, role: student.role }; 
+      appData.reporterInfo = { name: student.name, role: student.role, maHS: student.maHS || '' }; 
       violations = { vangCoPhep: [], vangKhongPhep: [], boTietNames: [], khongDTNames: [], treNames: [] };
       
       const role = student.role ? student.role.toLowerCase() : ""; 
@@ -705,6 +705,9 @@
         else { let noticeDiv = document.createElement("div"); noticeDiv.id = "student-notice-view"; noticeDiv.innerHTML = noticeHtml; step1.appendChild(noticeDiv); }
         document.querySelector("#step-1 > div:first-child").classList.add("hidden");
         initVietnameseDatePickers();
+        if (typeof updateQuickPromptsByCurrentTab === "function") {
+          updateQuickPromptsByCurrentTab();
+        }
     }
 
     // TIỆN ÍCH ĐỊNH DẠNG NGÀY TIẾNG VIỆT (dd/mm/yyyy)
@@ -1293,6 +1296,9 @@
             currentStep = '1'; 
             document.getElementById("btn-back").classList.remove("hidden"); 
             document.getElementById("session-info").classList.add("hidden"); 
+            if (typeof updateQuickPromptsByCurrentTab === "function") {
+              updateQuickPromptsByCurrentTab();
+            }
           }
         });
       }
@@ -1444,25 +1450,129 @@
     initVoiceRecognitionModule();
   });
 
-  function callChatBackendApi(fnName, ...args) {
+  function postGasJsonRequest(url, fnName, args, timeoutMs = 15000) {
     return new Promise((resolve, reject) => {
-      if (!CHAT_APP_URL || CHAT_APP_URL.includes("DAN_LINK_WEB_APP")) {
-        reject("Chưa cấu hình CHAT_APP_URL");
+      if (!url || url.includes("DAN_LINK_WEB_APP")) {
+        reject(new Error("Chưa cấu hình URL Web App"));
         return;
       }
-      fetch(CHAT_APP_URL, {
+      const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+
+      fetch(url, {
         method: "POST",
         mode: "cors",
+        redirect: "follow",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: fnName, args: args })
+        body: JSON.stringify({ action: fnName, args: args }),
+        ...(controller ? { signal: controller.signal } : {})
       })
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.status === "error") reject(data.msg);
-        else resolve(data);
+      .then(async res => {
+        if (timer) clearTimeout(timer);
+        const rawText = await res.text();
+        let data = null;
+        try {
+          data = JSON.parse(rawText);
+        } catch (parseErr) {
+          throw new Error("Server trả về dữ liệu không phải JSON");
+        }
+        if (!data || data.status === "error") {
+          throw new Error((data && data.msg) ? data.msg : "Lỗi xử lý từ server");
+        }
+        const replyText = (data.text || data.reply || data.message || "").toString().trim();
+        if (!replyText) {
+          throw new Error("Phản hồi rỗng từ AI");
+        }
+        resolve({ ...data, text: replyText });
       })
-      .catch(reject);
+      .catch(err => {
+        if (timer) clearTimeout(timer);
+        reject(err);
+      });
     });
+  }
+
+  function buildPortalEnrichedPrompt(msg, role, name, className, tabContext) {
+    const dateStr = (typeof appData !== "undefined" && appData.dateStr) ? appData.dateStr : "";
+    const sessionStr = (typeof appData !== "undefined" && appData.session) ? appData.session : "";
+    const maHS = (typeof appData !== "undefined" && appData.reporterInfo?.maHS) ? appData.reporterInfo.maHS : "";
+    const totalStudents = (typeof appData !== "undefined" && Array.isArray(appData.students)) ? appData.students.length : 0;
+
+    let contextLines = [
+      `[NGỮ CẢNH HỆ THỐNG ĐIỂM DANH THPT NGÔ QUYỀN]`,
+      `- Phân hệ đang truy cập: ${tabContext}`,
+      `- Người dùng: ${name} | Vai trò: ${role}${maHS ? ` | Mã HS: ${maHS}` : ""}${className ? ` | Lớp: ${className}` : ""}`,
+      dateStr ? `- Thời điểm hệ thống: ${dateStr}${sessionStr ? ` (${sessionStr})` : ""}` : ""
+    ];
+
+    if (tabContext === "Thẻ Học sinh" && totalStudents > 0) {
+      contextLines.push(`- Sĩ số lớp ${className}: ${totalStudents} học sinh.`);
+      contextLines.push(`- Các chức năng có sẵn trên màn hình của học sinh: Tra cứu lịch sử vi phạm cá nhân (chọn Từ ngày - Đến ngày dạng dd/mm/yyyy), Gửi đơn xin phép online cho GVCN (chọn Ngày nghỉ, Buổi, Lý do)${role.toLowerCase().includes("lớp") || role.toLowerCase().includes("bí thư") ? ", và Vào Giao Diện Điểm Danh Lớp (quét QR/khuôn mặt AI hoặc chọn vi phạm/mang điện thoại)." : "."}`);
+    } else if (tabContext === "Thẻ Giáo viên/Giám thị") {
+      contextLines.push(`- Các chức năng có sẵn trên màn hình Giáo viên/Quản trị: Xem tiến độ nộp điểm danh toàn trường, Chốt sổ điểm danh, Cài đặt hệ thống, Quản lý dữ liệu/nhập file phép, Duyệt đơn xin phép online, Theo dõi báo cáo vắng/trễ theo lớp, Thêm học sinh mới và Reset mật khẩu PIN.`);
+    }
+
+    contextLines.push(`Hãy trả lời ngắn gọn, rõ ràng, thân thiện bằng tiếng Việt cho câu hỏi/yêu cầu sau của người dùng: "${msg}"`);
+    return contextLines.filter(Boolean).join("
+");
+  }
+
+  function buildLocalPortalFallbackReply(msg, role, name, className, tabContext) {
+    const q = (msg || "").toLowerCase();
+    if (tabContext === "Thẻ Học sinh") {
+      if (q.includes("nghỉ") || q.includes("phép")) {
+        return `Chào **${name}**, để gửi đơn xin nghỉ phép ngay trên màn hình **Thẻ Học sinh**, bạn hãy kéo xuống mục **Gửi Đơn Xin Phép Online**, chọn **Ngày nghỉ (dd/mm/yyyy)**, **Thời gian (Cả ngày / Buổi Sáng / Buổi Chiều)**, nhập lý do rồi bấm **Gửi Đơn Cho GVCN** nhé! 📝`;
+      }
+      if (q.includes("vi phạm") || q.includes("tra cứu") || q.includes("lịch sử")) {
+        return `Chào **${name}**, bạn có thể xem ngay ở mục **Tra Cứu Lịch Sử Vi Phạm Cá Nhân** phía trên màn hình: chọn **Từ ngày** và **Đến ngày** (định dạng **dd/mm/yyyy**) rồi bấm nút **Tra cứu** để xem chi tiết từng buổi nhé! 🔍`;
+      }
+      return `Chào **${name}** (${role}${className ? ` - Lớp ${className}` : ""}), mình đang sẵn sàng hỗ trợ bạn tại **Thẻ Học sinh**! Bạn có thể dùng các tính năng ngay trên màn hình như **Tra cứu lịch sử vi phạm**, **Gửi đơn xin phép online**, hoặc hỏi mình về phương pháp học tập và nề nếp nhé! ✨`;
+    }
+    if (tabContext === "Thẻ Giáo viên/Giám thị") {
+      if (q.includes("tiến độ") || q.includes("nộp")) {
+        return `Thưa Thầy/Cô **${name}**, Thầy/Cô có thể bấm trực tiếp vào nút **TIẾN ĐỘ NỘP** ở bảng điều khiển **Cổng Giáo Viên & Quản Trị** để xem danh sách các lớp đã nộp và chưa nộp báo cáo điểm danh hôm nay ạ! 📊`;
+      }
+      if (q.includes("đơn") || q.includes("nghỉ phép") || q.includes("duyệt")) {
+        return `Thưa Thầy/Cô **${name}**, tại mục **Duyệt Đơn Xin Phép Online** trong **Khu Vực Giáo Viên Chủ Nhiệm / Bộ Môn**, Thầy/Cô bấm nút **Tải lại** để hiển thị danh sách đơn mới nhất và bấm **Duyệt Phép** cho từng học sinh ạ! 📋`;
+      }
+      return `Kính chào Thầy/Cô **${name}** (${role}), hệ thống đã ghi nhận Thầy/Cô đang ở **Cổng Giáo Viên & Quản Trị**. Thầy/Cô có thể thao tác nhanh **Tiến độ nộp**, **Chốt sổ**, **Duyệt đơn xin phép online**, **Theo dõi vắng/trễ lớp học**, hoặc **Reset mật khẩu** ngay trên giao diện chính ạ! ✨`;
+    }
+    return `⚠️ Hệ thống AI đang tạm bận. Thầy/Cô và các bạn vui lòng thử gửi lại sau vài giây nhé!`;
+  }
+
+  async function callChatBackendApi(fnName, msg, currentRole, currentName, currentClass, currentTab) {
+    const args = [msg, currentRole, currentName, currentClass, currentTab];
+
+    // 1. Gọi trực tiếp Web App Chatbot chính với đầy đủ ngữ cảnh cổng hiện tại
+    try {
+      return await postGasJsonRequest(CHAT_APP_URL, fnName, args, 14000);
+    } catch (primaryErr) {
+      // Nếu đang ở Cổng điểm danh mà lỗi thì ném lỗi luôn để xử lý
+      if (currentTab === "Cổng điểm danh") {
+        throw primaryErr;
+      }
+
+      // 2. Dự phòng 1: Thử gọi qua Web App Điểm danh chính (nơi liên kết trực tiếp Google Sheets)
+      if (typeof WEB_APP_URL !== "undefined" && WEB_APP_URL && WEB_APP_URL !== CHAT_APP_URL) {
+        try {
+          return await postGasJsonRequest(WEB_APP_URL, fnName, args, 12000);
+        } catch (secondaryErr) {
+          // Tiếp tục sang lớp dự phòng 2
+        }
+      }
+
+      // 3. Dự phòng 2: Đóng gói ngữ cảnh cổng Học sinh / Giáo viên vào prompt và gửi qua luồng xử lý ổn định của CHAT_APP_URL
+      try {
+        const enrichedPrompt = buildPortalEnrichedPrompt(msg, currentRole, currentName, currentClass, currentTab);
+        return await postGasJsonRequest(CHAT_APP_URL, fnName, [enrichedPrompt, "Khách", currentName, currentClass, "Cổng điểm danh"], 14000);
+      } catch (relayErr) {
+        // 4. Dự phòng 3: Phản hồi thông minh theo đúng cổng đang mở (không báo lỗi chết)
+        return {
+          status: "success",
+          text: buildLocalPortalFallbackReply(msg, currentRole, currentName, currentClass, currentTab)
+        };
+      }
+    }
   }
 
   function toggleChatTheme() {

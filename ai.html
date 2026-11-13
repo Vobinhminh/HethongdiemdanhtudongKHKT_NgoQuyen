@@ -34,6 +34,20 @@
     .custom-scrollbar::-webkit-scrollbar { width: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+    .searchable-list {
+      position: absolute;
+      z-index: 60;
+      width: 100%;
+      top: 100%;
+      left: 0;
+      margin-top: 4px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.75rem;
+      max-height: 200px;
+      overflow-y: auto;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.05);
+    }
   </style>
 </head>
 <body class="flex flex-col items-center justify-start pb-24">
@@ -67,34 +81,38 @@
                   <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
                       <h3 class="font-bold text-blue-800 mb-3 text-sm uppercase"><i class="fas fa-user-graduate mr-1"></i> 1. Thông tin học sinh</h3>
                       
-                      <!-- CHỌN LỚP CÓ TÍCH HỢP TÌM KIẾM NHANH -->
+                      <!-- Ô GÕ TÌM & BẤM CHỌN LỚP TRỰC TIẾP -->
                       <div class="mb-3 relative select-custom" id="wrapper-ai-class">
                           <label class="block text-xs font-bold text-slate-600 mb-1">Chọn Lớp</label>
                           <input type="hidden" id="ai-inp-class" value="">
-                          <button type="button" onclick="aiToggleSelect('dropdown-ai-class')" class="w-full flex justify-between items-center p-2.5 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-700 shadow-sm hover:border-cyan-500 transition">
-                            <span id="ai-label-class" class="text-slate-400">-- Bấm chọn lớp --</span>
-                            <i class="fas fa-chevron-down text-slate-400"></i>
-                          </button>
-                          
-                          <div id="dropdown-ai-class" class="hidden absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl p-2.5">
-                            <input type="text" id="search-ai-class-input" placeholder="Gõ tên lớp để tìm..." oninput="filterAiClassList(this.value)" class="w-full px-3 py-2 mb-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:border-cyan-500">
-                            <ul id="ul-class-list" class="max-h-[180px] overflow-y-auto custom-scrollbar space-y-0.5"></ul>
+                          <div class="relative flex items-center">
+                            <input type="text" id="search-ai-class-input" autocomplete="off"
+                                   placeholder="Gõ tên lớp hoặc bấm chọn..."
+                                   onfocus="openAiClassDropdown()"
+                                   oninput="handleAiClassInput(this.value)"
+                                   class="w-full p-2.5 pr-9 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-800 placeholder-slate-400 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition">
+                            <button type="button" tabindex="-1" onclick="toggleAiDropdownIcon('dropdown-ai-class', 'search-ai-class-input')" class="absolute right-0 inset-y-0 px-3 flex items-center text-slate-400 hover:text-cyan-600">
+                              <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
                           </div>
+                          <ul id="ul-class-list" class="hidden searchable-list custom-scrollbar p-1"></ul>
                       </div>
 
-                      <!-- CHỌN HỌC SINH CÓ TÍCH HỢP TÌM KIẾM NHANH -->
+                      <!-- Ô GÕ TÌM & BẤM CHỌN HỌC SINH TRỰC TIẾP -->
                       <div class="mb-3 relative select-custom" id="wrapper-ai-name">
                           <label class="block text-xs font-bold text-slate-600 mb-1">Họ và Tên Học Sinh</label>
                           <input type="hidden" id="ai-inp-name" value="">
-                          <button type="button" onclick="aiToggleSelect('dropdown-ai-name')" class="w-full flex justify-between items-center p-2.5 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-700 shadow-sm hover:border-cyan-500 transition">
-                            <span id="ai-label-name" class="text-slate-400">-- Chọn học sinh --</span>
-                            <i class="fas fa-chevron-down text-slate-400"></i>
-                          </button>
-                          
-                          <div id="dropdown-ai-name" class="hidden absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl p-2.5">
-                            <input type="text" id="search-ai-student-input" placeholder="Gõ tên học sinh để tìm..." oninput="filterAiStudentList(this.value)" class="w-full px-3 py-2 mb-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:border-cyan-500">
-                            <ul id="ul-student-list" class="max-h-[180px] overflow-y-auto custom-scrollbar space-y-0.5"></ul>
+                          <div class="relative flex items-center">
+                            <input type="text" id="search-ai-student-input" autocomplete="off"
+                                   placeholder="Gõ tên học sinh hoặc bấm chọn..."
+                                   onfocus="openAiStudentDropdown()"
+                                   oninput="handleAiStudentInput(this.value)"
+                                   class="w-full p-2.5 pr-9 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-800 placeholder-slate-400 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition">
+                            <button type="button" tabindex="-1" onclick="toggleAiDropdownIcon('ul-student-list', 'search-ai-student-input')" class="absolute right-0 inset-y-0 px-3 flex items-center text-slate-400 hover:text-cyan-600">
+                              <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
                           </div>
+                          <ul id="ul-student-list" class="hidden searchable-list custom-scrollbar p-1"></ul>
                       </div>
 
                       <div class="grid grid-cols-2 gap-3 mb-3">
@@ -241,6 +259,7 @@
 
     let appData = { classes: [] };
     let aiCurrentStudents = [];
+    let isLoadingStudents = false;
     let capturedSamples = [null, null, null]; 
     let currentStepIndex = 0; 
     let isCountdownActive = false;
@@ -250,63 +269,151 @@
 
     document.addEventListener('click', function(e) {
       if (!e.target.closest('.select-custom')) {
-        document.querySelectorAll('div[id^="dropdown-ai-"]').forEach(el => el.classList.add('hidden'));
+        closeAllAiSearchLists();
       }
     });
 
-    function aiToggleSelect(id) {
-      document.querySelectorAll('div[id^="dropdown-ai-"]').forEach(el => {
-        if(el.id !== id) el.classList.add('hidden');
-      });
-      const target = document.getElementById(id);
-      if (target) {
-        target.classList.toggle('hidden');
-        if (!target.classList.contains('hidden')) {
-          const input = target.querySelector('input[type="text"]');
-          if (input) { input.value = ""; input.focus(); }
-          if (id === 'dropdown-ai-class') filterAiClassList("");
-          if (id === 'dropdown-ai-name') filterAiStudentList("");
-        }
+    function closeAllAiSearchLists() {
+      document.getElementById('ul-class-list').classList.add('hidden');
+      document.getElementById('ul-student-list').classList.add('hidden');
+    }
+
+    function toggleAiDropdownIcon(listId, inputId) {
+      const listEl = document.getElementById(listId === 'dropdown-ai-class' ? 'ul-class-list' : 'ul-student-list');
+      const inputEl = document.getElementById(inputId);
+      const isHidden = listEl.classList.contains('hidden');
+      closeAllAiSearchLists();
+      if (isHidden) {
+        inputEl.focus();
       }
     }
 
+    // MỞ & LỌC TRỰC TIẾP TRÊN Ô CHỌN LỚP
+    function openAiClassDropdown() {
+      closeAllAiSearchLists();
+      const inputVal = document.getElementById("search-ai-class-input").value;
+      const confirmedClass = document.getElementById("ai-inp-class").value;
+      // Nếu đã chọn lớp rồi và bấm lại vào ô, hiển thị toàn bộ danh sách lớp để dễ đổi lớp khác
+      const keyword = (confirmedClass && inputVal.trim().toLowerCase() === confirmedClass.toLowerCase()) ? "" : inputVal;
+      filterAiClassList(keyword);
+      document.getElementById("ul-class-list").classList.remove("hidden");
+    }
+
+    function handleAiClassInput(val) {
+      const trimmed = val.trim();
+      const prevClass = document.getElementById("ai-inp-class").value;
+
+      // Nếu người dùng sửa chữ khác với lớp đã xác nhận, xóa trạng thái lớp/học sinh cũ để tránh lệch dữ liệu
+      if (prevClass && trimmed.toLowerCase() !== prevClass.toLowerCase()) {
+        document.getElementById("ai-inp-class").value = "";
+        aiCurrentStudents = [];
+        document.getElementById("ai-inp-name").value = "";
+        document.getElementById("search-ai-student-input").value = "";
+        aiClearInfo();
+        aiCheckEnableUpload();
+      }
+
+      // Nếu gõ khớp chính xác tên 1 lớp trong danh sách thì tự động chọn luôn
+      const exactMatch = appData.classes.find(c => c.toLowerCase() === trimmed.toLowerCase());
+      if (exactMatch && exactMatch !== prevClass) {
+        aiChooseClass(exactMatch, false);
+      }
+
+      filterAiClassList(val);
+      document.getElementById("ul-class-list").classList.remove("hidden");
+    }
+
     function filterAiClassList(keyword) {
-      const kw = keyword.toLowerCase().trim();
+      const kw = (keyword || "").toLowerCase().trim();
       const ul = document.getElementById("ul-class-list");
+      const confirmedClass = document.getElementById("ai-inp-class").value;
       ul.innerHTML = "";
       const filtered = appData.classes.filter(c => c.toLowerCase().includes(kw));
       
       if (filtered.length === 0) {
-        ul.innerHTML = `<li class="px-3.5 py-2 text-slate-400 text-xs text-center">Không tìm thấy lớp phù hợp</li>`;
+        ul.innerHTML = `<li class="px-3.5 py-2.5 text-slate-400 text-xs text-center font-medium">Không tìm thấy lớp phù hợp</li>`;
         return;
       }
 
       filtered.forEach(c => {
+        const isSelected = c === confirmedClass;
         let li = document.createElement("li");
-        li.className = "px-3 py-2 hover:bg-blue-50 cursor-pointer font-bold text-slate-700 text-xs border-b border-slate-100 rounded transition";
-        li.innerText = c;
-        li.onclick = () => aiChooseClass(c);
+        li.className = `px-3.5 py-2.5 hover:bg-cyan-50 cursor-pointer font-bold text-xs border-b border-slate-100 rounded-lg transition flex items-center justify-between ${isSelected ? 'bg-cyan-50 text-cyan-700' : 'text-slate-700'}`;
+        li.innerHTML = `<span>${c}</span>${isSelected ? '<i class="fas fa-check text-cyan-600 text-xs"></i>' : ''}`;
+        li.onmousedown = (e) => {
+          e.preventDefault();
+          aiChooseClass(c, true);
+        };
         ul.appendChild(li);
       });
     }
 
+    // MỞ & LỌC TRỰC TIẾP TRÊN Ô CHỌN HỌC SINH
+    function openAiStudentDropdown() {
+      closeAllAiSearchLists();
+      const inputVal = document.getElementById("search-ai-student-input").value;
+      const confirmedName = document.getElementById("ai-inp-name").value;
+      const keyword = (confirmedName && inputVal.trim().toLowerCase() === confirmedName.toLowerCase()) ? "" : inputVal;
+      filterAiStudentList(keyword);
+      document.getElementById("ul-student-list").classList.remove("hidden");
+    }
+
+    function handleAiStudentInput(val) {
+      const trimmed = val.trim();
+      const prevName = document.getElementById("ai-inp-name").value;
+
+      // Xóa thông tin học sinh cũ nếu người dùng đang sửa tên khác để tránh xung đột PIN/ID
+      if (prevName && trimmed.toLowerCase() !== prevName.toLowerCase()) {
+        document.getElementById("ai-inp-name").value = "";
+        aiClearInfo();
+        aiCheckEnableUpload();
+      }
+
+      // Khớp chính xác tên 1 học sinh duy nhất thì tự động điền thông tin
+      const exactMatches = aiCurrentStudents.filter(s => s.name && s.name.trim().toLowerCase() === trimmed.toLowerCase());
+      if (exactMatches.length === 1 && exactMatches[0].name !== prevName) {
+        const idx = aiCurrentStudents.indexOf(exactMatches[0]);
+        aiChooseStudent(idx, exactMatches[0].name, false);
+      }
+
+      filterAiStudentList(val);
+      document.getElementById("ul-student-list").classList.remove("hidden");
+    }
+
     function filterAiStudentList(keyword) {
-      const kw = keyword.toLowerCase().trim();
+      const kw = (keyword || "").toLowerCase().trim();
       const ul = document.getElementById("ul-student-list");
+      const confirmedClass = document.getElementById("ai-inp-class").value;
+      const confirmedName = document.getElementById("ai-inp-name").value;
       ul.innerHTML = "";
+
+      if (!confirmedClass) {
+        ul.innerHTML = `<li class="px-3.5 py-2.5 text-amber-600 text-xs text-center font-semibold"><i class="fas fa-exclamation-circle mr-1"></i>Vui lòng chọn Lớp trước</li>`;
+        return;
+      }
+
+      if (isLoadingStudents) {
+        ul.innerHTML = `<li class="px-3.5 py-2.5 text-cyan-600 text-xs text-center font-semibold"><i class="fas fa-spinner fa-spin mr-1"></i>Đang tải danh sách lớp ${confirmedClass}...</li>`;
+        return;
+      }
+
       const filtered = aiCurrentStudents.filter(s => s.name && s.name.toLowerCase().includes(kw));
 
       if (filtered.length === 0) {
-        ul.innerHTML = `<li class="px-3.5 py-2 text-slate-400 text-xs text-center">Không tìm thấy học sinh phù hợp</li>`;
+        ul.innerHTML = `<li class="px-3.5 py-2.5 text-slate-400 text-xs text-center font-medium">Không tìm thấy học sinh phù hợp</li>`;
         return;
       }
 
       filtered.forEach(s => {
-        const realIdx = aiCurrentStudents.findIndex(item => item.name === s.name);
+        const realIdx = aiCurrentStudents.indexOf(s);
+        const isSelected = s.name === confirmedName;
         let li = document.createElement("li");
-        li.className = "px-3 py-2 hover:bg-blue-50 cursor-pointer font-bold text-slate-700 text-xs border-b border-slate-100 rounded transition";
-        li.innerText = s.name;
-        li.onclick = () => aiChooseStudent(realIdx, s.name);
+        li.className = `px-3.5 py-2.5 hover:bg-cyan-50 cursor-pointer font-bold text-xs border-b border-slate-100 rounded-lg transition flex items-center justify-between ${isSelected ? 'bg-cyan-50 text-cyan-700' : 'text-slate-700'}`;
+        li.innerHTML = `<span>${s.name}</span>${isSelected ? '<i class="fas fa-check text-cyan-600 text-xs"></i>' : ''}`;
+        li.onmousedown = (e) => {
+          e.preventDefault();
+          aiChooseStudent(realIdx, s.name, true);
+        };
         ul.appendChild(li);
       });
     }
@@ -332,32 +439,39 @@
         aiLoadCameraDevices();
     }
 
-    function aiChooseClass(c) {
+    function aiChooseClass(c, closeDropdown = true) {
         document.getElementById("ai-inp-class").value = c;
-        document.getElementById("ai-label-class").innerText = c;
-        document.getElementById("ai-label-class").classList.replace('text-slate-400', 'text-slate-800');
-        document.getElementById("dropdown-ai-class").classList.add("hidden");
+        document.getElementById("search-ai-class-input").value = c;
+        if (closeDropdown) {
+          document.getElementById("ul-class-list").classList.add("hidden");
+        }
         
         document.getElementById("ai-inp-name").value = "";
-        document.getElementById("ai-label-name").innerText = "-- Chọn học sinh --";
-        document.getElementById("ai-label-name").classList.replace('text-slate-800', 'text-slate-400');
-        document.getElementById("ul-student-list").innerHTML = "";
         document.getElementById("search-ai-student-input").value = "";
+        document.getElementById("ul-student-list").innerHTML = "";
+        aiCurrentStudents = [];
+        isLoadingStudents = true;
         aiClearInfo();
+        aiCheckEnableUpload();
 
         callBackendApi('getClassDataRawStudents', c).then(res => {
-            if(res && res.students) {
+            isLoadingStudents = false;
+            if (document.getElementById("ai-inp-class").value !== c) return;
+            if (res && res.students) {
                 aiCurrentStudents = res.students;
-                filterAiStudentList("");
+                filterAiStudentList(document.getElementById("search-ai-student-input").value);
             }
+        }).catch(() => {
+            isLoadingStudents = false;
         });
     }
 
-    function aiChooseStudent(idx, name) {
+    function aiChooseStudent(idx, name, closeDropdown = true) {
         document.getElementById("ai-inp-name").value = name;
-        document.getElementById("ai-label-name").innerText = name;
-        document.getElementById("ai-label-name").classList.replace('text-slate-400', 'text-slate-800');
-        document.getElementById("dropdown-ai-name").classList.add("hidden");
+        document.getElementById("search-ai-student-input").value = name;
+        if (closeDropdown) {
+          document.getElementById("ul-student-list").classList.add("hidden");
+        }
         
         const student = aiCurrentStudents[idx];
         const pinInput = document.getElementById("ai-inp-pin");
@@ -368,20 +482,26 @@
             document.getElementById("ai-inp-id").value = student.maHS || student.id || "";
             pinInput.disabled = false; 
             pinInput.value = ""; 
+            pinInput.classList.remove("border-emerald-500", "border-red-500");
+            pinInput.classList.add("border-slate-300");
             document.getElementById("ai-icon-pin-correct").classList.add("hidden");
             document.getElementById("ai-icon-pin-wrong").classList.add("hidden");
             aiCheckEnableUpload();
+            if (closeDropdown) pinInput.focus();
         } else { 
             aiClearInfo(); 
         }
     }
     
     function aiClearInfo() { 
+        const pinInput = document.getElementById("ai-inp-pin");
         document.getElementById("ai-inp-role").value = "";
         document.getElementById("ai-inp-dob").value = ""; 
         document.getElementById("ai-inp-id").value = ""; 
-        document.getElementById("ai-inp-pin").value = ""; 
-        document.getElementById("ai-inp-pin").disabled = true; 
+        pinInput.value = ""; 
+        pinInput.disabled = true; 
+        pinInput.classList.remove("border-emerald-500", "border-red-500");
+        pinInput.classList.add("border-slate-300");
         document.getElementById("ai-icon-pin-correct").classList.add("hidden");
         document.getElementById("ai-icon-pin-wrong").classList.add("hidden");
     }
@@ -394,7 +514,12 @@
         const iconWrong = document.getElementById("ai-icon-pin-wrong");
         const pinInput = document.getElementById("ai-inp-pin");
 
-        if (!student) return;
+        if (!student) {
+            iconCorrect.classList.add("hidden");
+            iconWrong.classList.add("hidden");
+            aiCheckEnableUpload();
+            return;
+        }
 
         if (pin.length === 6) {
             if (student.pin && pin.toString() === student.pin.toString()) { 
@@ -711,7 +836,9 @@
               .then(() => { 
                 aiReset3AngleSequence(); 
                 document.getElementById("ai-inp-name").value = ""; 
+                document.getElementById("search-ai-student-input").value = "";
                 aiClearInfo(); 
+                aiCheckEnableUpload();
               });
           } else { 
               Swal.fire('Lỗi từ Server', res.msg || 'Gửi ảnh thất bại', 'error'); 

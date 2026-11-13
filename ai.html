@@ -67,30 +67,32 @@
                   <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
                       <h3 class="font-bold text-blue-800 mb-3 text-sm uppercase"><i class="fas fa-user-graduate mr-1"></i> 1. Thông tin học sinh</h3>
                       
-                      <!-- BỎ Ô GÕ SEARCH LỚP - BẤM CHỌN TRỰC TIẾP -->
+                      <!-- CHỌN LỚP CÓ TÍCH HỢP TÌM KIẾM NHANH -->
                       <div class="mb-3 relative select-custom" id="wrapper-ai-class">
                           <label class="block text-xs font-bold text-slate-600 mb-1">Chọn Lớp</label>
                           <input type="hidden" id="ai-inp-class" value="">
-                          <button type="button" onclick="aiToggleSelect('dropdown-ai-class')" class="w-full flex justify-between p-2.5 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-700 shadow-sm hover:border-cyan-500 transition">
+                          <button type="button" onclick="aiToggleSelect('dropdown-ai-class')" class="w-full flex justify-between items-center p-2.5 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-700 shadow-sm hover:border-cyan-500 transition">
                             <span id="ai-label-class" class="text-slate-400">-- Bấm chọn lớp --</span>
                             <i class="fas fa-chevron-down text-slate-400"></i>
                           </button>
                           
-                          <div id="dropdown-ai-class" class="hidden absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl p-2">
+                          <div id="dropdown-ai-class" class="hidden absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl p-2.5">
+                            <input type="text" id="search-ai-class-input" placeholder="Gõ tên lớp để tìm..." oninput="filterAiClassList(this.value)" class="w-full px-3 py-2 mb-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:border-cyan-500">
                             <ul id="ul-class-list" class="max-h-[180px] overflow-y-auto custom-scrollbar space-y-0.5"></ul>
                           </div>
                       </div>
 
-                      <!-- BỎ Ô GÕ SEARCH HỌC SINH - BẤM CHỌN TRỰC TIẾP -->
+                      <!-- CHỌN HỌC SINH CÓ TÍCH HỢP TÌM KIẾM NHANH -->
                       <div class="mb-3 relative select-custom" id="wrapper-ai-name">
                           <label class="block text-xs font-bold text-slate-600 mb-1">Họ và Tên Học Sinh</label>
                           <input type="hidden" id="ai-inp-name" value="">
-                          <button type="button" onclick="aiToggleSelect('dropdown-ai-name')" class="w-full flex justify-between p-2.5 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-700 shadow-sm hover:border-cyan-500 transition">
+                          <button type="button" onclick="aiToggleSelect('dropdown-ai-name')" class="w-full flex justify-between items-center p-2.5 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-700 shadow-sm hover:border-cyan-500 transition">
                             <span id="ai-label-name" class="text-slate-400">-- Chọn học sinh --</span>
                             <i class="fas fa-chevron-down text-slate-400"></i>
                           </button>
                           
-                          <div id="dropdown-ai-name" class="hidden absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl p-2">
+                          <div id="dropdown-ai-name" class="hidden absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl p-2.5">
+                            <input type="text" id="search-ai-student-input" placeholder="Gõ tên học sinh để tìm..." oninput="filterAiStudentList(this.value)" class="w-full px-3 py-2 mb-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:border-cyan-500">
                             <ul id="ul-student-list" class="max-h-[180px] overflow-y-auto custom-scrollbar space-y-0.5"></ul>
                           </div>
                       </div>
@@ -257,7 +259,56 @@
         if(el.id !== id) el.classList.add('hidden');
       });
       const target = document.getElementById(id);
-      if (target) target.classList.toggle('hidden');
+      if (target) {
+        target.classList.toggle('hidden');
+        if (!target.classList.contains('hidden')) {
+          const input = target.querySelector('input[type="text"]');
+          if (input) { input.value = ""; input.focus(); }
+          if (id === 'dropdown-ai-class') filterAiClassList("");
+          if (id === 'dropdown-ai-name') filterAiStudentList("");
+        }
+      }
+    }
+
+    function filterAiClassList(keyword) {
+      const kw = keyword.toLowerCase().trim();
+      const ul = document.getElementById("ul-class-list");
+      ul.innerHTML = "";
+      const filtered = appData.classes.filter(c => c.toLowerCase().includes(kw));
+      
+      if (filtered.length === 0) {
+        ul.innerHTML = `<li class="px-3.5 py-2 text-slate-400 text-xs text-center">Không tìm thấy lớp phù hợp</li>`;
+        return;
+      }
+
+      filtered.forEach(c => {
+        let li = document.createElement("li");
+        li.className = "px-3 py-2 hover:bg-blue-50 cursor-pointer font-bold text-slate-700 text-xs border-b border-slate-100 rounded transition";
+        li.innerText = c;
+        li.onclick = () => aiChooseClass(c);
+        ul.appendChild(li);
+      });
+    }
+
+    function filterAiStudentList(keyword) {
+      const kw = keyword.toLowerCase().trim();
+      const ul = document.getElementById("ul-student-list");
+      ul.innerHTML = "";
+      const filtered = aiCurrentStudents.filter(s => s.name && s.name.toLowerCase().includes(kw));
+
+      if (filtered.length === 0) {
+        ul.innerHTML = `<li class="px-3.5 py-2 text-slate-400 text-xs text-center">Không tìm thấy học sinh phù hợp</li>`;
+        return;
+      }
+
+      filtered.forEach(s => {
+        const realIdx = aiCurrentStudents.findIndex(item => item.name === s.name);
+        let li = document.createElement("li");
+        li.className = "px-3 py-2 hover:bg-blue-50 cursor-pointer font-bold text-slate-700 text-xs border-b border-slate-100 rounded transition";
+        li.innerText = s.name;
+        li.onclick = () => aiChooseStudent(realIdx, s.name);
+        ul.appendChild(li);
+      });
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -277,17 +328,7 @@
     });
 
     function aiInitPhotoStation() {
-        const ulClass = document.getElementById("ul-class-list");
-        ulClass.innerHTML = '';
-        if (appData.classes && appData.classes.length > 0) {
-            appData.classes.forEach(c => {
-                let li = document.createElement("li");
-                li.className = "px-3 py-2 hover:bg-blue-50 cursor-pointer font-bold text-slate-700 text-xs border-b border-slate-100 rounded";
-                li.innerText = c;
-                li.onclick = () => aiChooseClass(c);
-                ulClass.appendChild(li);
-            });
-        }
+        filterAiClassList("");
         aiLoadCameraDevices();
     }
 
@@ -301,20 +342,13 @@
         document.getElementById("ai-label-name").innerText = "-- Chọn học sinh --";
         document.getElementById("ai-label-name").classList.replace('text-slate-800', 'text-slate-400');
         document.getElementById("ul-student-list").innerHTML = "";
+        document.getElementById("search-ai-student-input").value = "";
         aiClearInfo();
 
         callBackendApi('getClassDataRawStudents', c).then(res => {
             if(res && res.students) {
                 aiCurrentStudents = res.students;
-                const ulName = document.getElementById("ul-student-list");
-                ulName.innerHTML = "";
-                res.students.forEach((s, idx) => {
-                    let li = document.createElement("li");
-                    li.className = "px-3 py-2 hover:bg-blue-50 cursor-pointer font-bold text-slate-700 text-xs border-b border-slate-100 rounded";
-                    li.innerText = s.name;
-                    li.onclick = () => aiChooseStudent(idx, s.name);
-                    ulName.appendChild(li);
-                });
+                filterAiStudentList("");
             }
         });
     }

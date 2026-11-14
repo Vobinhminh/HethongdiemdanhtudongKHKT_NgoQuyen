@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Trạm Thu Thập Ảnh AI - THPT Ngô Quyền</title>
+  <title>Trạm Thu Thập Ảnh AI</title>
 
   <!-- FAVICON ICON HỆ THỐNG -->
   <link rel="icon" type="image/png" href="icon (1).png">
@@ -27,7 +27,7 @@
     body { background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%); font-family: 'Inter', sans-serif; color: #334155; min-height: 100vh; }
     .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06); }
     .glass-header { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(226, 232, 240, 0.8); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
-    #preview-canvas { width: 100%; height: 100%; object-fit: cover; border-radius: 0.75rem; background: #000; display: none; }
+    #preview-canvas { width: 100%; height: 100%; object-fit: cover; border-radius: 0.75rem; background: #0f4c81; display: none; }
     #camera-stream { width: 100%; height: 100%; object-fit: cover; border-radius: 0.75rem; transform: scaleX(-1); background: #000; display: none; }
     .loader { border: 3px solid rgba(59, 130, 246, 0.1); border-top: 3px solid #3b82f6; border-radius: 50%; width: 45px; height: 45px; animation: spin 0.8s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -50,12 +50,12 @@
     }
   </style>
 </head>
-<body class="flex flex-col items-center justify-start pb-24">
+<body class="flex flex-col items-center justify-start pb-12">
 
-  <header class="glass-header text-slate-800 p-4 sticky top-0 z-50 flex items-center justify-between max-w-5xl w-full mx-auto rounded-b-2xl mb-6">
+  <header class="glass-header text-slate-800 p-3.5 sticky top-0 z-50 flex items-center justify-between max-w-5xl w-full mx-auto rounded-b-2xl mb-4">
     <div class="flex items-center space-x-2.5">
         <img src="icon (1).png" alt="Logo" class="w-8 h-8 object-contain drop-shadow" onerror="this.src='https://img.icons8.com/fluency/512/camera.png'">
-        <span class="font-bold text-sm tracking-wider text-cyan-700">TRẠM ẢNH AI NGÔ QUYỀN</span>
+        <span class="font-bold text-sm tracking-wider text-cyan-700">TRẠM THU THẬP ẢNH AI</span>
     </div>
     
     <button type="button" onclick="goBackToPortal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl text-xs transition shadow-md flex items-center space-x-1.5">
@@ -67,18 +67,18 @@
     <div class="loader mb-4"></div><p class="text-cyan-600 font-semibold text-sm animate-pulse" id="loading-msg">KẾT NỐI HỆ THỐNG...</p>
   </div>
 
-  <div id="step-ai-photo" class="hidden flex-1 p-4 flex flex-col items-center max-w-5xl w-full mx-auto">
-      <div class="glass-card w-full p-5 sm:p-6 rounded-2xl mb-6 shadow-xl border border-cyan-100">
-          <div class="text-center mb-6">
-              <h1 class="text-xl sm:text-2xl font-extrabold text-cyan-700 uppercase tracking-wide flex items-center justify-center">
-                <img src="icon (1).png" class="w-8 h-8 mr-2 object-contain inline-block" onerror="this.style.display='none'">
+  <div id="step-ai-photo" class="hidden flex-1 px-4 flex flex-col items-center max-w-5xl w-full mx-auto">
+      <div class="glass-card w-full p-4 sm:p-5 rounded-2xl mb-4 shadow-xl border border-cyan-100">
+          <div class="text-center mb-4">
+              <h1 class="text-lg sm:text-xl font-extrabold text-cyan-700 uppercase tracking-wide flex items-center justify-center">
+                <img src="icon (1).png" class="w-7 h-7 mr-2 object-contain inline-block" onerror="this.style.display='none'">
                 Trạm Thu Thập 3 Mẫu Ảnh Thẻ AI
               </h1>
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
               <!-- CỘT TRÁI: THÔNG TIN HỌC SINH & ĐẨY DỮ LIỆU -->
-              <div class="lg:col-span-5 space-y-4">
+              <div class="lg:col-span-5 space-y-3.5">
                   <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
                       <h3 class="font-bold text-blue-800 mb-3 text-sm uppercase"><i class="fas fa-user-graduate mr-1"></i> 1. Thông tin học sinh</h3>
                       
@@ -92,7 +92,7 @@
                                    onfocus="openAiClassDropdown()"
                                    oninput="handleAiClassInput(this.value)"
                                    class="w-full p-2.5 pr-9 bg-white border border-slate-300 rounded-lg font-bold text-sm text-slate-800 placeholder-slate-400 shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition">
-                            <button type="button" tabindex="-1" onclick="toggleAiDropdownIcon('dropdown-ai-class', 'search-ai-class-input')" class="absolute right-0 inset-y-0 px-3 flex items-center text-slate-400 hover:text-cyan-600">
+                            <button type="button" tabindex="-1" onclick="toggleAiDropdownIcon('ul-class-list', 'search-ai-class-input')" class="absolute right-0 inset-y-0 px-3 flex items-center text-slate-400 hover:text-cyan-600">
                               <i class="fas fa-chevron-down text-xs"></i>
                             </button>
                           </div>
@@ -139,71 +139,71 @@
                   </div>
 
                   <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
-                      <h3 class="font-bold text-emerald-800 mb-2 text-sm uppercase"><i class="fas fa-cloud-upload-alt mr-1"></i> 2. Đẩy Bộ 3 Mẫu Ảnh Lên Drive</h3>
-                      <p class="text-[11px] text-slate-500 mb-3">Chụp đủ 3 góc mẫu ảnh + Nhập đúng PIN để mở khóa lưu dữ liệu.</p>
-                      <button id="ai-btn-upload" onclick="aiUploadToServer()" disabled class="w-full bg-slate-400 text-white font-bold py-3 rounded-xl shadow-md transition flex items-center justify-center">
-                          <i class="fas fa-upload mr-2 text-lg"></i> LƯU VÀ ĐẨY BỘ 3 ẢNH LÊN DRIVE
+                      <h3 class="font-bold text-emerald-800 mb-1.5 text-sm uppercase"><i class="fas fa-cloud-upload-alt mr-1"></i> 2. Đẩy Bộ 3 Mẫu Ảnh Lên Drive</h3>
+                      <p class="text-[11px] text-slate-500 mb-2.5">Chụp đủ 3 góc mẫu ảnh + Nhập đúng PIN để mở khóa lưu dữ liệu.</p>
+                      <button id="ai-btn-upload" onclick="aiUploadToServer()" disabled class="w-full bg-slate-400 text-white font-bold py-2.5 rounded-xl shadow-md transition flex items-center justify-center text-sm">
+                          <i class="fas fa-upload mr-2"></i> LƯU VÀ ĐẨY BỘ 3 ẢNH LÊN DRIVE
                       </button>
                   </div>
               </div>
 
-              <!-- CỘT PHẢI: TRẠM QUÉT CAMERA TO RÕ + LỌC NỀN XANH / TRẮNG + GIỮ YÊN 100% -->
-              <div class="lg:col-span-7 flex flex-col items-center bg-slate-800 p-4 sm:p-5 rounded-2xl border-4 border-slate-700 relative shadow-xl">
-                  <div class="flex flex-col w-full mb-3 space-y-2">
+              <!-- CỘT PHẢI: TRẠM QUÉT CAMERA GỌN GÀNG + TỰ ĐỘNG LỌC NỀN XANH TRƯỚC KHI CHỤP -->
+              <div class="lg:col-span-7 flex flex-col items-center bg-slate-800 p-3.5 sm:p-4 rounded-2xl border-4 border-slate-700 relative shadow-xl">
+                  <div class="flex flex-col w-full mb-2.5 space-y-2">
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          <div class="flex items-center justify-between bg-slate-900 p-2 rounded-lg border border-slate-600">
-                              <span class="text-white text-xs font-bold uppercase"><i class="fas fa-video text-cyan-400 mr-1.5"></i> Thiết bị Cam</span>
-                              <select id="ai-camera-select" class="bg-slate-700 text-white text-xs p-1.5 rounded border border-slate-500 outline-none max-w-[145px]" onchange="aiSwitchCamera()"><option value="">-- Mặc định --</option></select>
+                          <div class="flex items-center justify-between bg-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-600">
+                              <span class="text-white text-[11px] font-bold uppercase"><i class="fas fa-video text-cyan-400 mr-1"></i> Thiết bị Cam</span>
+                              <select id="ai-camera-select" class="bg-slate-700 text-white text-xs p-1 rounded border border-slate-500 outline-none max-w-[140px]" onchange="aiSwitchCamera()"><option value="">-- Mặc định --</option></select>
                           </div>
-                          <!-- MẶC ĐỊNH LỌC KHUNG NỀN XANH HOẶC TRẮNG -->
-                          <div class="flex items-center justify-between bg-slate-900 p-2 rounded-lg border border-slate-600">
-                              <span class="text-white text-xs font-bold uppercase"><i class="fas fa-fill-drip text-cyan-400 mr-1.5"></i> Nền lọc AI</span>
+                          <!-- MẶC ĐỊNH TỰ ĐỘNG LỌC NỀN XANH THẺ NGAY KHI BẬT CAM -->
+                          <div class="flex items-center justify-between bg-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-600">
+                              <span class="text-white text-[11px] font-bold uppercase"><i class="fas fa-fill-drip text-cyan-400 mr-1"></i> Lọc nền AI</span>
                               <div class="flex items-center space-x-1.5">
-                                  <button type="button" id="btn-bg-blue" onclick="setAiBgColor('blue')" class="px-2.5 py-1 rounded text-[11px] font-extrabold bg-blue-600 text-white ring-2 ring-cyan-400 transition">
+                                  <button type="button" id="btn-bg-blue" onclick="setAiBgColor('blue')" class="px-2 py-0.5 rounded text-[11px] font-extrabold bg-blue-600 text-white ring-2 ring-cyan-400 transition">
                                       Xanh thẻ
                                   </button>
-                                  <button type="button" id="btn-bg-white" onclick="setAiBgColor('white')" class="px-2.5 py-1 rounded text-[11px] font-extrabold bg-slate-700 text-slate-200 hover:bg-white hover:text-slate-900 transition">
+                                  <button type="button" id="btn-bg-white" onclick="setAiBgColor('white')" class="px-2 py-0.5 rounded text-[11px] font-extrabold bg-slate-700 text-slate-200 hover:bg-white hover:text-slate-900 transition">
                                       Trắng
                                   </button>
                               </div>
                           </div>
                       </div>
 
-                      <div class="flex items-center justify-between w-full bg-slate-900 p-2.5 rounded-lg border border-slate-600">
-                          <span class="text-white text-xs font-bold uppercase tracking-wide"><i class="fas fa-vr-cardboard text-cyan-400 mr-2"></i> QUÉT LƯỚI AR MẶT</span>
+                      <div class="flex items-center justify-between w-full bg-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-600">
+                          <span class="text-white text-[11px] font-bold uppercase tracking-wide"><i class="fas fa-vr-cardboard text-cyan-400 mr-1.5"></i> QUÉT LƯỚI AR MẶT (TỰ ĐỘNG LỌC NỀN XANH)</span>
                           <label class="relative inline-flex items-center cursor-pointer">
                               <input type="checkbox" id="ai-toggle-ar" class="sr-only peer" checked>
-                              <div class="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500 shadow-inner"></div>
+                              <div class="w-10 h-5 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500 shadow-inner"></div>
                           </label>
                       </div>
                   </div>
 
-                  <div id="scan-instruction-box" class="w-full bg-cyan-900/90 text-cyan-200 text-xs sm:text-sm font-bold p-3 rounded-xl mb-3 text-center border border-cyan-500/50 flex items-center justify-center space-x-2">
-                    <i class="fas fa-info-circle text-cyan-400 text-base"></i>
-                    <span id="scan-instruction-text">Hãy Bật Cam và chọn Quét Mẫu 1 (Chính diện)</span>
+                  <div id="scan-instruction-box" class="w-full bg-cyan-900/90 text-cyan-200 text-xs font-bold px-3 py-2 rounded-xl mb-2.5 text-center border border-cyan-500/50 flex items-center justify-center space-x-2">
+                    <i class="fas fa-info-circle text-cyan-400 text-sm"></i>
+                    <span id="scan-instruction-text">Hãy Bật Cam — AI sẽ tự động lọc nền xanh trước khi chụp</span>
                   </div>
 
-                  <!-- KHUNG CAMERA TO RÕ GIỐNG MÀN HÌNH QUÉT NHẬN DIỆN -->
-                  <div id="camera-viewport" class="relative w-full min-h-[340px] sm:min-h-[430px] bg-black overflow-hidden rounded-xl border border-slate-600 shadow-2xl flex items-center justify-center">
-                    <div id="cam-placeholder" class="text-center p-6 text-slate-400">
-                      <i class="fas fa-camera text-5xl mb-3 text-slate-600 block"></i>
-                      <p class="text-xs font-bold uppercase tracking-wider">Khung hình Camera AI (Nền Xanh / Trắng)</p>
-                      <p class="text-[11px] text-slate-500 mt-1">Bấm "Bật Cam" bên dưới để bắt đầu thu thập 3 góc khuôn mặt</p>
+                  <!-- KHUNG CAMERA VỪA VẶN HIỂN THỊ ĐẦY ĐỦ CÙNG CÁC NÚT CHỨC NĂNG -->
+                  <div id="camera-viewport" class="relative w-full h-[230px] sm:h-[265px] bg-black overflow-hidden rounded-xl border border-slate-600 shadow-xl flex items-center justify-center">
+                    <div id="cam-placeholder" class="text-center p-4 text-slate-400">
+                      <i class="fas fa-camera text-4xl mb-2 text-slate-600 block"></i>
+                      <p class="text-xs font-bold uppercase tracking-wider">Khung hình Camera AI (Tự động lọc nền xanh)</p>
+                      <p class="text-[11px] text-slate-500 mt-1">Bấm "Bật Cam" bên dưới để hiển thị trực tiếp trên nền xanh</p>
                     </div>
 
                     <video id="camera-stream" autoplay playsinline></video>
                     <canvas id="preview-canvas" class="w-full h-full rounded-xl"></canvas>
 
                     <!-- THANH TRẠNG THÁI GIỮ YÊN 100% KHI QUÉT -->
-                    <div id="stillness-hud" class="hidden absolute top-3 left-3 right-3 z-20 bg-slate-950/85 backdrop-blur-md border border-cyan-500/50 rounded-xl p-2.5 shadow-lg">
-                      <div class="flex items-center justify-between text-xs font-extrabold mb-1.5">
+                    <div id="stillness-hud" class="hidden absolute top-2 left-2.5 right-2.5 z-20 bg-slate-950/85 backdrop-blur-md border border-cyan-500/50 rounded-xl p-2 shadow-lg">
+                      <div class="flex items-center justify-between text-[11px] font-extrabold mb-1">
                         <span id="stillness-angle-badge" class="text-cyan-400 uppercase tracking-wider">MẪU 1/3: CHÍNH DIỆN</span>
-                        <span id="stillness-percent-text" class="text-amber-300">Đang kiểm tra độ ổn định: 0%</span>
+                        <span id="stillness-percent-text" class="text-amber-300">Giữ yên: 0%</span>
                       </div>
-                      <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+                      <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
                         <div id="stillness-progress-bar" class="h-full bg-gradient-to-r from-amber-400 via-cyan-400 to-emerald-400 transition-all duration-100" style="width: 0%"></div>
                       </div>
-                      <p id="stillness-hint-text" class="text-[11px] text-slate-200 font-semibold mt-1.5 text-center">
+                      <p id="stillness-hint-text" class="text-[10px] text-slate-200 font-semibold mt-1 text-center">
                         Giữ đầu thật yên đạt 100% hệ thống sẽ tự động chụp!
                       </p>
                     </div>
@@ -212,41 +212,43 @@
                     <div id="capture-flash" class="pointer-events-none absolute inset-0 bg-white opacity-0 transition-opacity duration-200 z-30"></div>
 
                     <div id="ai-loading" class="absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center hidden rounded-xl z-30">
-                        <div class="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mb-3"></div>
-                        <span class="text-white font-bold text-sm tracking-widest animate-pulse" id="ai-loading-text">AI ĐANG TÁCH NỀN XANH THẺ...</span>
+                        <div class="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                        <span class="text-white font-bold text-xs tracking-widest animate-pulse" id="ai-loading-text">AI ĐANG LƯU ẢNH NỀN XANH THẺ...</span>
                     </div>
                   </div>
 
-                  <div class="w-full grid grid-cols-3 gap-2.5 mt-3">
-                    <div class="bg-slate-900 p-2 rounded-xl border border-slate-700 text-center">
+                  <!-- 3 KHUNG ẢNH MẪU THU NHỎ GỌN -->
+                  <div class="w-full grid grid-cols-3 gap-2 mt-2.5">
+                    <div class="bg-slate-900 p-1.5 rounded-xl border border-slate-700 text-center">
                       <span class="text-[10px] text-slate-300 font-bold block mb-1">Mẫu 1: Chính diện</span>
-                      <div id="thumb-box-1" class="w-full h-20 bg-slate-800 rounded-lg flex items-center justify-center border border-dashed border-slate-600 overflow-hidden">
-                        <i class="fas fa-user text-slate-600 text-lg"></i>
+                      <div id="thumb-box-1" class="w-full h-14 sm:h-16 bg-slate-800 rounded-lg flex items-center justify-center border border-dashed border-slate-600 overflow-hidden">
+                        <i class="fas fa-user text-slate-600 text-base"></i>
                       </div>
                     </div>
-                    <div class="bg-slate-900 p-2 rounded-xl border border-slate-700 text-center">
+                    <div class="bg-slate-900 p-1.5 rounded-xl border border-slate-700 text-center">
                       <span class="text-[10px] text-slate-300 font-bold block mb-1">Mẫu 2: Quay Trái</span>
-                      <div id="thumb-box-2" class="w-full h-20 bg-slate-800 rounded-lg flex items-center justify-center border border-dashed border-slate-600 overflow-hidden">
-                        <i class="fas fa-user text-slate-600 text-lg"></i>
+                      <div id="thumb-box-2" class="w-full h-14 sm:h-16 bg-slate-800 rounded-lg flex items-center justify-center border border-dashed border-slate-600 overflow-hidden">
+                        <i class="fas fa-user text-slate-600 text-base"></i>
                       </div>
                     </div>
-                    <div class="bg-slate-900 p-2 rounded-xl border border-slate-700 text-center">
+                    <div class="bg-slate-900 p-1.5 rounded-xl border border-slate-700 text-center">
                       <span class="text-[10px] text-slate-300 font-bold block mb-1">Mẫu 3: Quay Phải</span>
-                      <div id="thumb-box-3" class="w-full h-20 bg-slate-800 rounded-lg flex items-center justify-center border border-dashed border-slate-600 overflow-hidden">
-                        <i class="fas fa-user text-slate-600 text-lg"></i>
+                      <div id="thumb-box-3" class="w-full h-14 sm:h-16 bg-slate-800 rounded-lg flex items-center justify-center border border-dashed border-slate-600 overflow-hidden">
+                        <i class="fas fa-user text-slate-600 text-base"></i>
                       </div>
                     </div>
                   </div>
 
-                  <div class="w-full grid grid-cols-2 gap-2.5 mt-4 z-20">
-                      <button id="ai-btn-toggle-cam" onclick="aiToggleCamera()" class="bg-slate-600 hover:bg-slate-500 text-white font-bold py-3 rounded-xl text-xs sm:text-sm transition shadow-md flex items-center justify-center">
+                  <!-- HÀNG NÚT CHỨC NĂNG GỌN TRÊN 1 HÀNG (TẮT CAM + QUÉT LẠI NHỎ + QUÉT MẪU) -->
+                  <div id="ai-action-row" class="w-full flex items-center gap-2 mt-2.5 z-20">
+                      <button id="ai-btn-toggle-cam" onclick="aiToggleCamera()" class="flex-1 bg-slate-600 hover:bg-slate-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition shadow-md flex items-center justify-center whitespace-nowrap">
                           <i class="fas fa-power-off mr-1.5"></i> Bật Cam
                       </button>
-                      <button id="ai-btn-step-action" onclick="triggerNextAngleStep()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded-xl shadow-lg text-xs sm:text-sm transition flex items-center justify-center hidden">
-                          <i class="fas fa-crosshairs mr-1.5"></i> <span id="btn-step-label">Quét Mẫu 1 (Chính diện)</span>
+                      <button id="ai-btn-retake" onclick="aiReset3AngleSequence()" title="Quét lại từ đầu" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition shadow-md flex items-center justify-center whitespace-nowrap hidden">
+                          <i class="fas fa-redo mr-1"></i> Quét lại
                       </button>
-                      <button id="ai-btn-retake" onclick="aiReset3AngleSequence()" class="col-span-2 bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl text-xs sm:text-sm transition shadow-md flex items-center justify-center hidden">
-                          <i class="fas fa-redo mr-1.5"></i> Quét Lại Từ Đầu
+                      <button id="ai-btn-step-action" onclick="triggerNextAngleStep()" class="flex-[1.5] bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2.5 px-3 rounded-xl shadow-lg text-xs transition flex items-center justify-center whitespace-nowrap hidden">
+                          <i class="fas fa-crosshairs mr-1.5"></i> <span id="btn-step-label">Quét Mẫu 1 (Chính diện)</span>
                       </button>
                   </div>
               </div>
@@ -302,6 +304,7 @@
     let aiIsARActive = true;
     let aiIsCameraOn = false;
     let aiCurrentStream = null;
+    let aiMirrorCamera = true;
 
     // CẤU HÌNH MÀU NỀN LỌC MẶC ĐỊNH: XANH THẺ (#0f4c81) HOẶC TRẮNG (#ffffff)
     let selectedBgMode = 'blue'; // 'blue' | 'white'
@@ -316,11 +319,14 @@
       const btnWhite = document.getElementById('btn-bg-white');
 
       if (selectedBgMode === 'blue') {
-        btnBlue.className = 'px-2.5 py-1 rounded text-[11px] font-extrabold bg-blue-600 text-white ring-2 ring-cyan-400 transition';
-        btnWhite.className = 'px-2.5 py-1 rounded text-[11px] font-extrabold bg-slate-700 text-slate-200 hover:bg-white hover:text-slate-900 transition';
+        btnBlue.className = 'px-2 py-0.5 rounded text-[11px] font-extrabold bg-blue-600 text-white ring-2 ring-cyan-400 transition';
+        btnWhite.className = 'px-2 py-0.5 rounded text-[11px] font-extrabold bg-slate-700 text-slate-200 hover:bg-white hover:text-slate-900 transition';
       } else {
-        btnBlue.className = 'px-2.5 py-1 rounded text-[11px] font-extrabold bg-slate-700 text-slate-200 hover:bg-blue-600 hover:text-white transition';
-        btnWhite.className = 'px-2.5 py-1 rounded text-[11px] font-extrabold bg-white text-slate-900 ring-2 ring-cyan-400 transition';
+        btnBlue.className = 'px-2 py-0.5 rounded text-[11px] font-extrabold bg-slate-700 text-slate-200 hover:bg-blue-600 hover:text-white transition';
+        btnWhite.className = 'px-2 py-0.5 rounded text-[11px] font-extrabold bg-white text-slate-900 ring-2 ring-cyan-400 transition';
+      }
+      if (canvasElement) {
+        canvasElement.style.background = BG_COLOR_MAP[selectedBgMode].hex;
       }
     }
 
@@ -333,7 +339,7 @@
       resolve: null,
       prevLandmarks: null,
       stableStartTime: null,
-      requiredStableMs: 1600, // Giữ yên liên tục 1.6 giây để đạt 100%
+      requiredStableMs: 1600,
       lastBeepMilestone: 0
     };
 
@@ -349,8 +355,9 @@
     }
 
     function toggleAiDropdownIcon(listId, inputId) {
-      const listEl = document.getElementById(listId === 'dropdown-ai-class' ? 'ul-class-list' : 'ul-student-list');
+      const listEl = document.getElementById(listId);
       const inputEl = document.getElementById(inputId);
+      if (!listEl || !inputEl) return;
       const isHidden = listEl.classList.contains('hidden');
       closeAllAiSearchLists();
       if (isHidden) {
@@ -650,6 +657,11 @@
     const videoElement = document.getElementById('camera-stream'); 
     const canvasElement = document.getElementById('preview-canvas'); 
     const canvasCtx = canvasElement.getContext('2d');
+    const liveFgCanvas = document.createElement('canvas');
+    const liveFgCtx = liveFgCanvas.getContext('2d');
+    let latestSegMask = null;
+    let latestFaceLandmarks = null;
+
     document.getElementById('ai-toggle-ar').addEventListener('change', (e) => { aiIsARActive = e.target.checked; });
 
     async function aiLoadCameraDevices() {
@@ -657,6 +669,7 @@
             const devices = await navigator.mediaDevices.enumerateDevices(); 
             const videoDevices = devices.filter(device => device.kind === 'videoinput');
             const cameraSelect = document.getElementById('ai-camera-select'); 
+            const prevVal = cameraSelect.value;
             cameraSelect.innerHTML = '';
             if (videoDevices.length === 0) return cameraSelect.innerHTML = '<option value="">Không tìm thấy Cam</option>';
             videoDevices.forEach((device, index) => { 
@@ -665,6 +678,7 @@
               option.text = device.label || `Camera ${index + 1}`; 
               cameraSelect.appendChild(option); 
             });
+            if (prevVal) cameraSelect.value = prevVal;
         } catch (err) {}
     }
 
@@ -672,10 +686,15 @@
 
     const faceMesh = new FaceMesh({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`});
     faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 }); 
-    faceMesh.onResults(aiOnFaceMeshResults);
+    faceMesh.onResults((results) => {
+        latestFaceLandmarks = (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) ? results.multiFaceLandmarks[0] : null;
+    });
 
     const selfieSegmentation = new SelfieSegmentation({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`});
     selfieSegmentation.setOptions({ modelSelection: 1 });
+    selfieSegmentation.onResults((results) => {
+        latestSegMask = results.segmentationMask || null;
+    });
 
     function aiToggleCamera() { if (aiIsCameraOn) aiStopCamera(); else aiStartCamera(); }
 
@@ -699,9 +718,12 @@
           aiCurrentStream = null; 
         }
         videoElement.srcObject = null; 
+        latestSegMask = null;
+        latestFaceLandmarks = null;
         canvasElement.style.display = "none";
         document.getElementById("cam-placeholder").classList.remove("hidden");
         document.getElementById("ai-btn-step-action").classList.add("hidden");
+        document.getElementById("ai-btn-retake").classList.add("hidden");
         const btnToggle = document.getElementById("ai-btn-toggle-cam"); 
         btnToggle.innerHTML = '<i class="fas fa-power-off mr-1.5"></i> Bật Cam'; 
         btnToggle.classList.replace('bg-red-600', 'bg-slate-600'); 
@@ -715,11 +737,17 @@
             const selectedDeviceId = document.getElementById('ai-camera-select').value;
             const constraints = { video: { width: { ideal: 1280 }, height: { ideal: 720 }, ...(selectedDeviceId ? { deviceId: { exact: selectedDeviceId } } : { facingMode: "user" }) } };
             aiCurrentStream = await navigator.mediaDevices.getUserMedia(constraints); 
+            const videoTrack = aiCurrentStream.getVideoTracks()[0];
+            const settings = videoTrack && videoTrack.getSettings ? videoTrack.getSettings() : {};
+            aiMirrorCamera = (settings.facingMode !== 'environment');
+
             videoElement.srcObject = aiCurrentStream;
             videoElement.onloadedmetadata = () => {
                 videoElement.play(); 
+                aiLoadCameraDevices();
                 document.getElementById("cam-placeholder").classList.add("hidden");
                 document.getElementById("ai-btn-step-action").classList.remove("hidden"); 
+                document.getElementById("ai-btn-retake").classList.remove("hidden");
                 canvasElement.style.display = "block"; 
                 const btnToggle = document.getElementById("ai-btn-toggle-cam"); 
                 btnToggle.innerHTML = '<i class="fas fa-power-off mr-1.5"></i> Tắt Cam'; 
@@ -730,65 +758,57 @@
         } catch (err) { Swal.fire('Lỗi', 'Cấp quyền Camera thất bại!', 'error'); }
     }
 
-    let isFaceMeshBusy = false;
+    let isAiPipelineBusy = false;
     async function aiProcessRealTimeAR() {
-        if (aiIsCameraOn && !isCapturingProcess && !isFaceMeshBusy && videoElement.videoWidth > 0 && videoElement.readyState >= 2) {
-            isFaceMeshBusy = true;
+        if (aiIsCameraOn && !isCapturingProcess && !isAiPipelineBusy && videoElement.videoWidth > 0 && videoElement.readyState >= 2) {
+            isAiPipelineBusy = true;
             try {
+                // Chạy tuần tự tách nền xanh & nhận diện lưới mặt trên cùng 1 khung hình
+                await selfieSegmentation.send({image: videoElement});
                 await faceMesh.send({image: videoElement});
+                renderLiveCompositeFrame();
             } catch (e) {}
-            isFaceMeshBusy = false;
+            isAiPipelineBusy = false;
         }
         if (aiIsCameraOn) requestAnimationFrame(aiProcessRealTimeAR);
     }
 
-    function computeFaceStability(landmarks) {
-        if (!landmarks || landmarks.length === 0) return { hasFace: false, isStable: false, motion: 1 };
-        const keyIndices = [1, 33, 263, 61, 291, 152, 10]; // Mũi, đuôi mắt trái/phải, khóe miệng, cằm, trán
-        
-        // Kiểm tra khuôn mặt nằm gọn trong khung và đủ kích thước
-        const nose = landmarks[1];
-        const leftCheek = landmarks[234];
-        const rightCheek = landmarks[454];
-        const faceWidth = Math.abs(rightCheek.x - leftCheek.x);
-        const inFrame = nose.x > 0.18 && nose.x < 0.82 && nose.y > 0.15 && nose.y < 0.85 && faceWidth > 0.14;
+    function renderLiveCompositeFrame() {
+        if (!aiIsCameraOn || isCapturingProcess || videoElement.videoWidth === 0) return;
+        const w = videoElement.videoWidth;
+        const h = videoElement.videoHeight;
+        if (canvasElement.width !== w) canvasElement.width = w;
+        if (canvasElement.height !== h) canvasElement.height = h;
 
-        if (!inFrame) {
-            return { hasFace: true, outOfFrame: true, isStable: false, motion: 1 };
+        canvasCtx.save();
+        // 1. Vẽ nền xanh thẻ (hoặc trắng) tự động ngay trước khi chụp
+        canvasCtx.fillStyle = BG_COLOR_MAP[selectedBgMode].hex;
+        canvasCtx.fillRect(0, 0, w, h);
+
+        if (aiMirrorCamera) {
+            canvasCtx.translate(w, 0);
+            canvasCtx.scale(-1, 1);
         }
 
-        if (!stillnessMonitor.prevLandmarks) {
-            stillnessMonitor.prevLandmarks = keyIndices.map(i => ({ x: landmarks[i].x, y: landmarks[i].y }));
-            return { hasFace: true, outOfFrame: false, isStable: true, motion: 0 };
+        // 2. Tách chủ thể lên nền xanh theo thời gian thực
+        if (latestSegMask) {
+            if (liveFgCanvas.width !== w) liveFgCanvas.width = w;
+            if (liveFgCanvas.height !== h) liveFgCanvas.height = h;
+            liveFgCtx.save();
+            liveFgCtx.clearRect(0, 0, w, h);
+            liveFgCtx.drawImage(latestSegMask, 0, 0, w, h);
+            liveFgCtx.globalCompositeOperation = 'source-in';
+            liveFgCtx.drawImage(videoElement, 0, 0, w, h);
+            liveFgCtx.restore();
+            canvasCtx.drawImage(liveFgCanvas, 0, 0, w, h);
+        } else {
+            canvasCtx.drawImage(videoElement, 0, 0, w, h);
         }
 
-        let totalDist = 0;
-        keyIndices.forEach((idx, k) => {
-            const dx = landmarks[idx].x - stillnessMonitor.prevLandmarks[k].x;
-            const dy = landmarks[idx].y - stillnessMonitor.prevLandmarks[k].y;
-            totalDist += Math.hypot(dx, dy);
-            stillnessMonitor.prevLandmarks[k] = { x: landmarks[idx].x, y: landmarks[idx].y };
-        });
-
-        const avgMotion = totalDist / keyIndices.length;
-        // Ngưỡng rung lắc cực nhỏ (< 0.0045 tọa độ chuẩn hóa) mới tính là giữ yên
-        return { hasFace: true, outOfFrame: false, isStable: avgMotion < 0.0045, motion: avgMotion };
-    }
-
-    function aiOnFaceMeshResults(results) {
-        if (isCapturingProcess) return; 
-        canvasElement.width = videoElement.videoWidth; 
-        canvasElement.height = videoElement.videoHeight;
-        canvasCtx.save(); 
-        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-        const isFrontCamera = !document.getElementById('ai-camera-select').value; 
-        if(isFrontCamera) { canvasCtx.translate(canvasElement.width, 0); canvasCtx.scale(-1, 1); }
-        canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
-
-        const landmarks = (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) ? results.multiFaceLandmarks[0] : null;
+        const landmarks = latestFaceLandmarks;
         let ovalColor = '#00E676';
 
-        // XỬ LÝ KIỂM TRA GIỮ YÊN 100% NẾU ĐANG TRONG CHẾ ĐỘ CHỤP MẪU
+        // 3. Kiểm tra giữ yên 100% nếu đang quét mẫu
         if (stillnessMonitor.active) {
             const stability = computeFaceStability(landmarks);
             const percentEl = document.getElementById("stillness-percent-text");
@@ -831,7 +851,7 @@
                 percentEl.innerText = `Giữ yên: ${pct}%`;
                 percentEl.className = pct === 100 ? "text-emerald-400" : "text-cyan-300";
                 barEl.style.width = `${pct}%`;
-                hintEl.innerText = pct < 100 ? `${stillnessMonitor.subtext} — Tiếp tục giữ yên...` : "Đạt 100%! Đang chụp & tách nền AI...";
+                hintEl.innerText = pct < 100 ? `${stillnessMonitor.subtext} — Tiếp tục giữ yên...` : "Đạt 100%! Đang chụp ảnh nền xanh...";
 
                 const milestone = Math.floor(pct / 33);
                 if (milestone > stillnessMonitor.lastBeepMilestone && pct < 100) {
@@ -840,11 +860,14 @@
                 }
 
                 if (pct >= 100) {
+                    canvasCtx.restore();
                     triggerCaptureAt100Percent();
+                    return;
                 }
             }
         }
         
+        // 4. Vẽ lưới AR khuôn mặt trên nền xanh
         if (aiIsARActive && landmarks) {
             drawConnectors(canvasCtx, landmarks, FACEMESH_TESSELATION, {color: '#C0C0C070', lineWidth: 1}); 
             drawConnectors(canvasCtx, landmarks, FACEMESH_RIGHT_EYE, {color: '#00FFFF', lineWidth: 2});     
@@ -855,13 +878,43 @@
         canvasCtx.restore();
     }
 
+    function computeFaceStability(landmarks) {
+        if (!landmarks || landmarks.length === 0) return { hasFace: false, isStable: false, motion: 1 };
+        const keyIndices = [1, 33, 263, 61, 291, 152, 10];
+        
+        const nose = landmarks[1];
+        const leftCheek = landmarks[234];
+        const rightCheek = landmarks[454];
+        const faceWidth = Math.abs(rightCheek.x - leftCheek.x);
+        const inFrame = nose.x > 0.18 && nose.x < 0.82 && nose.y > 0.15 && nose.y < 0.85 && faceWidth > 0.14;
+
+        if (!inFrame) {
+            return { hasFace: true, outOfFrame: true, isStable: false, motion: 1 };
+        }
+
+        if (!stillnessMonitor.prevLandmarks) {
+            stillnessMonitor.prevLandmarks = keyIndices.map(i => ({ x: landmarks[i].x, y: landmarks[i].y }));
+            return { hasFace: true, outOfFrame: false, isStable: true, motion: 0 };
+        }
+
+        let totalDist = 0;
+        keyIndices.forEach((idx, k) => {
+            const dx = landmarks[idx].x - stillnessMonitor.prevLandmarks[k].x;
+            const dy = landmarks[idx].y - stillnessMonitor.prevLandmarks[k].y;
+            totalDist += Math.hypot(dx, dy);
+            stillnessMonitor.prevLandmarks[k] = { x: landmarks[idx].x, y: landmarks[idx].y };
+        });
+
+        const avgMotion = totalDist / keyIndices.length;
+        return { hasFace: true, outOfFrame: false, isStable: avgMotion < 0.0045, motion: avgMotion };
+    }
+
     async function triggerCaptureAt100Percent() {
         const resolveFn = stillnessMonitor.resolve;
         stillnessMonitor.active = false;
         stillnessMonitor.resolve = null;
         isCapturingProcess = true;
 
-        // Hiệu ứng chớp chụp ảnh
         const flashEl = document.getElementById("capture-flash");
         flashEl.classList.remove("opacity-0");
         flashEl.classList.add("opacity-80");
@@ -871,17 +924,21 @@
         }, 180);
 
         document.getElementById("stillness-hud").classList.add("hidden");
-        document.getElementById("ai-loading-text").innerText = `AI ĐANG TÁCH ${BG_COLOR_MAP[selectedBgMode].label}...`;
+        document.getElementById("ai-loading-text").innerText = `AI ĐANG LƯU ẢNH ${BG_COLOR_MAP[selectedBgMode].label}...`;
         document.getElementById("ai-loading").classList.remove("hidden");
         playBeep(1200, 0.2);
 
-        selfieSegmentation.onResults((results) => {
-            let imgBase64 = processSegmentedCrop(results);
+        try {
+            await selfieSegmentation.send({ image: videoElement });
+            const imgBase64 = processSegmentedCrop({ image: videoElement, segmentationMask: latestSegMask });
             document.getElementById("ai-loading").classList.add("hidden");
             isCapturingProcess = false;
             if (resolveFn) resolveFn(imgBase64);
-        });
-        await selfieSegmentation.send({ image: videoElement });
+        } catch (err) {
+            document.getElementById("ai-loading").classList.add("hidden");
+            isCapturingProcess = false;
+            if (resolveFn) resolveFn(null);
+        }
     }
 
     async function triggerNextAngleStep() {
@@ -916,7 +973,6 @@
         } else {
           document.getElementById("ai-btn-step-action").classList.add("hidden");
           document.getElementById("scan-instruction-text").innerText = angleConfigs[2].instruction;
-          document.getElementById("ai-btn-retake").classList.remove("hidden");
           
           Swal.fire({
             icon: 'success',
@@ -952,7 +1008,19 @@
     }
 
     function processSegmentedCrop(results) {
-        const w = results.image.width; const h = results.image.height;
+        const w = results.image.videoWidth || results.image.width;
+        const h = results.image.videoHeight || results.image.height;
+
+        if (!results.segmentationMask) {
+            const fallbackCanvas = document.createElement('canvas');
+            fallbackCanvas.width = w;
+            fallbackCanvas.height = h;
+            const fCtx = fallbackCanvas.getContext('2d');
+            if (aiMirrorCamera) { fCtx.translate(w, 0); fCtx.scale(-1, 1); }
+            fCtx.drawImage(results.image, 0, 0, w, h);
+            return fallbackCanvas.toDataURL('image/jpeg', 0.85);
+        }
+
         const tempCanvas = document.createElement('canvas'); tempCanvas.width = w; tempCanvas.height = h; 
         const tempCtx = tempCanvas.getContext('2d');
         tempCtx.drawImage(results.segmentationMask, 0, 0, w, h); 
@@ -966,26 +1034,32 @@
           } 
         }
         
-        const padding = 40; minX = Math.max(0, minX - padding); minY = Math.max(0, minY - padding); maxX = Math.min(w, maxX + padding); maxY = Math.min(h, maxY + padding);
-        const cropW = maxX - minX; const cropH = maxY - minY;
+        const padding = 40;
+        minX = Math.max(0, minX - padding);
+        minY = Math.max(0, minY - padding);
+        maxX = Math.min(w, maxX + padding);
+        maxY = Math.min(h, maxY + padding);
+        const cropW = maxX > minX ? (maxX - minX) : w;
+        const cropH = maxY > minY ? (maxY - minY) : h;
+        const srcX = maxX > minX ? minX : 0;
+        const srcY = maxY > minY ? minY : 0;
 
         const outCanvas = document.createElement('canvas');
-        outCanvas.width = cropW > 0 ? cropW : w; 
-        outCanvas.height = cropH > 0 ? cropH : h;
+        outCanvas.width = cropW; 
+        outCanvas.height = cropH;
         const outCtx = outCanvas.getContext('2d');
 
-        // TÔ MÀU NỀN LỌC MẶC ĐỊNH XANH THẺ (#0f4c81) HOẶC TRẮNG (#ffffff)
+        // TÔ MÀU NỀN LỌC XANH THẺ (#0f4c81) HOẶC TRẮNG (#ffffff)
         outCtx.fillStyle = BG_COLOR_MAP[selectedBgMode].hex; 
         outCtx.fillRect(0, 0, outCanvas.width, outCanvas.height);
         
         const fgCanvas = document.createElement('canvas'); 
         fgCanvas.width = outCanvas.width; fgCanvas.height = outCanvas.height; 
         const fgCtx = fgCanvas.getContext('2d');
-        const isFrontCamera = !document.getElementById('ai-camera-select').value; 
-        if(isFrontCamera) { fgCtx.translate(outCanvas.width, 0); fgCtx.scale(-1, 1); }
-        fgCtx.drawImage(results.segmentationMask, w - maxX, minY, cropW, cropH, 0, 0, cropW, cropH);
+        if (aiMirrorCamera) { fgCtx.translate(outCanvas.width, 0); fgCtx.scale(-1, 1); }
+        fgCtx.drawImage(results.segmentationMask, srcX, srcY, cropW, cropH, 0, 0, cropW, cropH);
         fgCtx.globalCompositeOperation = 'source-in'; 
-        fgCtx.drawImage(results.image, w - maxX, minY, cropW, cropH, 0, 0, cropW, cropH);
+        fgCtx.drawImage(results.image, srcX, srcY, cropW, cropH, 0, 0, cropW, cropH);
 
         outCtx.drawImage(fgCanvas, 0, 0); 
         return outCanvas.toDataURL('image/jpeg', 0.85);
@@ -1003,17 +1077,19 @@
       isCapturingProcess = false;
 
       [1, 2, 3].forEach(i => {
-        document.getElementById(`thumb-box-${i}`).innerHTML = `<i class="fas fa-user text-slate-600 text-lg"></i>`;
+        document.getElementById(`thumb-box-${i}`).innerHTML = `<i class="fas fa-user text-slate-600 text-base"></i>`;
       });
 
-      document.getElementById("scan-instruction-text").innerText = "Hãy Bật Cam và chọn Quét Mẫu 1 (Chính diện)";
+      document.getElementById("scan-instruction-text").innerText = "Hãy Bật Cam — AI sẽ tự động lọc nền xanh trước khi chụp";
       document.getElementById("btn-step-label").innerText = "Quét Mẫu 1 (Chính diện)";
-      document.getElementById("ai-btn-retake").classList.add("hidden");
       const stepBtn = document.getElementById("ai-btn-step-action");
       stepBtn.disabled = false;
       stepBtn.classList.remove("opacity-60", "cursor-not-allowed");
       if (aiIsCameraOn) {
         stepBtn.classList.remove("hidden");
+        document.getElementById("ai-btn-retake").classList.remove("hidden");
+      } else {
+        document.getElementById("ai-btn-retake").classList.add("hidden");
       }
       aiCheckEnableUpload();
     }

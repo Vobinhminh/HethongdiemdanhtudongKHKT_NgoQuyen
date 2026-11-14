@@ -33,26 +33,41 @@
     .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
     
-    /* Ẩn AM/PM và tối ưu hóa ô nhập thời gian */
+    /* Ẩn AM/PM và tối ưu hóa ô nhập thời gian chống tràn khung */
+    input[type="time"] {
+      -moz-appearance: textfield;
+      min-width: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      padding-left: 0.25rem !important;
+      padding-right: 0.25rem !important;
+    }
     input[type="time"]::-webkit-datetime-edit-ampm-field { display: none; }
     input[type="time"]::-webkit-clear-button { display: none; }
     input[type="time"]::-webkit-inner-spin-button { display: none; }
-    input[type="time"] { -moz-appearance: textfield; }
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      margin-left: 2px;
+      padding: 0;
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+    }
     
     .searchable-list { position: absolute; z-index: 60; width: 100%; top: 100%; left: 0; margin-top: 4px; background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; max-height: 220px; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
   </style>
 </head>
 <body class="flex flex-col items-center justify-start">
 
-  <div class="w-full max-w-5xl min-h-screen flex flex-col relative pb-24">
+  <div class="w-full max-w-7xl min-h-screen flex flex-col relative pb-24 md:px-4 lg:px-6">
     
     <!-- HEADER -->
-    <header class="glass-header text-slate-800 p-4 sticky top-0 z-50 flex items-center justify-between max-w-md w-full mx-auto rounded-b-2xl">
+    <header class="glass-header text-slate-800 p-4 sticky top-0 z-50 flex items-center justify-between max-w-md md:max-w-4xl lg:max-w-6xl w-full mx-auto rounded-b-2xl">
       <div class="flex items-center space-x-2.5">
         <img src="icon (1).png" alt="Logo" class="w-8 h-8 object-contain drop-shadow" onerror="this.src='https://img.icons8.com/fluency/512/book.png'">
-        <span class="font-bold text-sm tracking-wider text-blue-700">THPT NGÔ QUYỀN</span>
+        <span class="font-bold text-sm md:text-base tracking-wider text-blue-700">THPT NGÔ QUYỀN</span>
       </div>
-      <button type="button" id="btn-back" onclick="goBack()" class="hidden bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-1.5 px-3 rounded-lg text-xs border border-slate-200 transition shadow-sm">
+      <button type="button" id="btn-back" onclick="goBack()" class="hidden bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-1.5 px-3 md:px-4 rounded-lg text-xs border border-slate-200 transition shadow-sm">
         <i class="fas fa-arrow-left mr-1"></i> Quay lại
       </button>
       <div id="session-info" class="text-xs font-semibold bg-white px-3 py-1.5 rounded-full border border-slate-200 text-slate-600 shadow-sm">
@@ -61,14 +76,14 @@
     </header>
 
     <!-- LOADING SCREEN -->
-    <div id="loading-screen" class="flex-1 flex flex-col items-center justify-center p-6 text-center max-w-md w-full mx-auto">
+    <div id="loading-screen" class="flex-1 flex flex-col items-center justify-center p-6 text-center max-w-md md:max-w-xl w-full mx-auto">
       <div class="loader mb-4"></div>
       <p class="text-blue-600 font-semibold text-sm animate-pulse" id="loading-msg">KẾT NỐI HỆ THỐNG...</p>
     </div>
 
     <!-- MÀN HÌNH ĐÓNG CỬA -->
-    <div id="out-of-time-screen" class="hidden flex-1 flex flex-col items-center justify-center p-6 text-center max-w-md w-full mx-auto">
-      <div class="glass-card p-8 rounded-2xl w-full max-w-sm border-red-200">
+    <div id="out-of-time-screen" class="hidden flex-1 flex flex-col items-center justify-center p-6 text-center max-w-md md:max-w-xl w-full mx-auto">
+      <div class="glass-card p-8 rounded-2xl w-full max-w-sm md:max-w-md border-red-200">
         <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-200"><i class="fas fa-lock text-red-500 text-2xl"></i></div>
         <h2 class="text-lg font-bold text-red-600 mb-2">HỆ THỐNG ĐÃ KHÓA</h2>
         <p id="out-of-time-msg" class="text-slate-500 text-sm whitespace-pre-line leading-relaxed"></p>
@@ -79,22 +94,28 @@
     </div>
 
     <!-- CỔNG CHÍNH (STEP 0) -->
-    <div id="step-0" class="hidden flex-1 flex flex-col items-center justify-center p-6 max-w-md w-full mx-auto">
-      <div class="glass-card p-8 rounded-3xl w-full text-center">
-        <div class="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-5 p-2 shadow-inner border border-blue-100">
-            <img src="icon (1).png" alt="Logo Trường" class="w-20 h-20 object-contain" onerror="this.src='https://img.icons8.com/fluency/512/book.png'">
+    <div id="step-0" class="hidden flex-1 flex flex-col items-center justify-center p-6 max-w-md md:max-w-3xl lg:max-w-5xl w-full mx-auto">
+      <div class="glass-card p-8 md:p-10 lg:p-12 rounded-3xl w-full text-center">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-10 items-center">
+          <div class="md:col-span-5 flex flex-col items-center justify-center md:border-r md:border-slate-200/80 md:pr-6">
+            <div class="w-24 h-24 md:w-28 md:h-28 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-5 p-2 shadow-inner border border-blue-100">
+                <img src="icon (1).png" alt="Logo Trường" class="w-20 h-20 md:w-24 md:h-24 object-contain" onerror="this.src='https://img.icons8.com/fluency/512/book.png'">
+            </div>
+            <h2 class="text-2xl lg:text-3xl font-extrabold text-slate-800 mb-2 tracking-wide">CỔNG ĐIỂM DANH</h2>
+            <p class="text-xs md:text-sm text-slate-400 font-medium mb-5 md:mb-0">Hệ Thống Quản Lý Điểm Danh THPT Ngô Quyền</p>
+          </div>
+          <div class="md:col-span-7 flex flex-col justify-center space-y-3 md:space-y-4">
+            <button type="button" onclick="changeStep('1')" class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 text-white font-bold py-4 md:py-5 px-5 rounded-xl shadow-lg flex items-center justify-center space-x-3 transition active:scale-95 text-sm md:text-base"><i class="fas fa-user-graduate text-xl"></i><span>Học sinh đăng nhập</span></button>
+            <button type="button" onclick="openTramDiemDanh()" class="w-full bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 text-white font-bold py-4 md:py-5 px-5 rounded-xl shadow-lg flex items-center justify-center space-x-3 transition active:scale-95 text-sm md:text-base"><i class="fas fa-camera-retro text-xl"></i><span>Trạm thu thập ảnh AI</span></button>
+            <button type="button" onclick="changeStep('gv-login')" class="w-full bg-white border-2 border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-4 md:py-5 px-5 rounded-xl shadow-sm flex items-center justify-center space-x-3 transition active:scale-95 text-sm md:text-base"><i class="fas fa-chalkboard-teacher text-xl text-slate-500"></i><span>Giáo viên đăng nhập</span></button>
+          </div>
         </div>
-        <h2 class="text-2xl font-extrabold text-slate-800 mb-2 tracking-wide">CỔNG ĐIỂM DANH</h2>
-        <p class="text-xs text-slate-400 font-medium mb-5">Hệ Thống Quản Lý Điểm Danh THPT Ngô Quyền</p>
-        <button type="button" onclick="changeStep('1')" class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 text-white font-bold py-4 px-4 rounded-xl shadow-lg mb-3 flex items-center justify-center space-x-3 transition active:scale-95"><i class="fas fa-user-graduate text-xl"></i><span>Học sinh đăng nhập</span></button>
-        <button type="button" onclick="openTramDiemDanh()" class="w-full bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 text-white font-bold py-4 px-4 rounded-xl shadow-lg mb-3 flex items-center justify-center space-x-3 transition active:scale-95"><i class="fas fa-camera-retro text-xl"></i><span>Trạm thu thập ảnh AI</span></button>
-        <button type="button" onclick="changeStep('gv-login')" class="w-full bg-white border-2 border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-4 px-4 rounded-xl shadow-sm flex items-center justify-center space-x-3 transition active:scale-95"><i class="fas fa-chalkboard-teacher text-xl text-slate-500"></i><span>Giáo viên đăng nhập</span></button>
       </div>
     </div>
 
     <!-- ĐĂNG NHẬP GIÁO VIÊN / GIÁM THỊ (STEP GV-LOGIN) -->
-    <div id="step-gv-login" class="hidden flex-1 p-5 flex flex-col justify-center max-w-md w-full mx-auto">
-      <div class="glass-card p-6 rounded-2xl shadow-xl border border-emerald-100">
+    <div id="step-gv-login" class="hidden flex-1 p-5 flex flex-col justify-center max-w-md md:max-w-xl lg:max-w-2xl w-full mx-auto">
+      <div class="glass-card p-6 md:p-8 rounded-2xl shadow-xl border border-emerald-100">
         <h2 class="text-xl font-bold text-slate-800 text-center mb-5 border-b pb-3">XÁC THỰC GIÁO VIÊN</h2>
         
         <!-- Searchable Input Tên Giáo Viên -->
@@ -105,145 +126,169 @@
           <ul id="list-gv-name" class="hidden searchable-list custom-scrollbar"></ul>
         </div>
         
-        <div class="mb-4">
-          <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Chức vụ hệ thống</label>
-          <input type="text" id="gv-auth-role" readonly placeholder="Chức vụ..." class="w-full p-3 bg-slate-100 border border-slate-300 rounded-xl text-slate-600 font-bold text-sm">
-        </div>
-        <div class="mb-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Chức vụ hệ thống</label>
+            <input type="text" id="gv-auth-role" readonly placeholder="Chức vụ..." class="w-full p-3 bg-slate-100 border border-slate-300 rounded-xl text-slate-600 font-bold text-sm">
+          </div>
+          <div>
             <label class="block text-xs font-bold text-slate-500 uppercase mb-2">2. Mật khẩu (PIN)</label>
             <input type="password" id="gv-auth-pin" maxlength="6" inputmode="numeric" pattern="[0-9]*" onkeypress="return event.charCode >= 48 && event.charCode <= 57" oninput="clearInlineError('gv-auth-error')" placeholder="Mật khẩu PIN 6 số..." class="w-full p-3 bg-white border border-slate-300 rounded-xl text-center text-lg tracking-widest font-mono shadow-sm">
-            <p id="gv-auth-error" class="text-red-500 text-xs font-bold mt-2 text-center hidden"></p>
+          </div>
         </div>
+        <p id="gv-auth-error" class="text-red-500 text-xs font-bold mb-3 text-center hidden"></p>
         <button type="button" id="btn-submit-gv" onclick="submitGiaoVienLogin()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition active:scale-95"><i class="fas fa-sign-in-alt mr-1"></i> ĐĂNG NHẬP GIÁO VIÊN</button>
       </div>
     </div>
 
     <!-- BẢNG ĐIỀU KHIỂN GIÁO VIÊN / ADMIN (STEP ADMIN) -->
-    <div id="step-admin" class="hidden flex-1 p-4 flex flex-col max-w-md w-full mx-auto pb-24">
-      <div class="glass-card p-5 rounded-3xl shadow-xl border border-blue-100 text-center mb-4">
-        <h2 class="text-xl font-bold text-slate-800 mb-1">CỔNG GIÁO VIÊN & QUẢN TRỊ</h2>
-        <p class="text-xs text-blue-600 font-bold mb-4" id="admin-welcome-text"></p>
-        
-        <!-- ADMIN CONTROLS (Chỉ hiện với Admin/Quản lý) -->
-        <div id="admin-only-buttons" class="grid grid-cols-2 gap-3 mb-3 hidden">
-          <button type="button" onclick="adminCheckStats()" class="bg-blue-50 text-blue-700 p-3 rounded-xl shadow-sm border border-blue-200 font-bold text-xs"><i class="fas fa-chart-pie text-xl mb-1 block"></i>TIẾN ĐỘ NỘP</button>
-          <button type="button" onclick="adminLockData()" class="bg-amber-50 text-amber-700 p-3 rounded-xl shadow-sm border border-amber-200 font-bold text-xs"><i class="fas fa-lock text-xl mb-1 block"></i>CHỐT SỔ</button>
-          <button type="button" id="btn-admin-config" onclick="adminOpenConfig()" class="col-span-2 bg-indigo-50 text-indigo-700 p-3 rounded-xl shadow-sm border border-indigo-200 font-bold text-xs"><i class="fas fa-cogs text-lg mr-2"></i>CÀI ĐẶT HỆ THỐNG</button>
-          <button type="button" id="btn-admin-data" onclick="changeStep('admin-data')" class="col-span-2 bg-emerald-50 text-emerald-700 p-3 rounded-xl shadow-sm border border-emerald-200 font-bold text-xs"><i class="fas fa-database text-lg mr-2"></i>QUẢN LÝ DỮ LIỆU & NHẬP FILE</button>
+    <div id="step-admin" class="hidden flex-1 p-4 flex flex-col max-w-md md:max-w-4xl lg:max-w-6xl w-full mx-auto pb-24">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start">
+        <!-- Cột Trái: Thông tin & Điều khiển Quản trị -->
+        <div class="lg:col-span-4 space-y-4">
+          <div class="glass-card p-5 rounded-3xl shadow-xl border border-blue-100 text-center">
+            <h2 class="text-xl font-bold text-slate-800 mb-1">CỔNG GIÁO VIÊN & QUẢN TRỊ</h2>
+            <p class="text-xs text-blue-600 font-bold mb-4" id="admin-welcome-text"></p>
+            
+            <!-- ADMIN CONTROLS (Chỉ hiện với Admin/Quản lý) -->
+            <div id="admin-only-buttons" class="grid grid-cols-2 gap-3 mb-1 hidden">
+              <button type="button" onclick="adminCheckStats()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 p-3 rounded-xl shadow-sm border border-blue-200 font-bold text-xs transition"><i class="fas fa-chart-pie text-xl mb-1 block"></i>TIẾN ĐỘ NỘP</button>
+              <button type="button" onclick="adminLockData()" class="bg-amber-50 hover:bg-amber-100 text-amber-700 p-3 rounded-xl shadow-sm border border-amber-200 font-bold text-xs transition"><i class="fas fa-lock text-xl mb-1 block"></i>CHỐT SỔ</button>
+              <button type="button" id="btn-admin-config" onclick="adminOpenConfig()" class="col-span-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-3 rounded-xl shadow-sm border border-indigo-200 font-bold text-xs transition"><i class="fas fa-cogs text-lg mr-2"></i>CÀI ĐẶT HỆ THỐNG</button>
+              <button type="button" id="btn-admin-data" onclick="changeStep('admin-data')" class="col-span-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-3 rounded-xl shadow-sm border border-emerald-200 font-bold text-xs transition"><i class="fas fa-database text-lg mr-2"></i>QUẢN LÝ DỮ LIỆU & NHẬP FILE</button>
+            </div>
+          </div>
+
+          <button type="button" onclick="changeStep('0')" class="hidden lg:flex w-full items-center justify-center text-sm text-slate-500 border border-slate-200 rounded-xl py-3 bg-white font-bold hover:bg-slate-50 transition shadow-sm"><i class="fas fa-sign-out-alt mr-1.5"></i> Đăng Xuất Quản Trị</button>
+        </div>
+
+        <!-- Cột Phải: Khu vực GVCN & Giáo viên Bộ môn -->
+        <div class="lg:col-span-8">
+          <div class="glass-card p-5 rounded-3xl shadow-xl border border-indigo-100 mb-4">
+             <h3 class="font-extrabold text-indigo-700 mb-4 text-sm uppercase text-center border-b pb-2"><i class="fas fa-user-shield mr-2"></i> KHU VỰC GIÁO VIÊN CHỦ NHIỆM / BỘ MÔN</h3>
+             
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+               <!-- 1. DUYỆT ĐƠN XIN PHÉP ONLINE -->
+               <div class="bg-purple-50/70 p-4 rounded-2xl border border-purple-200 flex flex-col">
+                  <h4 class="font-bold text-xs text-purple-800 uppercase mb-2 flex items-center justify-between">
+                    <span><i class="fas fa-file-signature mr-1.5"></i> Duyệt Đơn Xin Phép Online</span>
+                    <button type="button" onclick="loadOnlineLeavesGV()" class="text-[11px] bg-purple-200 hover:bg-purple-300 text-purple-800 px-2 py-0.5 rounded-md font-bold transition"><i class="fas fa-sync-alt mr-1"></i>Tải lại</button>
+                  </h4>
+                  <div id="gv-leave-requests-list" class="max-h-56 overflow-y-auto custom-scrollbar text-xs space-y-2 mt-2"></div>
+               </div>
+
+               <!-- 2. BẢNG THEO DÕI VẮNG TRỄ CỦA HỌC SINH TRONG LỚP -->
+               <div class="bg-blue-50/70 p-4 rounded-2xl border border-blue-200 flex flex-col">
+                  <h4 class="font-bold text-xs text-blue-800 uppercase mb-3"><i class="fas fa-chart-bar mr-1.5"></i> Theo Dõi Vắng / Trễ Lớp Học</h4>
+                  <div class="mb-3 relative">
+                     <input type="text" id="inp-gvcn-class" autocomplete="off" placeholder="Nhập/Chọn lớp cần xem..." class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold text-xs">
+                     <ul id="list-gvcn-class" class="hidden searchable-list custom-scrollbar"></ul>
+                  </div>
+                  <div class="flex gap-2 mb-3">
+                     <div class="relative flex-1">
+                       <input type="text" id="gvcn-start-date" placeholder="Từ ngày (dd/mm/yyyy)" maxlength="10" inputmode="numeric" class="vn-date-input w-full p-2 pr-7 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-700 focus:border-blue-500 focus:outline-none">
+                       <i class="far fa-calendar-alt absolute right-2.5 top-2.5 text-slate-400 text-xs pointer-events-none"></i>
+                     </div>
+                     <div class="relative flex-1">
+                       <input type="text" id="gvcn-end-date" placeholder="Đến ngày (dd/mm/yyyy)" maxlength="10" inputmode="numeric" class="vn-date-input w-full p-2 pr-7 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-700 focus:border-blue-500 focus:outline-none">
+                       <i class="far fa-calendar-alt absolute right-2.5 top-2.5 text-slate-400 text-xs pointer-events-none"></i>
+                     </div>
+                  </div>
+                  <button type="button" onclick="fetchClassAbsenceSummary()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl text-xs shadow transition"><i class="fas fa-search mr-1"></i> Xem Báo Cáo Vi Phạm Lớp</button>
+                  <div id="gvcn-class-summary-result" class="mt-3 hidden max-h-60 overflow-y-auto custom-scrollbar bg-white rounded-xl border p-2 text-xs"></div>
+               </div>
+             </div>
+
+             <!-- 3. THÊM HỌC SINH MỚI & RESET MẬT KHẨU -->
+             <div class="grid grid-cols-2 gap-3">
+                <button type="button" onclick="openQuickAddStudentModal()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-3 rounded-xl border border-emerald-200 font-bold text-xs text-center transition"><i class="fas fa-user-plus text-base mb-1 block"></i>Thêm Học Sinh</button>
+                <button type="button" onclick="openQuickResetModal()" class="bg-red-50 hover:bg-red-100 text-red-700 p-3 rounded-xl border border-red-200 font-bold text-xs text-center transition"><i class="fas fa-key text-base mb-1 block"></i>Reset Mật Khẩu</button>
+             </div>
+          </div>
+
+          <button type="button" onclick="changeStep('0')" class="lg:hidden w-full text-sm text-slate-500 border border-slate-200 rounded-xl py-3 bg-white font-bold hover:bg-slate-50 transition shadow-sm"><i class="fas fa-sign-out-alt mr-1"></i> Đăng Xuất Quản Trị</button>
         </div>
       </div>
-
-      <!-- KHU VỰC DÀNH CHO GVCN & GIÁO VIÊN BỘ MÔN -->
-      <div class="glass-card p-5 rounded-3xl shadow-xl border border-indigo-100 mb-4">
-         <h3 class="font-extrabold text-indigo-700 mb-4 text-sm uppercase text-center border-b pb-2"><i class="fas fa-user-shield mr-2"></i> KHU VỰC GIÁO VIÊN CHỦ NHIỆM / BỘ MÔN</h3>
-         
-         <!-- 1. DUYỆT ĐƠN XIN PHÉP ONLINE -->
-         <div class="mb-5 bg-purple-50/70 p-4 rounded-2xl border border-purple-200">
-            <h4 class="font-bold text-xs text-purple-800 uppercase mb-2 flex items-center justify-between">
-              <span><i class="fas fa-file-signature mr-1.5"></i> Duyệt Đơn Xin Phép Online</span>
-              <button type="button" onclick="loadOnlineLeavesGV()" class="text-[11px] bg-purple-200 hover:bg-purple-300 text-purple-800 px-2 py-0.5 rounded-md font-bold transition"><i class="fas fa-sync-alt mr-1"></i>Tải lại</button>
-            </h4>
-            <div id="gv-leave-requests-list" class="max-h-48 overflow-y-auto custom-scrollbar text-xs space-y-2 mt-2">
-               <p class="text-slate-400 text-center py-3 italic">Bấm "Tải lại" để xem đơn xin nghỉ online mới nhất.</p>
-            </div>
-         </div>
-
-         <!-- 2. BẢNG THEO DÕI VẮNG TRỄ CỦA HỌC SINH TRONG LỚP -->
-         <div class="mb-5 bg-blue-50/70 p-4 rounded-2xl border border-blue-200">
-            <h4 class="font-bold text-xs text-blue-800 uppercase mb-3"><i class="fas fa-chart-bar mr-1.5"></i> Theo Dõi Vắng / Trễ Lớp Học</h4>
-            <div class="mb-3 relative">
-               <input type="text" id="inp-gvcn-class" autocomplete="off" placeholder="Nhập/Chọn lớp cần xem..." class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold text-xs">
-               <ul id="list-gvcn-class" class="hidden searchable-list custom-scrollbar"></ul>
-            </div>
-            <div class="flex gap-2 mb-3">
-               <div class="relative flex-1">
-                 <input type="text" id="gvcn-start-date" placeholder="Từ ngày (dd/mm/yyyy)" maxlength="10" inputmode="numeric" class="vn-date-input w-full p-2 pr-7 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-700 focus:border-blue-500 focus:outline-none">
-                 <i class="far fa-calendar-alt absolute right-2.5 top-2.5 text-slate-400 text-xs pointer-events-none"></i>
-               </div>
-               <div class="relative flex-1">
-                 <input type="text" id="gvcn-end-date" placeholder="Đến ngày (dd/mm/yyyy)" maxlength="10" inputmode="numeric" class="vn-date-input w-full p-2 pr-7 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-700 focus:border-blue-500 focus:outline-none">
-                 <i class="far fa-calendar-alt absolute right-2.5 top-2.5 text-slate-400 text-xs pointer-events-none"></i>
-               </div>
-            </div>
-            <button type="button" onclick="fetchClassAbsenceSummary()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl text-xs shadow transition"><i class="fas fa-search mr-1"></i> Xem Báo Cáo Vi Phạm Lớp</button>
-            <div id="gvcn-class-summary-result" class="mt-3 hidden max-h-60 overflow-y-auto custom-scrollbar bg-white rounded-xl border p-2 text-xs"></div>
-         </div>
-
-         <!-- 3. THÊM HỌC SINH MỚI & RESET MẬT KHẨU -->
-         <div class="grid grid-cols-2 gap-3">
-            <button type="button" onclick="openQuickAddStudentModal()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-3 rounded-xl border border-emerald-200 font-bold text-xs text-center transition"><i class="fas fa-user-plus text-base mb-1 block"></i>Thêm Học Sinh</button>
-            <button type="button" onclick="openQuickResetModal()" class="bg-red-50 hover:bg-red-100 text-red-700 p-3 rounded-xl border border-red-200 font-bold text-xs text-center transition"><i class="fas fa-key text-base mb-1 block"></i>Reset Mật Khẩu</button>
-         </div>
-      </div>
-
-      <button type="button" onclick="changeStep('0')" class="w-full text-sm text-slate-500 border border-slate-200 rounded-xl py-3 bg-white font-bold hover:bg-slate-50 transition shadow-sm"><i class="fas fa-sign-out-alt mr-1"></i> Đăng Xuất Quản Trị</button>
     </div>
 
     <!-- ADMIN CÀI ĐẶT HỆ THỐNG (STEP ADMIN-CONFIG) -->
-    <div id="step-admin-config" class="hidden flex-1 flex flex-col p-4 max-w-md w-full mx-auto">
+    <div id="step-admin-config" class="hidden flex-1 flex flex-col p-4 max-w-md md:max-w-4xl lg:max-w-6xl w-full mx-auto">
       <div class="glass-card p-4 rounded-2xl mb-4 text-center">
-        <h3 class="font-bold text-indigo-600 mb-1 uppercase text-sm"><i class="fas fa-cogs mr-2"></i> CÀI ĐẶT HỆ THỐNG</h3>
+        <h3 class="font-bold text-indigo-600 mb-1 uppercase text-sm md:text-base"><i class="fas fa-cogs mr-2"></i> CÀI ĐẶT HỆ THỐNG</h3>
       </div>
       
-      <div class="glass-card p-4 rounded-xl border-t-4 border-t-blue-500 mb-4">
+      <div class="glass-card p-4 md:p-5 rounded-xl border-t-4 border-t-blue-500 mb-4">
         <label class="flex items-center space-x-3 mb-4 cursor-pointer">
           <input type="checkbox" id="cfg-require-subject" class="w-5 h-5 text-blue-600">
           <span class="font-bold text-sm">Bật tính năng chọn Môn học</span>
         </label>
-        <label class="block text-xs font-bold text-slate-500 mb-1">Môn học CA SÁNG (Cách nhau dấu phẩy)</label>
-        <textarea id="cfg-subj-sang" rows="3" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-xs mb-3"></textarea>
-        <label class="block text-xs font-bold text-slate-500 mb-1">Môn học CA CHIỀU (Cách nhau dấu phẩy)</label>
-        <textarea id="cfg-subj-chieu" rows="3" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-xs"></textarea>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">Môn học CA SÁNG (Cách nhau dấu phẩy)</label>
+            <textarea id="cfg-subj-sang" rows="3" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs"></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">Môn học CA CHIỀU (Cách nhau dấu phẩy)</label>
+            <textarea id="cfg-subj-chieu" rows="3" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs"></textarea>
+          </div>
+        </div>
       </div>
       
-      <div class="glass-card p-4 rounded-xl border-t-4 border-t-indigo-500 mb-20">
+      <div class="glass-card p-4 md:p-5 rounded-xl border-t-4 border-t-indigo-500 mb-20">
         <div class="flex justify-between items-center mb-3 border-b pb-2">
             <h4 class="font-bold text-sm">Khóa thời gian điểm danh</h4>
-            <button type="button" onclick="restoreDefaultConfig()" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold hover:bg-red-200 transition"><i class="fas fa-sync-alt mr-1"></i>Mặc định</button>
+            <button type="button" onclick="restoreDefaultConfig()" class="text-[10px] md:text-xs bg-red-100 text-red-600 px-2.5 py-1 rounded font-bold hover:bg-red-200 transition"><i class="fas fa-sync-alt mr-1"></i>Mặc định</button>
         </div>
-        <div class="flex space-x-2 mb-4">
-          <button type="button" onclick="syncTime('Sang')" class="flex-1 bg-indigo-50 text-indigo-700 py-2 rounded-lg text-xs font-bold">Đồng bộ Ca Sáng</button>
-          <button type="button" onclick="syncTime('Chieu')" class="flex-1 bg-indigo-50 text-indigo-700 py-2 rounded-lg text-xs font-bold">Đồng bộ Ca Chiều</button>
+        <div class="flex space-x-2 mb-4 max-w-lg">
+          <button type="button" onclick="syncTime('Sang')" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-2 rounded-lg text-xs font-bold transition">Đồng bộ Ca Sáng</button>
+          <button type="button" onclick="syncTime('Chieu')" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-2 rounded-lg text-xs font-bold transition">Đồng bộ Ca Chiều</button>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="time-grid"></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3" id="time-grid"></div>
       </div>
 
       <div class="fixed bottom-0 left-0 right-0 p-4 glass-header flex justify-center z-40">
-        <button type="button" onclick="saveAdminConfigData()" class="w-full max-w-md bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition"><i class="fas fa-save mr-1"></i> LƯU CÀI ĐẶT</button>
+        <button type="button" onclick="saveAdminConfigData()" class="w-full max-w-md md:max-w-4xl lg:max-w-6xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition"><i class="fas fa-save mr-1"></i> LƯU CÀI ĐẶT</button>
       </div>
     </div>
 
     <!-- ADMIN QUẢN LÝ DỮ LIỆU (STEP ADMIN-DATA) -->
-    <div id="step-admin-data" class="hidden flex-1 flex flex-col p-4 max-w-md w-full mx-auto pb-24">
-      <div class="glass-card p-4 rounded-2xl mb-4 text-center"><h3 class="font-bold text-emerald-600 mb-1 uppercase text-sm"><i class="fas fa-database mr-2"></i> QUẢN LÝ DỮ LIỆU TỔNG HỢP</h3></div>
+    <div id="step-admin-data" class="hidden flex-1 flex flex-col p-4 max-w-md md:max-w-4xl lg:max-w-6xl w-full mx-auto pb-24">
+      <div class="glass-card p-4 rounded-2xl mb-4 text-center"><h3 class="font-bold text-emerald-600 mb-1 uppercase text-sm md:text-base"><i class="fas fa-database mr-2"></i> QUẢN LÝ DỮ LIỆU TỔNG HỢP</h3></div>
       
-      <!-- NẠP FILE QUÉT PHÉP -->
-      <div class="glass-card p-4 rounded-xl border-t-4 border-t-purple-500 mb-4">
-         <h4 class="font-bold text-sm mb-3 text-purple-700"><i class="fas fa-file-signature mr-1"></i> Bổ Sung & Duyệt Phép Từ File</h4>
-         <div class="flex gap-2">
-             <button type="button" onclick="downloadLeaveTemplate()" class="flex-1 bg-slate-50 text-slate-600 py-2.5 rounded-lg text-xs font-bold border border-slate-300 hover:bg-slate-100 transition"><i class="fas fa-download mb-1 block text-lg"></i>Tải File Mẫu</button>
-             <button type="button" onclick="document.getElementById('leave-uploader').click()" class="flex-1 bg-purple-50 text-purple-700 py-2.5 rounded-lg shadow-sm border border-purple-200 font-bold text-xs hover:bg-purple-100 transition"><i class="fas fa-upload mb-1 block text-lg"></i>Nạp File Phép</button>
-             <input type="file" id="leave-uploader" accept=".xlsx, .xls, .pdf, .csv" class="hidden" onchange="handleLeaveUpload(event)">
-         </div>
-      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
+        <!-- NẠP FILE QUÉT PHÉP -->
+        <div class="glass-card p-4 md:p-5 rounded-xl border-t-4 border-t-purple-500 flex flex-col justify-between">
+           <h4 class="font-bold text-sm mb-3 text-purple-700"><i class="fas fa-file-signature mr-1"></i> Bổ Sung & Duyệt Phép Từ File</h4>
+           <div class="flex gap-2">
+               <button type="button" onclick="downloadLeaveTemplate()" class="flex-1 bg-slate-50 text-slate-600 py-3 rounded-lg text-xs font-bold border border-slate-300 hover:bg-slate-100 transition"><i class="fas fa-download mb-1 block text-lg"></i>Tải File Mẫu</button>
+               <button type="button" onclick="document.getElementById('leave-uploader').click()" class="flex-1 bg-purple-50 text-purple-700 py-3 rounded-lg shadow-sm border border-purple-200 font-bold text-xs hover:bg-purple-100 transition"><i class="fas fa-upload mb-1 block text-lg"></i>Nạp File Phép</button>
+               <input type="file" id="leave-uploader" accept=".xlsx, .xls, .pdf, .csv" class="hidden" onchange="handleLeaveUpload(event)">
+           </div>
+        </div>
 
-      <div class="glass-card p-4 rounded-xl border-t-4 border-t-emerald-500 mb-4 grid grid-cols-2 gap-3">
-         <button type="button" onclick="document.getElementById('csv-uploader').click()" class="bg-emerald-50 text-emerald-700 py-3 rounded-xl shadow-sm border border-emerald-200 font-bold text-sm"><i class="fas fa-upload mb-1 block text-lg"></i>Nạp File CSV</button>
-         <input type="file" id="csv-uploader" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
-         <button type="button" id="btn-open-sheets-data" class="bg-blue-50 text-blue-700 py-3 rounded-xl shadow-sm border border-blue-200 font-bold text-sm"><i class="fas fa-table mb-1 block text-lg"></i>Mở Google Sheets</button>
-      </div>
+        <div class="glass-card p-4 md:p-5 rounded-xl border-t-4 border-t-emerald-500 flex flex-col justify-between">
+           <h4 class="font-bold text-sm mb-3 text-emerald-700"><i class="fas fa-table mr-1"></i> Đồng Bộ Dữ Liệu Học Sinh</h4>
+           <div class="grid grid-cols-2 gap-3">
+             <button type="button" onclick="document.getElementById('csv-uploader').click()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 py-3 rounded-xl shadow-sm border border-emerald-200 font-bold text-xs md:text-sm transition"><i class="fas fa-upload mb-1 block text-lg"></i>Nạp File CSV</button>
+             <input type="file" id="csv-uploader" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
+             <button type="button" id="btn-open-sheets-data" class="bg-blue-50 hover:bg-blue-100 text-blue-700 py-3 rounded-xl shadow-sm border border-blue-200 font-bold text-xs md:text-sm transition"><i class="fas fa-table mb-1 block text-lg"></i>Mở Google Sheets</button>
+           </div>
+        </div>
 
-      <div class="glass-card p-4 rounded-xl border-t-4 border-t-blue-500 mb-4">
-         <h4 class="font-bold text-sm mb-3 text-blue-700"><i class="fas fa-user-plus mr-1"></i> Thêm Giám Thị / Giáo Viên Mới</h4>
-         <input type="text" id="add-gt-name" placeholder="Họ và tên..." class="w-full p-2.5 mb-2 border rounded-lg text-sm font-semibold">
-         <input type="text" id="add-gt-role" placeholder="Chức vụ (vd: Giám thị / GVCN)" class="w-full p-2.5 mb-3 border rounded-lg text-sm font-semibold">
-         <button type="button" onclick="reqAddGiamThi()" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg shadow">THÊM TÀI KHOẢN GIÁO VIÊN</button>
+        <div class="glass-card p-4 md:p-5 rounded-xl border-t-4 border-t-blue-500 md:col-span-2 lg:col-span-1 flex flex-col justify-between">
+           <div>
+             <h4 class="font-bold text-sm mb-3 text-blue-700"><i class="fas fa-user-plus mr-1"></i> Thêm Giám Thị / Giáo Viên Mới</h4>
+             <input type="text" id="add-gt-name" placeholder="Họ và tên..." class="w-full p-2.5 mb-2 border rounded-lg text-sm font-semibold">
+             <input type="text" id="add-gt-role" placeholder="Chức vụ (vd: Giám thị / GVCN)" class="w-full p-2.5 mb-3 border rounded-lg text-sm font-semibold">
+           </div>
+           <button type="button" onclick="reqAddGiamThi()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg shadow transition text-xs md:text-sm">THÊM TÀI KHOẢN GIÁO VIÊN</button>
+        </div>
       </div>
     </div>
 
     <!-- STEP 1: XÁC THỰC HỌC SINH -->
-    <div id="step-1" class="hidden flex-1 p-5 flex flex-col justify-center max-w-md w-full mx-auto">
-      <div class="glass-card p-6 rounded-2xl shadow-xl border border-blue-100">
+    <div id="step-1" class="hidden flex-1 p-5 flex flex-col justify-center max-w-md md:max-w-4xl lg:max-w-6xl w-full mx-auto">
+      <div class="glass-card p-6 md:p-8 rounded-2xl shadow-xl border border-blue-100 max-w-md md:max-w-xl lg:max-w-2xl w-full mx-auto">
         <h2 class="text-xl font-bold text-slate-800 text-center mb-5 border-b pb-3">XÁC THỰC HỌC SINH</h2>
         
         <!-- Searchable Input Chọn Lớp -->
@@ -273,169 +318,179 @@
             <ul id="list-auth-name" class="hidden searchable-list custom-scrollbar"></ul>
           </div>
           
-          <div class="mb-4"><input type="text" id="auth-role" readonly placeholder="Chức vụ học sinh..." class="w-full p-3 bg-slate-200 border border-slate-300 rounded-xl font-bold text-sm text-slate-600"></div>
-          <div class="mb-4">
-              <input type="password" id="auth-pin" maxlength="6" inputmode="numeric" pattern="[0-9]*" onkeypress="return event.charCode >= 48 && event.charCode <= 57" oninput="clearInlineError('auth-error')" placeholder="Password PIN 6 số..." class="w-full p-3 bg-white border border-slate-300 rounded-xl font-mono text-center text-lg tracking-widest shadow-sm">
-              <p id="auth-error" class="text-red-500 text-xs font-bold mt-2 text-center hidden"></p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+            <div><input type="text" id="auth-role" readonly placeholder="Chức vụ học sinh..." class="w-full p-3 bg-slate-200 border border-slate-300 rounded-xl font-bold text-sm text-slate-600"></div>
+            <div><input type="password" id="auth-pin" maxlength="6" inputmode="numeric" pattern="[0-9]*" onkeypress="return event.charCode >= 48 && event.charCode <= 57" oninput="clearInlineError('auth-error')" placeholder="Password PIN 6 số..." class="w-full p-3 bg-white border border-slate-300 rounded-xl font-mono text-center text-lg tracking-widest shadow-sm"></div>
           </div>
+          <p id="auth-error" class="text-red-500 text-xs font-bold mb-3 text-center hidden"></p>
           <button type="button" id="btn-submit-hs" onclick="verifyStudentLogin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition active:scale-95">TIẾP TỤC</button>
         </div>
       </div>
     </div>
 
     <!-- STEP 2: MÀN HÌNH ĐIỂM DANH & QUÉT QR -->
-    <div id="step-2" class="hidden flex-1 flex flex-col p-4 w-full items-center">
-      <div id="qr-module-card" class="glass-card p-5 rounded-2xl mb-5 shadow-xl border border-blue-100 max-w-md w-full">
-        <div class="flex items-center justify-between border-b pb-3 mb-3">
-          <div class="flex items-center space-x-2">
-            <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center font-bold"><i class="fas fa-qrcode text-lg"></i></div>
-            <div>
-              <h4 class="font-bold text-slate-800 text-sm leading-tight">Điểm danh nhanh bằng Thẻ QR</h4>
-              <p class="text-[11px] text-slate-400">Quét mã QR thẻ học sinh tốc độ cao</p>
-            </div>
-          </div>
-          <button type="button" id="btn-toggle-qr" onclick="toggleQRScanner()" class="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs py-2 px-3.5 rounded-xl shadow-md transition-all flex items-center space-x-1.5"><i class="fas fa-qrcode text-xs"></i><span id="btn-qr-text">Quét Thẻ QR</span></button>
-        </div>
-        <div class="flex items-center justify-between bg-cyan-50/80 border border-cyan-200/80 rounded-xl px-3 py-2">
-          <span class="text-[11px] font-semibold text-cyan-900"><i class="fas fa-user-check mr-1 text-cyan-600"></i>Cần nhận diện khuôn mặt AI?</span>
-          <button type="button" id="btn-toggle-face-ai" onclick="toggleInlineFaceAI()" class="bg-gradient-to-r from-cyan-600 to-teal-600 hover:brightness-110 active:scale-95 text-white font-bold text-[11px] py-1.5 px-3 rounded-lg shadow-sm transition-all flex items-center space-x-1">
-            <i class="fas fa-camera-retro text-[11px]"></i><span id="btn-face-ai-text">Mở Camera Khuôn Mặt AI</span>
-          </button>
-        </div>
-
-        <!-- KHUNG NHẬN DIỆN KHUÔN MẶT AI TRỰC TIẾP TẠI CHỖ -->
-        <div id="face-ai-wrapper" class="hidden flex-col items-center mt-3 bg-slate-800 p-3.5 rounded-2xl border-2 border-cyan-500/60 shadow-inner">
-          <div class="w-full space-y-2 mb-2.5">
-            <div class="flex items-center justify-between bg-slate-900 px-2.5 py-2 rounded-lg border border-slate-700">
-              <span class="text-white text-[11px] font-bold uppercase flex items-center"><i class="fas fa-video text-cyan-400 mr-1.5"></i>Thiết bị Cam</span>
-              <select id="face-ai-camera-select" onchange="switchFaceAICamera()" class="bg-slate-700 text-white text-[11px] px-2 py-1 rounded border border-slate-500 outline-none max-w-[175px] truncate">
-                <option value="">-- Mặc định --</option>
-              </select>
-            </div>
-            <div class="flex items-center justify-between bg-slate-900 px-2.5 py-2 rounded-lg border border-slate-700">
-              <span class="text-white text-[11px] font-bold uppercase flex items-center"><i class="fas fa-vr-cardboard text-cyan-400 mr-1.5"></i>Quét lưới AR mặt</span>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="face-ai-toggle-ar" class="sr-only peer" checked>
-                <div class="w-10 h-5 bg-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
-              </label>
-            </div>
-          </div>
-
-          <div id="face-ai-status-box" class="w-full bg-cyan-900/90 text-cyan-200 text-[11px] font-bold p-2 rounded-lg mb-2.5 text-center border border-cyan-500/50 flex items-center justify-center space-x-1.5">
-            <i class="fas fa-info-circle text-cyan-400"></i>
-            <span id="face-ai-status-text">Bấm "Bật Cam" hoặc "Quét Tự Động Dừng" để nhận diện</span>
-          </div>
-
-          <div class="relative w-full overflow-hidden rounded-xl bg-black border border-slate-600 min-h-[200px] flex items-center justify-center">
-            <video id="face-ai-video" autoplay playsinline muted class="hidden w-full"></video>
-            <canvas id="face-ai-canvas" class="hidden w-full rounded-xl"></canvas>
-            <div id="face-ai-placeholder" class="text-center p-6 text-slate-400">
-              <i class="fas fa-camera text-3xl text-cyan-500/70 mb-2 block"></i>
-              <span class="text-xs font-semibold block">Camera nhận diện đang chờ bật</span>
-            </div>
-            <div id="face-ai-processing" class="hidden absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center z-20">
-              <div class="w-10 h-10 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mb-2"></div>
-              <span class="text-white font-bold text-xs tracking-wider animate-pulse">AI ĐANG XỬ LÝ NHẬN DIỆN...</span>
-            </div>
-          </div>
-
-          <!-- KẾT QUẢ SAU KHI QUÉT TỰ ĐỘNG DỪNG: HỌ TÊN_NGÀY THÁNG NĂM -->
-          <div id="face-ai-result-card" class="hidden w-full mt-2.5 bg-emerald-950/90 border border-emerald-400/70 rounded-xl p-3 text-left shadow-md">
-            <div class="flex items-center space-x-3">
-              <img id="face-ai-result-img" src="" alt="Ảnh nhận diện" class="w-14 h-14 rounded-lg object-cover border-2 border-emerald-400 bg-slate-900 flex-shrink-0">
-              <div class="flex-1 min-w-0">
-                <div class="text-[10px] font-bold uppercase text-emerald-300 tracking-wider"><i class="fas fa-check-circle mr-1"></i>Đã nhận diện & tự động dừng</div>
-                <div id="face-ai-result-label" class="text-sm font-extrabold text-white truncate mt-0.5">Họ tên_dd/mm/yyyy</div>
-                <div id="face-ai-result-meta" class="text-[10px] text-cyan-200 mt-0.5">Lớp • Mã HS</div>
+    <div id="step-2" class="hidden flex-1 flex flex-col p-4 max-w-md md:max-w-4xl lg:max-w-6xl w-full mx-auto">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start w-full">
+        <!-- Cột Trái: Quét Thẻ QR / Khuôn Mặt AI & Trạng Thái Sĩ Số -->
+        <div class="lg:col-span-5 flex flex-col w-full">
+          <div id="qr-module-card" class="glass-card p-5 rounded-2xl mb-4 shadow-xl border border-blue-100 w-full">
+            <div class="flex items-center justify-between border-b pb-3 mb-3">
+              <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center font-bold"><i class="fas fa-qrcode text-lg"></i></div>
+                <div>
+                  <h4 class="font-bold text-slate-800 text-sm leading-tight">Điểm danh nhanh bằng Thẻ QR</h4>
+                  <p class="text-[11px] text-slate-400">Quét mã QR thẻ học sinh tốc độ cao</p>
+                </div>
               </div>
+              <button type="button" id="btn-toggle-qr" onclick="toggleQRScanner()" class="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs py-2 px-3.5 rounded-xl shadow-md transition-all flex items-center space-x-1.5"><i class="fas fa-qrcode text-xs"></i><span id="btn-qr-text">Quét Thẻ QR</span></button>
             </div>
-            <div class="mt-2.5 grid grid-cols-2 gap-2">
-              <button type="button" onclick="openFaceAIMarkViolationModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-2.5 rounded-lg text-[11px] shadow transition flex items-center justify-center">
-                <i class="fas fa-clipboard-check mr-1"></i>Ghi nhận nề nếp
-              </button>
-              <button type="button" onclick="resumeAutoScanFaceAI()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-2.5 rounded-lg text-[11px] shadow transition flex items-center justify-center">
-                <i class="fas fa-redo mr-1"></i>Quét tiếp HS khác
+            <div class="flex items-center justify-between bg-cyan-50/80 border border-cyan-200/80 rounded-xl px-3 py-2">
+              <span class="text-[11px] font-semibold text-cyan-900"><i class="fas fa-user-check mr-1 text-cyan-600"></i>Cần nhận diện khuôn mặt AI?</span>
+              <button type="button" id="btn-toggle-face-ai" onclick="toggleInlineFaceAI()" class="bg-gradient-to-r from-cyan-600 to-teal-600 hover:brightness-110 active:scale-95 text-white font-bold text-[11px] py-1.5 px-3 rounded-lg shadow-sm transition-all flex items-center space-x-1">
+                <i class="fas fa-camera-retro text-[11px]"></i><span id="btn-face-ai-text">Mở Camera Khuôn Mặt AI</span>
               </button>
             </div>
-          </div>
 
-          <div class="w-full grid grid-cols-2 gap-2 mt-3">
-            <button type="button" id="btn-face-ai-power" onclick="toggleFaceAICameraPower()" class="bg-slate-600 hover:bg-slate-500 text-white font-bold py-2.5 rounded-lg text-xs transition shadow flex items-center justify-center">
-              <i class="fas fa-power-off mr-1"></i><span>Bật Cam</span>
-            </button>
-            <button type="button" id="btn-face-ai-autoscan" onclick="startAutoScanFaceAI()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2.5 rounded-lg text-xs transition shadow flex items-center justify-center">
-              <i class="fas fa-crosshairs mr-1"></i><span id="btn-face-ai-auto-text">Quét Tự Động Dừng</span>
-            </button>
-          </div>
-        </div>
-        <div id="qr-reader-wrapper" class="hidden flex-col items-center mt-3">
-          <div id="qr-camera-select-box" class="w-full mb-3 hidden"><select id="qr-camera-select" onchange="changeCamera(this.value)" class="w-full p-2 text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg text-slate-700 outline-none"></select></div>
-          <div class="relative w-full rounded-2xl overflow-hidden border-2 border-blue-500/50 bg-black shadow-inner">
-            <div id="qr-reader" class="w-full"></div>
-            <div class="absolute inset-0 pointer-events-none border-2 border-dashed border-blue-400/40 rounded-2xl flex items-center justify-center">
-              <div class="w-48 h-48 border-2 border-emerald-400 rounded-xl relative animate-pulse">
-                <div class="absolute -top-1 -left-1 w-4 h-4 border-t-4 border-l-4 border-emerald-500"></div><div class="absolute -top-1 -right-1 w-4 h-4 border-t-4 border-r-4 border-emerald-500"></div>
-                <div class="absolute -bottom-1 -left-1 w-4 h-4 border-b-4 border-l-4 border-emerald-500"></div><div class="absolute -bottom-1 -right-1 w-4 h-4 border-b-4 border-r-4 border-emerald-500"></div>
+            <!-- KHUNG NHẬN DIỆN KHUÔN MẶT AI TRỰC TIẾP TẠI CHỖ -->
+            <div id="face-ai-wrapper" class="hidden flex-col items-center mt-3 bg-slate-800 p-3.5 rounded-2xl border-2 border-cyan-500/60 shadow-inner">
+              <div class="w-full space-y-2 mb-2.5">
+                <div class="flex items-center justify-between bg-slate-900 px-2.5 py-2 rounded-lg border border-slate-700">
+                  <span class="text-white text-[11px] font-bold uppercase flex items-center"><i class="fas fa-video text-cyan-400 mr-1.5"></i>Thiết bị Cam</span>
+                  <select id="face-ai-camera-select" onchange="switchFaceAICamera()" class="bg-slate-700 text-white text-[11px] px-2 py-1 rounded border border-slate-500 outline-none max-w-[175px] truncate">
+                    <option value="">-- Mặc định --</option>
+                  </select>
+                </div>
+                <div class="flex items-center justify-between bg-slate-900 px-2.5 py-2 rounded-lg border border-slate-700">
+                  <span class="text-white text-[11px] font-bold uppercase flex items-center"><i class="fas fa-vr-cardboard text-cyan-400 mr-1.5"></i>Quét lưới AR mặt</span>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="face-ai-toggle-ar" class="sr-only peer" checked>
+                    <div class="w-10 h-5 bg-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
+                  </label>
+                </div>
+              </div>
+
+              <div id="face-ai-status-box" class="w-full bg-cyan-900/90 text-cyan-200 text-[11px] font-bold p-2 rounded-lg mb-2.5 text-center border border-cyan-500/50 flex items-center justify-center space-x-1.5">
+                <i class="fas fa-info-circle text-cyan-400"></i>
+                <span id="face-ai-status-text">Bấm "Bật Cam" hoặc "Quét Tự Động Dừng" để nhận diện</span>
+              </div>
+
+              <div class="relative w-full overflow-hidden rounded-xl bg-black border border-slate-600 min-h-[200px] flex items-center justify-center">
+                <video id="face-ai-video" autoplay playsinline muted class="hidden w-full"></video>
+                <canvas id="face-ai-canvas" class="hidden w-full rounded-xl"></canvas>
+                <div id="face-ai-placeholder" class="text-center p-6 text-slate-400">
+                  <i class="fas fa-camera text-3xl text-cyan-500/70 mb-2 block"></i>
+                  <span class="text-xs font-semibold block">Camera nhận diện đang chờ bật</span>
+                </div>
+                <div id="face-ai-processing" class="hidden absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center z-20">
+                  <div class="w-10 h-10 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mb-2"></div>
+                  <span class="text-white font-bold text-xs tracking-wider animate-pulse">AI ĐANG XỬ LÝ NHẬN DIỆN...</span>
+                </div>
+              </div>
+
+              <!-- KẾT QUẢ SAU KHI QUÉT TỰ ĐỘNG DỪNG: HỌ TÊN_NGÀY THÁNG NĂM -->
+              <div id="face-ai-result-card" class="hidden w-full mt-2.5 bg-emerald-950/90 border border-emerald-400/70 rounded-xl p-3 text-left shadow-md">
+                <div class="flex items-center space-x-3">
+                  <img id="face-ai-result-img" src="" alt="Ảnh nhận diện" class="w-14 h-14 rounded-lg object-cover border-2 border-emerald-400 bg-slate-900 flex-shrink-0">
+                  <div class="flex-1 min-w-0">
+                    <div class="text-[10px] font-bold uppercase text-emerald-300 tracking-wider"><i class="fas fa-check-circle mr-1"></i>Đã nhận diện & tự động dừng</div>
+                    <div id="face-ai-result-label" class="text-sm font-extrabold text-white truncate mt-0.5">Họ tên_dd/mm/yyyy</div>
+                    <div id="face-ai-result-meta" class="text-[10px] text-cyan-200 mt-0.5">Lớp • Mã HS</div>
+                  </div>
+                </div>
+                <div class="mt-2.5 grid grid-cols-2 gap-2">
+                  <button type="button" onclick="openFaceAIMarkViolationModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-2.5 rounded-lg text-[11px] shadow transition flex items-center justify-center">
+                    <i class="fas fa-clipboard-check mr-1"></i>Ghi nhận nề nếp
+                  </button>
+                  <button type="button" onclick="resumeAutoScanFaceAI()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-2.5 rounded-lg text-[11px] shadow transition flex items-center justify-center">
+                    <i class="fas fa-redo mr-1"></i>Quét tiếp HS khác
+                  </button>
+                </div>
+              </div>
+
+              <div class="w-full grid grid-cols-2 gap-2 mt-3">
+                <button type="button" id="btn-face-ai-power" onclick="toggleFaceAICameraPower()" class="bg-slate-600 hover:bg-slate-500 text-white font-bold py-2.5 rounded-lg text-xs transition shadow flex items-center justify-center">
+                  <i class="fas fa-power-off mr-1"></i><span>Bật Cam</span>
+                </button>
+                <button type="button" id="btn-face-ai-autoscan" onclick="startAutoScanFaceAI()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2.5 rounded-lg text-xs transition shadow flex items-center justify-center">
+                  <i class="fas fa-crosshairs mr-1"></i><span id="btn-face-ai-auto-text">Quét Tự Động Dừng</span>
+                </button>
               </div>
             </div>
-          </div>
-          <div class="mt-3 flex items-center space-x-2 text-xs text-slate-500 font-medium"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span><span>Đưa mã QR trên thẻ học sinh vào khung hình</span></div>
-        </div>
-      </div>
-      
-      <!-- Sĩ số và Vi phạm -->
-      <div class="glass-card p-5 rounded-2xl mb-5 text-center max-w-md w-full">
-        <h3 class="font-bold text-emerald-600 mb-4 uppercase text-sm"><i class="fas fa-clipboard-check mr-1"></i> Trạng Thái Sĩ Số Lớp</h3>
-        <div class="flex items-center justify-between bg-emerald-50 border border-emerald-200 p-4 rounded-xl" id="box-all-present">
-          <div class="text-left"><span class="block font-extrabold text-emerald-700 text-xl" id="text-all-present">LỚP ĐI ĐỦ</span></div>
-          <div class="relative w-14 mr-2"><input type="checkbox" id="toggle-all-present" checked onchange="toggleAllPresent()" class="toggle-checkbox absolute block w-8 h-8 rounded-full bg-white border-4 appearance-none cursor-pointer z-10"/><label for="toggle-all-present" class="toggle-label block overflow-hidden h-8 rounded-full bg-slate-300 cursor-pointer"></label></div>
-        </div>
-      </div>
-
-      <div id="violation-section" class="glass-card p-5 rounded-2xl mb-24 max-w-md w-full border-t-4 border-t-blue-500 shadow-xl">
-        <div class="flex items-center justify-between border-b pb-3 mb-4">
-          <h4 id="violation-section-title" class="font-bold text-slate-800 text-sm uppercase flex items-center"><i class="fas fa-mobile-alt text-blue-600 mr-2"></i> Ghi Nhận Điện Thoại / Nề Nếp</h4>
-          <span class="bg-blue-100 text-blue-700 text-xs font-extrabold px-3 py-1 rounded-full border border-blue-200" id="badge-remaining-students">Còn lại: 0/0</span>
-        </div>
-        
-        <div id="absence-only-boxes" class="hidden">
-          <div class="mb-4 bg-amber-50/50 p-3 rounded-xl border border-amber-200/60">
-            <label class="block text-xs font-bold text-amber-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-amber-500 mr-1.5"></span>Vắng Có Phép</label>
-            <input type="text" list="student-list-global" placeholder="Gõ hoặc chọn học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-amber-500 mb-2" onchange="addViolation(this, 'vangCoPhep')">
-            <div id="chip-vangCoPhep" class="flex flex-wrap gap-1.5"></div>
-          </div>
-          <div class="mb-4 bg-red-50/50 p-3 rounded-xl border border-red-200/60">
-            <label class="block text-xs font-bold text-red-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>Vắng Không Phép</label>
-            <input type="text" list="student-list-global" placeholder="Gõ hoặc chọn học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-red-500 mb-2" onchange="addViolation(this, 'vangKhongPhep')">
-            <div id="chip-vangKhongPhep" class="flex flex-wrap gap-1.5"></div>
-          </div>
-          <div class="mb-4 bg-orange-50/50 p-3 rounded-xl border border-orange-200/60">
-            <label class="block text-xs font-bold text-orange-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-orange-500 mr-1.5"></span>Đi Trễ</label>
-            <div class="flex gap-2 mb-2">
-              <input type="text" id="inp-tre-name" list="student-list-global" placeholder="Chọn tên..." class="flex-1 p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-orange-500">
-              <input type="number" id="inp-tre-min" placeholder="Phút" class="w-16 p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-center focus:outline-none focus:border-orange-500">
-              <button type="button" onclick="addTre()" class="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white px-3.5 rounded-lg font-bold text-xs shadow-sm transition-all"><i class="fas fa-plus"></i></button>
+            <div id="qr-reader-wrapper" class="hidden flex-col items-center mt-3">
+              <div id="qr-camera-select-box" class="w-full mb-3 hidden"><select id="qr-camera-select" onchange="changeCamera(this.value)" class="w-full p-2 text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg text-slate-700 outline-none"></select></div>
+              <div class="relative w-full rounded-2xl overflow-hidden border-2 border-blue-500/50 bg-black shadow-inner">
+                <div id="qr-reader" class="w-full"></div>
+                <div class="absolute inset-0 pointer-events-none border-2 border-dashed border-blue-400/40 rounded-2xl flex items-center justify-center">
+                  <div class="w-48 h-48 border-2 border-emerald-400 rounded-xl relative animate-pulse">
+                    <div class="absolute -top-1 -left-1 w-4 h-4 border-t-4 border-l-4 border-emerald-500"></div><div class="absolute -top-1 -right-1 w-4 h-4 border-t-4 border-r-4 border-emerald-500"></div>
+                    <div class="absolute -bottom-1 -left-1 w-4 h-4 border-b-4 border-l-4 border-emerald-500"></div><div class="absolute -bottom-1 -right-1 w-4 h-4 border-b-4 border-r-4 border-emerald-500"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-3 flex items-center space-x-2 text-xs text-slate-500 font-medium"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span><span>Đưa mã QR trên thẻ học sinh vào khung hình</span></div>
             </div>
-            <div id="chip-tre" class="flex flex-wrap gap-1.5"></div>
           </div>
-          <div class="mb-4 bg-purple-50/50 p-3 rounded-xl border border-purple-200/60">
-            <label class="block text-xs font-bold text-purple-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-purple-500 mr-1.5"></span>Bỏ Tiết</label>
-            <input type="text" list="student-list-global" placeholder="Gõ hoặc chọn học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-purple-500 mb-2" onchange="addViolation(this, 'boTietNames')">
-            <div id="chip-boTietNames" class="flex flex-wrap gap-1.5"></div>
+          
+          <!-- Sĩ số -->
+          <div class="glass-card p-5 rounded-2xl mb-4 text-center w-full">
+            <h3 class="font-bold text-emerald-600 mb-4 uppercase text-sm"><i class="fas fa-clipboard-check mr-1"></i> Trạng Thái Sĩ Số Lớp</h3>
+            <div class="flex items-center justify-between bg-emerald-50 border border-emerald-200 p-4 rounded-xl" id="box-all-present">
+              <div class="text-left"><span class="block font-extrabold text-emerald-700 text-xl" id="text-all-present">LỚP ĐI ĐỦ</span></div>
+              <div class="relative w-14 mr-2"><input type="checkbox" id="toggle-all-present" checked onchange="toggleAllPresent()" class="toggle-checkbox absolute block w-8 h-8 rounded-full bg-white border-4 appearance-none cursor-pointer z-10"/><label for="toggle-all-present" class="toggle-label block overflow-hidden h-8 rounded-full bg-slate-300 cursor-pointer"></label></div>
+            </div>
           </div>
         </div>
 
-        <div id="phone-uniform-box" class="bg-slate-100/80 p-3.5 rounded-xl border border-slate-200">
-          <label class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-blue-600 mr-1.5"></span>Học Sinh Mang Điện Thoại / Không ĐT / Đồng Phục</label>
-          <input type="text" list="student-list-phone-uniform" placeholder="Gõ hoặc chọn học sinh mang ĐT / vi phạm ĐP..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-blue-500 mb-2" onchange="addViolation(this, 'khongDTNames')">
-          <div id="chip-khongDTNames" class="flex flex-wrap gap-1.5"></div>
+        <!-- Cột Phải: Ghi Nhận Vi Phạm & Nề Nếp -->
+        <div class="lg:col-span-7 flex flex-col w-full">
+          <div id="violation-section" class="glass-card p-5 rounded-2xl mb-24 w-full border-t-4 border-t-blue-500 shadow-xl">
+            <div class="flex items-center justify-between border-b pb-3 mb-4">
+              <h4 id="violation-section-title" class="font-bold text-slate-800 text-sm uppercase flex items-center"><i class="fas fa-mobile-alt text-blue-600 mr-2"></i> Ghi Nhận Điện Thoại / Nề Nếp</h4>
+              <span class="bg-blue-100 text-blue-700 text-xs font-extrabold px-3 py-1 rounded-full border border-blue-200" id="badge-remaining-students">Còn lại: 0/0</span>
+            </div>
+            
+            <div id="absence-only-boxes" class="hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                <div class="bg-amber-50/50 p-3 rounded-xl border border-amber-200/60">
+                  <label class="block text-xs font-bold text-amber-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-amber-500 mr-1.5"></span>Vắng Có Phép</label>
+                  <input type="text" list="student-list-global" placeholder="Gõ hoặc chọn học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-amber-500 mb-2" onchange="addViolation(this, 'vangCoPhep')">
+                  <div id="chip-vangCoPhep" class="flex flex-wrap gap-1.5"></div>
+                </div>
+                <div class="bg-red-50/50 p-3 rounded-xl border border-red-200/60">
+                  <label class="block text-xs font-bold text-red-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-red-500 mr-1.5"></span>Vắng Không Phép</label>
+                  <input type="text" list="student-list-global" placeholder="Gõ hoặc chọn học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-red-500 mb-2" onchange="addViolation(this, 'vangKhongPhep')">
+                  <div id="chip-vangKhongPhep" class="flex flex-wrap gap-1.5"></div>
+                </div>
+                <div class="bg-orange-50/50 p-3 rounded-xl border border-orange-200/60">
+                  <label class="block text-xs font-bold text-orange-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-orange-500 mr-1.5"></span>Đi Trễ</label>
+                  <div class="flex gap-2 mb-2">
+                    <input type="text" id="inp-tre-name" list="student-list-global" placeholder="Chọn tên..." class="flex-1 min-w-0 p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-orange-500">
+                    <input type="number" id="inp-tre-min" placeholder="Phút" class="w-16 p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-center focus:outline-none focus:border-orange-500">
+                    <button type="button" onclick="addTre()" class="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white px-3.5 rounded-lg font-bold text-xs shadow-sm transition-all"><i class="fas fa-plus"></i></button>
+                  </div>
+                  <div id="chip-tre" class="flex flex-wrap gap-1.5"></div>
+                </div>
+                <div class="bg-purple-50/50 p-3 rounded-xl border border-purple-200/60">
+                  <label class="block text-xs font-bold text-purple-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-purple-500 mr-1.5"></span>Bỏ Tiết</label>
+                  <input type="text" list="student-list-global" placeholder="Gõ hoặc chọn học sinh..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-purple-500 mb-2" onchange="addViolation(this, 'boTietNames')">
+                  <div id="chip-boTietNames" class="flex flex-wrap gap-1.5"></div>
+                </div>
+              </div>
+            </div>
+
+            <div id="phone-uniform-box" class="bg-slate-100/80 p-3.5 rounded-xl border border-slate-200">
+              <label class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-blue-600 mr-1.5"></span>Học Sinh Mang Điện Thoại / Không ĐT / Đồng Phục</label>
+              <input type="text" list="student-list-phone-uniform" placeholder="Gõ hoặc chọn học sinh mang ĐT / vi phạm ĐP..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-blue-500 mb-2" onchange="addViolation(this, 'khongDTNames')">
+              <div id="chip-khongDTNames" class="flex flex-wrap gap-1.5"></div>
+            </div>
+          </div>
         </div>
       </div>
       <datalist id="student-list-global"></datalist>
       <datalist id="student-list-phone-uniform"></datalist>
 
       <div class="fixed bottom-0 left-0 right-0 p-4 glass-header z-40 flex justify-center">
-        <button type="button" onclick="previewAttendance()" class="w-full max-w-md bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg uppercase text-sm transition active:scale-95">XÁC NHẬN NỘP BÁO CÁO</button>
+        <button type="button" onclick="previewAttendance()" class="w-full max-w-md md:max-w-4xl lg:max-w-6xl bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg uppercase text-sm transition active:scale-95">XÁC NHẬN NỘP BÁO CÁO</button>
       </div>
     </div>
   </div>
@@ -637,7 +692,6 @@
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
       }
-      // Dự phòng SHA-256 thuần JS khi chạy qua HTTP không bảo mật
       function rightRotate(value, amount) { return (value >>> amount) | (value << (32 - amount)); }
       const mathPow = Math.pow;
       const maxWord = mathPow(2, 32);
@@ -655,8 +709,8 @@
         0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
         0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
       ];
-      message += '';
-      while (message.length % 64 - 56) message += ' ';
+      message += '€';
+      while (message.length % 64 - 56) message += ' ';
       for (let i = 0; i < message.length; i++) {
         const j = message.charCodeAt(i);
         words[i >> 2] |= j << ((3 - i) % 4) * 8;
@@ -805,65 +859,74 @@
           reportButtonHtml = `<button type="button" onclick="openReporterDashboard()" class="mt-3 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition shadow-md flex items-center justify-center space-x-2"><i class="fas fa-clipboard-list text-lg"></i><span>Vào Giao Diện Điểm Danh Lớp</span></button>`; 
         }
         
-        let noticeHtml = `<div class="glass-card p-6 rounded-2xl shadow-xl max-w-md w-full mx-auto mt-4 border border-blue-100">
-          <h2 class="text-xl font-bold text-blue-700 text-center mb-4"><i class="fas fa-bullhorn mr-2"></i> THÔNG BÁO HỌC SINH</h2>
-          <div class="text-left text-xs text-slate-700 space-y-2.5 bg-slate-50 p-3 rounded-xl border">
-             <div class="flex justify-between border-b pb-1.5"><span class="font-semibold">Họ và tên:</span><span class="font-bold text-blue-600">${student.name}</span></div>
-             <div class="flex justify-between border-b pb-1.5"><span class="font-semibold">Mã học sinh:</span><span class="font-bold">${student.maHS || "Chưa có"}</span></div>
-             <div class="flex justify-between border-b pb-1.5"><span class="font-semibold">Chức vụ:</span><span class="font-bold text-purple-600">${student.role || "Học sinh"}</span></div>
-             ${appData.subject ? `<div class="flex justify-between border-b pb-1.5"><span class="font-semibold">Môn học:</span><span class="font-bold text-emerald-600">${appData.subject}</span></div>` : ''}
-          </div>
-          
-          <div class="mt-4 border-t pt-3">
-             <h3 class="font-bold text-slate-800 mb-2 text-xs flex items-center"><i class="fas fa-history text-blue-600 mr-2"></i> Tra Cứu Lịch Sử Vi Phạm Cá Nhân</h3>
-             <div class="flex space-x-2 mb-2">
-                <div class="flex-1">
-                  <label class="text-[9px] font-bold text-slate-500 uppercase">Từ ngày</label>
-                  <div class="relative mt-0.5">
-                    <input type="text" id="search-start-date" placeholder="dd/mm/yyyy" maxlength="10" inputmode="numeric" class="vn-date-input w-full p-2 pr-7 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-700 focus:border-blue-500 focus:outline-none">
-                    <i class="far fa-calendar-alt absolute right-2 top-2.5 text-slate-400 text-xs pointer-events-none"></i>
-                  </div>
-                </div>
-                <div class="flex-1">
-                  <label class="text-[9px] font-bold text-slate-500 uppercase">Đến ngày</label>
-                  <div class="relative mt-0.5">
-                    <input type="text" id="search-end-date" placeholder="dd/mm/yyyy" maxlength="10" inputmode="numeric" class="vn-date-input w-full p-2 pr-7 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-700 focus:border-blue-500 focus:outline-none">
-                    <i class="far fa-calendar-alt absolute right-2 top-2.5 text-slate-400 text-xs pointer-events-none"></i>
-                  </div>
-                </div>
-             </div>
-             <button type="button" onclick="fetchStudentHistory('${student.maHS || ''}', '${student.name}')" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold py-2 rounded-lg text-xs border border-blue-200 transition"><i class="fas fa-search mr-1"></i> Tra cứu</button>
-             <div id="student-history-result" class="mt-2 hidden max-h-48 overflow-y-auto custom-scrollbar text-xs border rounded-lg p-1 bg-white"></div>
-          </div>
+        let noticeHtml = `<div class="glass-card p-6 md:p-8 rounded-2xl shadow-xl max-w-md md:max-w-4xl lg:max-w-6xl w-full mx-auto mt-2 border border-blue-100">
+          <h2 class="text-xl font-bold text-blue-700 text-center mb-4 md:mb-6 border-b pb-3"><i class="fas fa-bullhorn mr-2"></i> THÔNG BÁO HỌC SINH</h2>
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+            <div class="lg:col-span-5 flex flex-col justify-between space-y-3">
+              <div class="text-left text-xs text-slate-700 space-y-2.5 bg-slate-50 p-4 rounded-xl border">
+                 <div class="flex justify-between border-b pb-1.5"><span class="font-semibold">Họ và tên:</span><span class="font-bold text-blue-600">${student.name}</span></div>
+                 <div class="flex justify-between border-b pb-1.5"><span class="font-semibold">Mã học sinh:</span><span class="font-bold">${student.maHS || "Chưa có"}</span></div>
+                 <div class="flex justify-between border-b pb-1.5"><span class="font-semibold">Lớp học:</span><span class="font-bold text-indigo-600">${appData.className || ""}</span></div>
+                 <div class="flex justify-between border-b pb-1.5"><span class="font-semibold">Chức vụ:</span><span class="font-bold text-purple-600">${student.role || "Học sinh"}</span></div>
+                 ${appData.subject ? `<div class="flex justify-between border-b pb-1.5"><span class="font-semibold">Môn học:</span><span class="font-bold text-emerald-600">${appData.subject}</span></div>` : ''}
+              </div>
+              ${reportButtonHtml}
+              <button type="button" onclick="changeStep('0')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2.5 rounded-xl transition text-xs">Đăng Xuất</button>
+            </div>
 
-          <div class="mt-4 border-t pt-3">
-             <h3 class="font-bold text-slate-800 mb-2 text-xs flex items-center"><i class="fas fa-paper-plane text-purple-600 mr-2"></i> Gửi Đơn Xin Phép Online</h3>
-             <div class="bg-purple-50/60 p-3 rounded-xl border border-purple-100 space-y-2">
-                <div class="grid grid-cols-2 gap-2">
-                   <div>
-                     <span class="text-[9px] font-semibold text-slate-500">Ngày nghỉ</span>
-                     <div class="relative mt-0.5">
-                       <input type="text" id="online-leave-date" placeholder="dd/mm/yyyy" maxlength="10" inputmode="numeric" class="vn-date-input w-full p-2 pr-7 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-700 focus:border-purple-500 focus:outline-none">
-                       <i class="far fa-calendar-alt absolute right-2 top-2.5 text-slate-400 text-xs pointer-events-none"></i>
-                     </div>
+            <div class="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+              <div class="border-t lg:border-t-0 pt-3 lg:pt-0">
+                 <h3 class="font-bold text-slate-800 mb-2 text-xs flex items-center"><i class="fas fa-history text-blue-600 mr-2"></i> Tra Cứu Lịch Sử Vi Phạm Cá Nhân</h3>
+                 <div class="bg-blue-50/40 p-3 rounded-xl border border-blue-100">
+                   <div class="flex space-x-2 mb-2">
+                      <div class="flex-1">
+                        <label class="text-[9px] font-bold text-slate-500 uppercase">Từ ngày</label>
+                        <div class="relative mt-0.5">
+                          <input type="text" id="search-start-date" placeholder="dd/mm/yyyy" maxlength="10" inputmode="numeric" class="vn-date-input w-full p-2 pr-7 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-700 focus:border-blue-500 focus:outline-none">
+                          <i class="far fa-calendar-alt absolute right-2 top-2.5 text-slate-400 text-xs pointer-events-none"></i>
+                        </div>
+                      </div>
+                      <div class="flex-1">
+                        <label class="text-[9px] font-bold text-slate-500 uppercase">Đến ngày</label>
+                        <div class="relative mt-0.5">
+                          <input type="text" id="search-end-date" placeholder="dd/mm/yyyy" maxlength="10" inputmode="numeric" class="vn-date-input w-full p-2 pr-7 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-700 focus:border-blue-500 focus:outline-none">
+                          <i class="far fa-calendar-alt absolute right-2 top-2.5 text-slate-400 text-xs pointer-events-none"></i>
+                        </div>
+                      </div>
                    </div>
-                   <div>
-                     <span class="text-[9px] font-semibold text-slate-500">Thời gian</span>
-                     <select id="online-leave-session" class="w-full mt-0.5 p-2 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-700"><option value="Cả ngày">Cả ngày</option><option value="Buổi Sáng">Buổi Sáng</option><option value="Buổi Chiều">Buổi Chiều</option></select>
-                   </div>
-                </div>
-                <input type="text" id="online-leave-reason" placeholder="Nhập lý do xin nghỉ..." class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-white">
-                <button type="button" onclick="submitOnlineLeave('${student.maHS || ''}', '${student.name}', '${appData.className}')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-lg text-xs shadow-sm transition"><i class="fas fa-paper-plane mr-1"></i> Gửi Đơn Cho GVCN</button>
-             </div>
+                   <button type="button" onclick="fetchStudentHistory('${student.maHS || ''}', '${student.name}')" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold py-2 rounded-lg text-xs border border-blue-200 transition"><i class="fas fa-search mr-1"></i> Tra cứu</button>
+                   <div id="student-history-result" class="mt-2 hidden max-h-48 overflow-y-auto custom-scrollbar text-xs border rounded-lg p-1 bg-white"></div>
+                 </div>
+              </div>
+
+              <div class="border-t md:border-t-0 pt-3 md:pt-0">
+                 <h3 class="font-bold text-slate-800 mb-2 text-xs flex items-center"><i class="fas fa-paper-plane text-purple-600 mr-2"></i> Gửi Đơn Xin Phép Online</h3>
+                 <div class="bg-purple-50/60 p-3 rounded-xl border border-purple-100 space-y-2">
+                    <div class="grid grid-cols-2 gap-2">
+                       <div>
+                         <span class="text-[9px] font-semibold text-slate-500">Ngày nghỉ</span>
+                         <div class="relative mt-0.5">
+                           <input type="text" id="online-leave-date" placeholder="dd/mm/yyyy" maxlength="10" inputmode="numeric" class="vn-date-input w-full p-2 pr-7 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-700 focus:border-purple-500 focus:outline-none">
+                           <i class="far fa-calendar-alt absolute right-2 top-2.5 text-slate-400 text-xs pointer-events-none"></i>
+                         </div>
+                       </div>
+                       <div>
+                         <span class="text-[9px] font-semibold text-slate-500">Thời gian</span>
+                         <select id="online-leave-session" class="w-full mt-0.5 p-2 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-700"><option value="Cả ngày">Cả ngày</option><option value="Buổi Sáng">Buổi Sáng</option><option value="Buổi Chiều">Buổi Chiều</option></select>
+                       </div>
+                    </div>
+                    <input type="text" id="online-leave-reason" placeholder="Nhập lý do xin nghỉ..." class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-white">
+                    <button type="button" onclick="submitOnlineLeave('${student.maHS || ''}', '${student.name}', '${appData.className}')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-lg text-xs shadow-sm transition"><i class="fas fa-paper-plane mr-1"></i> Gửi Đơn Cho GVCN</button>
+                 </div>
+              </div>
+            </div>
           </div>
-          ${reportButtonHtml}
-          <button type="button" onclick="changeStep('0')" class="mt-3 w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2.5 rounded-xl transition text-xs">Đăng Xuất</button>
         </div>`;
         
         let step1 = document.getElementById("step-1"); 
         let existingNotice = document.getElementById("student-notice-view");
         if (existingNotice) { existingNotice.innerHTML = noticeHtml; existingNotice.classList.remove("hidden"); } 
-        else { let noticeDiv = document.createElement("div"); noticeDiv.id = "student-notice-view"; noticeDiv.innerHTML = noticeHtml; step1.appendChild(noticeDiv); }
+        else { let noticeDiv = document.createElement("div"); noticeDiv.id = "student-notice-view"; noticeDiv.className = "w-full"; noticeDiv.innerHTML = noticeHtml; step1.appendChild(noticeDiv); }
         document.querySelector("#step-1 > div:first-child").classList.add("hidden");
         initVietnameseDatePickers();
         if (typeof updateQuickPromptsByCurrentTab === "function") {
@@ -1011,21 +1074,22 @@
         loadOnlineLeavesGV();
     }
 
-    // 2A: TÍNH NĂNG DÀNH CHO GVCN & GIÁO VIÊN (ĐỒNG BỘ API THẬT VỚI GOOGLE SHEETS)
+    // 2A: TÍNH NĂNG DÀNH CHO GVCN & GIÁO VIÊN (ĐỂ TRỐNG KHI KHÔNG CÓ DỮ LIỆU)
     function escapeHtmlAttr(str) {
       return String(str || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
     function loadOnlineLeavesGV() {
       const container = document.getElementById("gv-leave-requests-list");
-      container.innerHTML = '<p class="text-blue-500 text-center py-2"><i class="fas fa-spinner fa-spin mr-1"></i> Đang tải đơn xin nghỉ từ hệ thống...</p>';
+      if (!container) return;
+      container.innerHTML = '<p class="text-blue-500 text-center py-2"><i class="fas fa-spinner fa-spin mr-1"></i> Đang tải...</p>';
       
       const gvName = appData.reporterInfo?.name || "";
       const gvRole = appData.reporterInfo?.role || "";
 
       callBackendApi('getPendingLeaveRequests', gvName, gvRole).then(list => {
          if (!Array.isArray(list) || list.length === 0) {
-            container.innerHTML = '<p class="text-slate-400 text-center py-3 italic">Hiện không có đơn xin phép online nào đang chờ duyệt.</p>';
+            container.innerHTML = '';
             return;
          }
          container.innerHTML = list.map(item => {
@@ -1047,8 +1111,8 @@
               </div>
             </div>`;
          }).join('');
-      }).catch(err => {
-         container.innerHTML = `<p class="text-amber-600 text-center py-2 text-[11px]">Chưa tải được danh sách đơn (${escapeHtmlAttr(err.message || err)}). Vui lòng kiểm tra hàm <b>getPendingLeaveRequests</b> trên Google Apps Script.</p>`;
+      }).catch(() => {
+         container.innerHTML = '';
       });
     }
 
@@ -1091,7 +1155,8 @@
       
       callBackendApi('getClassAbsenceReport', cls, startParsed.iso, endParsed.iso).then(data => {
          if (!Array.isArray(data) || data.length === 0) {
-            resDiv.innerHTML = `<p class="text-emerald-600 font-bold text-center py-2">Lớp ${escapeHtmlAttr(cls)} không có lượt vắng/trễ nào trong khoảng thời gian này!</p>`;
+            resDiv.innerHTML = '';
+            resDiv.classList.add('hidden');
             return;
          }
          let html = `<table class="w-full text-left border-collapse"><thead><tr class="bg-slate-100"><th class="p-1.5 border">Học sinh</th><th class="p-1.5 border">Ngày</th><th class="p-1.5 border">Buổi</th><th class="p-1.5 border">Chi tiết</th></tr></thead><tbody>`;
@@ -1104,8 +1169,9 @@
          });
          html += `</tbody></table>`;
          resDiv.innerHTML = html;
-      }).catch(err => {
-         resDiv.innerHTML = `<p class="text-red-500 text-center py-2">Lỗi: ${escapeHtmlAttr(err.message || err)}</p>`;
+      }).catch(() => {
+         resDiv.innerHTML = '';
+         resDiv.classList.add('hidden');
       });
     }
 
@@ -1227,7 +1293,7 @@
        grid.innerHTML = "";
        days.forEach(d => {
           grid.innerHTML += `
-          <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+          <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 overflow-hidden">
              <div class="font-bold text-indigo-600 text-xs mb-2 border-b pb-1 flex justify-between items-center">
                 <span>${d === 'CN' ? 'Chủ nhật' : d}</span>
                 <label class="flex items-center space-x-1 cursor-pointer text-[10px]">
@@ -1235,20 +1301,32 @@
                    <span class="font-bold text-indigo-600">Bỏ khóa</span>
                 </label>
              </div>
-             <div class="mb-2 bg-white p-2 rounded border shadow-sm">
+             <div class="mb-2 bg-white p-2 rounded border shadow-sm overflow-hidden">
                  <div class="text-[10px] font-bold text-slate-500 mb-1">Ca Sáng</div>
-                 <div class="flex items-center justify-between space-x-1">
-                     <div class="flex flex-col flex-1"><span class="text-[9px] text-slate-400">Từ:</span><input type="time" id="cfg-${d}_Sang_Start" class="time-inp-${d} w-full text-xs p-1 border rounded text-center font-bold"></div>
-                     <span class="text-slate-400 font-bold">-</span>
-                     <div class="flex flex-col flex-1"><span class="text-[9px] text-slate-400">Đến:</span><input type="time" id="cfg-${d}_Sang" class="time-inp-${d} w-full text-xs p-1 border rounded text-center font-bold"></div>
+                 <div class="flex items-center gap-1.5 w-full">
+                     <div class="flex flex-col flex-1 min-w-0">
+                       <span class="text-[9px] text-slate-400 mb-0.5">Từ:</span>
+                       <input type="time" id="cfg-${d}_Sang_Start" class="time-inp-${d} w-full min-w-0 text-[11px] py-1 px-1 border border-slate-300 rounded text-center font-bold bg-white">
+                     </div>
+                     <span class="text-slate-400 font-bold pt-3.5 shrink-0">-</span>
+                     <div class="flex flex-col flex-1 min-w-0">
+                       <span class="text-[9px] text-slate-400 mb-0.5">Đến:</span>
+                       <input type="time" id="cfg-${d}_Sang" class="time-inp-${d} w-full min-w-0 text-[11px] py-1 px-1 border border-slate-300 rounded text-center font-bold bg-white">
+                     </div>
                  </div>
              </div>
-             <div class="bg-white p-2 rounded border shadow-sm">
+             <div class="bg-white p-2 rounded border shadow-sm overflow-hidden">
                  <div class="text-[10px] font-bold text-slate-500 mb-1">Ca Chiều</div>
-                 <div class="flex items-center justify-between space-x-1">
-                     <div class="flex flex-col flex-1"><span class="text-[9px] text-slate-400">Từ:</span><input type="time" id="cfg-${d}_Chieu_Start" class="time-inp-${d} w-full text-xs p-1 border rounded text-center font-bold"></div>
-                     <span class="text-slate-400 font-bold">-</span>
-                     <div class="flex flex-col flex-1"><span class="text-[9px] text-slate-400">Đến:</span><input type="time" id="cfg-${d}_Chieu" class="time-inp-${d} w-full text-xs p-1 border rounded text-center font-bold"></div>
+                 <div class="flex items-center gap-1.5 w-full">
+                     <div class="flex flex-col flex-1 min-w-0">
+                       <span class="text-[9px] text-slate-400 mb-0.5">Từ:</span>
+                       <input type="time" id="cfg-${d}_Chieu_Start" class="time-inp-${d} w-full min-w-0 text-[11px] py-1 px-1 border border-slate-300 rounded text-center font-bold bg-white">
+                     </div>
+                     <span class="text-slate-400 font-bold pt-3.5 shrink-0">-</span>
+                     <div class="flex flex-col flex-1 min-w-0">
+                       <span class="text-[9px] text-slate-400 mb-0.5">Đến:</span>
+                       <input type="time" id="cfg-${d}_Chieu" class="time-inp-${d} w-full min-w-0 text-[11px] py-1 px-1 border border-slate-300 rounded text-center font-bold bg-white">
+                     </div>
                  </div>
              </div>
          </div>`;
@@ -1762,7 +1840,18 @@
       });
     }
 
-    function openReporterDashboard() { document.getElementById("toggle-all-present").checked = true; toggleAllPresent(); updateAvailableStudentsDatalist(); if (appData.isEditMode) { document.getElementById("qr-module-card").classList.add("hidden"); Swal.fire({ title: 'Chế độ Sửa thủ công', text: 'Tính năng quét QR tạm thời khóa khi chỉnh sửa.', icon: 'info', toast: true, position: 'top' }); } else { document.getElementById("qr-module-card").classList.remove("hidden"); } changeStep('2'); }
+    function openReporterDashboard() { 
+      document.getElementById("toggle-all-present").checked = true; 
+      toggleAllPresent(); 
+      updateAvailableStudentsDatalist(); 
+      if (appData.isEditMode) { 
+        document.getElementById("qr-module-card").classList.add("hidden"); 
+        Swal.fire({ title: 'Chế độ Sửa thủ công', text: 'Tính năng quét QR tạm thời khóa khi chỉnh sửa.', icon: 'info', toast: true, position: 'top' }); 
+      } else { 
+        document.getElementById("qr-module-card").classList.remove("hidden"); 
+      } 
+      changeStep('2'); 
+    }
 
     function toggleQRScanner() { if (typeof faceAIState !== "undefined" && faceAIState.isPanelOpen) stopInlineFaceAI(); const wrapper = document.getElementById("qr-reader-wrapper"); const btnText = document.getElementById("btn-qr-text"); const btn = document.getElementById("btn-toggle-qr"); if (isScannerActive) { stopQRScanner(); } else { wrapper.classList.remove("hidden"); btnText.innerText = "Tắt Camera"; if (btn) btn.classList.replace("bg-blue-600", "bg-red-600"); if (!html5QrCode) { html5QrCode = new Html5Qrcode("qr-reader"); } Html5Qrcode.getCameras().then(cameras => { if (cameras && cameras.length > 0) { const selectBox = document.getElementById("qr-camera-select-box"); const selectEl = document.getElementById("qr-camera-select"); if (cameras.length > 1) { selectBox.classList.remove("hidden"); selectEl.innerHTML = cameras.map((c, i) => `<option value="${c.id}">${c.label || 'Camera ' + (i + 1)}</option>`).join(''); } const backCam = cameras.find(c => c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('rear')); currentCameraId = backCam ? backCam.id : cameras[0].id; if (selectEl) selectEl.value = currentCameraId; startScanning(currentCameraId); } else { startScanning({ facingMode: "environment" }); } }).catch(err => { startScanning({ facingMode: "user" }); }); } }
     function startScanning(cameraConfig) { const config = { fps: 15, qrbox: { width: 200, height: 200 }, aspectRatio: 1.0 }; html5QrCode.start(cameraConfig, config, onScanSuccess, onScanFailure).then(() => { isScannerActive = true; }).catch(err => { Swal.fire({ icon: 'error', title: 'Chưa mở được Camera', html: 'Cho phép quyền truy cập Camera để quét mã QR.', confirmButtonText: 'Đã hiểu' }); resetQRScannerState(); }); }
@@ -1788,7 +1877,6 @@
       } 
       
       if (student) { 
-        // Lưu ngầm thời gian dd/mm/yyyy_buổi_Giờ:phút:giây & loại khỏi danh sách điểm danh thủ công
         recordSilentStudentCheckin(student, 'QR');
         Swal.fire({ 
           toast: true,
@@ -1830,7 +1918,6 @@
       const cleanName = String(student.name).trim();
       checkedInStudentNames.add(cleanName);
 
-      // Nếu học sinh vô tình có mặt trong các mục vắng/trễ/bỏ tiết trước đó thì tự động gỡ khỏi mục vắng (vẫn giữ khongDTNames nếu có)
       ['vangCoPhep', 'vangKhongPhep', 'boTietNames'].forEach(key => {
         const idx = violations[key].indexOf(cleanName);
         if (idx !== -1) {
@@ -1844,7 +1931,6 @@
         renderChips('treNames', 'tre');
       }
 
-      // Lưu ngầm log điểm danh (cập nhật nếu quét lại hoặc thêm mới)
       const existingIdx = silentAttendanceLogs.findIndex(x => x.name === cleanName);
       const parts = timestamp.split("_");
       const logEntry = {
@@ -1862,10 +1948,8 @@
         silentAttendanceLogs.push(logEntry);
       }
 
-      // Cập nhật lại datalist nhập thủ công (loại bỏ bạn đã quét ở điểm danh, giữ nguyên ở ĐT/Đồng phục)
       updateAvailableStudentsDatalist();
 
-      // Đồng bộ ngầm lên server (không chặn luồng quét tiếp)
       try {
         callBackendApi('logSilentAttendanceCheckin', logEntry).catch(() => {});
       } catch (e) {}
@@ -1896,14 +1980,12 @@
 
       if (appData.students) { 
         appData.students.forEach(s => { 
-          // 1. Danh sách điểm danh thủ công (Vắng, Trễ, Bỏ tiết): Bỏ ra các bạn đã quét QR / Nhận diện khuôn mặt AI
           if (!markedAttendance.includes(s.name)) { 
             let opt = document.createElement("option"); 
             opt.value = s.name; 
             dlGlobal.appendChild(opt); 
             remainingCount++; 
           }
-          // 2. Danh sách nề nếp Điện thoại / Đồng phục: Vẫn giữ đầy đủ (chỉ loại bạn đã ghi nhận ngay trong mục này)
           if (dlPhoneUniform && !violations.khongDTNames.includes(s.name)) {
             let optPhone = document.createElement("option");
             optPhone.value = s.name;
@@ -1950,10 +2032,8 @@
       const name = matchedSt.name;
 
       if (arrayName === 'khongDTNames') {
-        // Nề nếp Điện thoại / Đồng phục: Cho phép chọn kể cả học sinh đã quét QR / Nhận diện khuôn mặt
         if (violations.khongDTNames.includes(name)) { Swal.fire('Trùng lặp', 'Học sinh này đã được ghi nhận ở mục Điện thoại / Đồng phục.', 'info'); inputEl.value = ""; return; }
       } else {
-        // Các mục điểm danh thủ công (Vắng phép, Không phép, Bỏ tiết): Bỏ ra các bạn đã quét QR / Nhận diện khuôn mặt
         if (checkedInStudentNames.has(name)) {
           Swal.fire('Đã điểm danh tự động', `Học sinh <b>${escapeHtmlAttr(name)}</b> đã quét QR / Nhận diện khuôn mặt AI nên không cần nhập thủ công điểm danh.`, 'info');
           inputEl.value = "";
@@ -2132,7 +2212,7 @@
 <div id="ai-chatbot-container" class="ai-chat-root fixed bottom-20 right-3 sm:right-5 z-[9999] flex flex-col items-end">
   
   <!-- Cửa sổ Chat chính -->
-  <div id="ai-chat-window" class="hidden chatbox-pop mb-3 w-[330px] sm:w-[375px] max-w-[calc(100vw-24px)] max-h-[calc(100vh-115px)] rounded-3xl shadow-2xl border border-indigo-200/80 bg-white/95 backdrop-blur-xl flex flex-col overflow-hidden transition-colors duration-300">
+  <div id="ai-chat-window" class="hidden chatbox-pop mb-3 w-[330px] sm:w-[385px] md:w-[410px] max-w-[calc(100vw-24px)] max-h-[calc(100vh-115px)] rounded-3xl shadow-2xl border border-indigo-200/80 bg-white/95 backdrop-blur-xl flex flex-col overflow-hidden transition-colors duration-300">
     
     <!-- Header Đa Sắc Màu -->
     <div class="flex-shrink-0 ai-vibrant-header px-3.5 py-3 text-white flex items-center justify-between shadow-md">
@@ -2228,6 +2308,7 @@
   document.addEventListener("DOMContentLoaded", () => {
     applyChatTheme(isChatDarkMode);
     initVoiceRecognitionModule();
+    updateQuickPromptsByCurrentTab();
   });
 
   function postGasJsonRequest(url, fnName, args, timeoutMs = 18000) {
@@ -2301,13 +2382,21 @@
   function buildLocalPortalFallbackReply(msg, role, name, className, tabContext) {
     const q = (msg || "").toLowerCase();
 
-    // 1. Các câu hỏi nghiệp vụ trong cổng Học sinh / Giáo viên
     if (tabContext === "Thẻ Học sinh") {
       if (q.includes("xin nghỉ") || q.includes("đơn xin phép") || (q.includes("nghỉ") && q.includes("phép"))) {
-        return `Chào **${name}**, để gửi đơn xin nghỉ phép ngay trên màn hình **Thẻ Học sinh**, bạn kéo xuống mục **Gửi Đơn Xin Phép Online**, chọn **Ngày nghỉ (dd/mm/yyyy)**, **Thời gian (Cả ngày / Buổi Sáng / Buổi Chiều)**, nhập lý do rồi bấm **Gửi Đơn Cho GVCN** nhé! 📝`;
+        return `Chào **${name}**, để gửi đơn xin nghỉ phép ngay trên màn hình **Thẻ Học sinh**, bạn có thể nhắn trực tiếp cho mình theo mẫu *"Xin nghỉ phép ngày dd/mm/yyyy buổi ... lý do ..."* hoặc điền vào mục **Gửi Đơn Xin Phép Online** trên màn hình rồi bấm **Gửi Đơn Cho GVCN** nhé! 📝`;
       }
-      if (q.includes("vi phạm") || q.includes("tra cứu") || q.includes("lịch sử")) {
-        return `Chào **${name}**, bạn chọn **Từ ngày** và **Đến ngày** (dạng **dd/mm/yyyy**) ở mục **Tra Cứu Lịch Sử Vi Phạm Cá Nhân** phía trên màn hình rồi bấm **Tra cứu** để xem chi tiết từng buổi nhé! 🔍`;
+      if (q.includes("vi phạm") || q.includes("tra cứu") || q.includes("lịch sử") || q.includes("chuyên cần")) {
+        return `Chào **${name}**, bạn chọn **Từ ngày** và **Đến ngày** (dạng **dd/mm/yyyy**) ở mục **Tra Cứu Lịch Sử Vi Phạm Cá Nhân** trên màn hình rồi bấm **Tra cứu** để xem chi tiết từng buổi nhé! 🔍`;
+      }
+      if (q.includes("quy định") || q.includes("nề nếp") || q.includes("điện thoại") || q.includes("đi trễ")) {
+        return `Chào **${name}**, quy định nề nếp tại **Trường THPT Ngô Quyền**:\n` +
+               `1. **Đi học đúng giờ:** Có mặt trước giờ vào lớp đầu buổi; đi trễ quá 45 phút sẽ tính vào diện vắng buổi.\n` +
+               `2. **Xin nghỉ phép:** Gửi đơn xin phép online trước buổi học hoặc có xác nhận của phụ huynh/GVCN.\n` +
+               `3. **Sử dụng điện thoại & đồng phục:** Chấp hành nghiêm túc quy định không sử dụng điện thoại trái phép trong giờ học và mặc đúng đồng phục quy định.`;
+      }
+      if (q.includes("qr") || q.includes("khuôn mặt") || q.includes("điểm danh lớp")) {
+        return `Chào **${name}**, nếu bạn là cán sự lớp (**Lớp trưởng / Lớp phó / Bí thư**), bạn bấm **Vào Giao Diện Điểm Danh Lớp**, sau đó chọn **Quét Thẻ QR** hoặc **Mở Camera Khuôn Mặt AI** để quét tự động từng bạn; hệ thống sẽ tự loại các bạn đã quét khỏi danh sách nhập thủ công! 📷`;
       }
     }
 
@@ -2327,7 +2416,6 @@
       }
     }
 
-    // 2. Các câu hỏi học tập / kiến thức / phương pháp học (khi kết nối AI đang gián đoạn)
     if (q.includes("toán")) {
       return `Chào **${name}**, để học tốt môn **Toán** ở bậc THPT, bạn nên áp dụng 4 bước trọng tâm sau:\n` +
              `1. **Nắm chắc định nghĩa, định lý và công thức gốc:** Hiểu bản chất và điều kiện áp dụng thay vì học thuộc máy móc.\n` +
@@ -2383,17 +2471,13 @@
     const args = [msg, currentRole, currentName, currentClass, currentTab];
     const enrichedPrompt = buildPortalEnrichedPrompt(msg, currentRole, currentName, currentClass, currentTab);
 
-    // 1. Gọi trực tiếp Web App Chatbot chính với đầy đủ ngữ cảnh cổng hiện tại
     try {
       const res1 = await postGasJsonRequest(CHAT_APP_URL, fnName, args, 15000);
       if (res1 && res1.text && !isGenericPortalMenuReply(res1.text, msg)) {
         return res1;
       }
-    } catch (primaryErr) {
-      // Chuyển sang bước dự phòng tiếp theo
-    }
+    } catch (primaryErr) {}
 
-    // 2. Gửi câu hỏi kèm chỉ thị trả lời đúng trọng tâm qua luồng xử lý ổn định của CHAT_APP_URL
     try {
       const res2 = await postGasJsonRequest(
         CHAT_APP_URL,
@@ -2404,23 +2488,17 @@
       if (res2 && res2.text && !isGenericPortalMenuReply(res2.text, msg)) {
         return res2;
       }
-    } catch (relayErr) {
-      // Chuyển sang bước dự phòng tiếp theo
-    }
+    } catch (relayErr) {}
 
-    // 3. Dự phòng qua Web App Điểm danh chính nếu có
     if (typeof WEB_APP_URL !== "undefined" && WEB_APP_URL && WEB_APP_URL !== CHAT_APP_URL) {
       try {
         const res3 = await postGasJsonRequest(WEB_APP_URL, fnName, args, 12000);
         if (res3 && res3.text && !isGenericPortalMenuReply(res3.text, msg)) {
           return res3;
         }
-      } catch (secondaryErr) {
-        // Chuyển sang dự phòng cục bộ thông minh
-      }
+      } catch (secondaryErr) {}
     }
 
-    // 4. Phản hồi cục bộ thông minh trả lời đúng trọng tâm câu hỏi
     return {
       status: "success",
       text: buildLocalPortalFallbackReply(msg, currentRole, currentName, currentClass, currentTab)
@@ -2604,7 +2682,6 @@
     const step1 = document.getElementById("step-1");
     const step2 = document.getElementById("step-2");
 
-    // 1. Kiểm tra chính xác màn hình/bước đang hiển thị (không có class hidden)
     if ((stepAdmin && !stepAdmin.classList.contains("hidden")) ||
         (stepAdminCfg && !stepAdminCfg.classList.contains("hidden")) ||
         (stepAdminData && !stepAdminData.classList.contains("hidden")) ||
@@ -2623,7 +2700,6 @@
       }
     }
 
-    // 2. Dự phòng theo vai trò đã đăng nhập trong appData
     if (currentRole && currentRole !== "Khách") {
       const r = currentRole.toLowerCase();
       if (r.includes("giáo viên") || r.includes("giám thị") || r.includes("admin") || r.includes("quản lý") || r.includes("gvcn")) {
@@ -2645,34 +2721,43 @@
 
     if (tabContext === "Thẻ Học sinh") {
       htmlButtons = `
-        <button type="button" onclick="sendQuickPrompt('Xin nghỉ phép ngày mai vì bị sốt')" class="whitespace-nowrap bg-gradient-to-r from-pink-500/10 to-rose-500/10 hover:from-pink-500/20 hover:to-rose-500/20 text-rose-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-rose-300/60 transition">
-          📝 Xin nghỉ phép
+        <button type="button" onclick="sendQuickPrompt('Xin nghỉ phép ngày mai vì bị sốt')" class="whitespace-nowrap bg-gradient-to-r from-pink-500/10 to-rose-500/10 hover:from-pink-500/20 hover:to-rose-500/20 text-rose-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-rose-300/60 transition flex-shrink-0">
+          📝 Xin nghỉ phép tự động
         </button>
-        <button type="button" onclick="sendQuickPrompt('Tra cứu lịch sử vi phạm của tôi tháng này')" class="whitespace-nowrap bg-gradient-to-r from-cyan-500/10 to-blue-500/10 hover:from-cyan-500/20 hover:to-blue-500/20 text-blue-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-blue-300/60 transition">
+        <button type="button" onclick="sendQuickPrompt('Tra cứu lịch sử vi phạm của tôi tháng này')" class="whitespace-nowrap bg-gradient-to-r from-cyan-500/10 to-blue-500/10 hover:from-cyan-500/20 hover:to-blue-500/20 text-blue-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-blue-300/60 transition flex-shrink-0">
           🔍 Tra cứu vi phạm
         </button>
-        <button type="button" onclick="sendQuickPrompt('Tư vấn cho tôi phương pháp ôn thi hiệu quả')" class="whitespace-nowrap bg-gradient-to-r from-violet-500/10 to-purple-500/10 hover:from-violet-500/20 hover:to-purple-500/20 text-violet-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-violet-300/60 transition">
+        <button type="button" onclick="sendQuickPrompt('Kiểm tra tình hình chuyên cần và số buổi nghỉ của tôi')" class="whitespace-nowrap bg-gradient-to-r from-emerald-500/10 to-teal-500/10 hover:from-emerald-500/20 hover:to-teal-500/20 text-emerald-700 font-bold text-[10px] px-2.5 py-1 rounded-full border border-emerald-300/60 transition flex-shrink-0">
+          📊 Thống kê chuyên cần
+        </button>
+        <button type="button" onclick="sendQuickPrompt('Quy định về đi trễ, vắng phép và mang điện thoại tại trường')" class="whitespace-nowrap bg-gradient-to-r from-amber-500/10 to-orange-500/10 hover:from-amber-500/20 hover:to-orange-500/20 text-amber-700 font-bold text-[10px] px-2.5 py-1 rounded-full border border-amber-300/60 transition flex-shrink-0">
+          📋 Quy định nề nếp
+        </button>
+        <button type="button" onclick="sendQuickPrompt('Hướng dẫn cách điểm danh lớp bằng thẻ QR và khuôn mặt AI')" class="whitespace-nowrap bg-gradient-to-r from-sky-500/10 to-indigo-500/10 hover:from-sky-500/20 hover:to-indigo-500/20 text-indigo-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-indigo-300/60 transition flex-shrink-0">
+          📷 Điểm danh QR & AI
+        </button>
+        <button type="button" onclick="sendQuickPrompt('Tư vấn cho tôi phương pháp ôn thi hiệu quả')" class="whitespace-nowrap bg-gradient-to-r from-violet-500/10 to-purple-500/10 hover:from-violet-500/20 hover:to-purple-500/20 text-violet-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-violet-300/60 transition flex-shrink-0">
           💡 Phương pháp học tập
         </button>
       `;
     } else if (tabContext === "Thẻ Giáo viên/Giám thị") {
       htmlButtons = `
-        <button type="button" onclick="sendQuickPrompt('Thống kê tiến độ nộp điểm danh toàn trường hôm nay')" class="whitespace-nowrap bg-gradient-to-r from-emerald-500/10 to-teal-500/10 hover:from-emerald-500/20 hover:to-teal-500/20 text-emerald-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-emerald-300/60 transition">
+        <button type="button" onclick="sendQuickPrompt('Thống kê tiến độ nộp điểm danh toàn trường hôm nay')" class="whitespace-nowrap bg-gradient-to-r from-emerald-500/10 to-teal-500/10 hover:from-emerald-500/20 hover:to-teal-500/20 text-emerald-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-emerald-300/60 transition flex-shrink-0">
           📊 Tiến độ điểm danh
         </button>
-        <button type="button" onclick="sendQuickPrompt('Danh sách các học sinh xin nghỉ phép hôm nay')" class="whitespace-nowrap bg-gradient-to-r from-blue-500/10 to-indigo-500/10 hover:from-blue-500/20 hover:to-indigo-500/20 text-indigo-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-indigo-300/60 transition">
+        <button type="button" onclick="sendQuickPrompt('Danh sách các học sinh xin nghỉ phép hôm nay')" class="whitespace-nowrap bg-gradient-to-r from-blue-500/10 to-indigo-500/10 hover:from-blue-500/20 hover:to-indigo-500/20 text-indigo-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-indigo-300/60 transition flex-shrink-0">
           📋 Duyệt đơn nghỉ phép
         </button>
-        <button type="button" onclick="sendQuickPrompt('Gợi ý giải pháp quản lý nề nếp học sinh hiệu quả')" class="whitespace-nowrap bg-gradient-to-r from-amber-500/10 to-orange-500/10 hover:from-amber-500/20 hover:to-orange-500/20 text-amber-700 font-bold text-[10px] px-2.5 py-1 rounded-full border border-amber-300/60 transition">
+        <button type="button" onclick="sendQuickPrompt('Gợi ý giải pháp quản lý nề nếp học sinh hiệu quả')" class="whitespace-nowrap bg-gradient-to-r from-amber-500/10 to-orange-500/10 hover:from-amber-500/20 hover:to-orange-500/20 text-amber-700 font-bold text-[10px] px-2.5 py-1 rounded-full border border-amber-300/60 transition flex-shrink-0">
           🛠️ Tư vấn nề nếp
         </button>
       `;
     } else {
       htmlButtons = `
-        <button type="button" onclick="sendQuickPrompt('Hướng dẫn sử dụng cổng điểm danh chi tiết')" class="whitespace-nowrap bg-gradient-to-r from-amber-500/10 to-orange-500/10 hover:from-amber-500/20 hover:to-orange-500/20 text-amber-700 font-bold text-[10px] px-2.5 py-1 rounded-full border border-amber-300/60 transition">
+        <button type="button" onclick="sendQuickPrompt('Hướng dẫn sử dụng cổng điểm danh chi tiết')" class="whitespace-nowrap bg-gradient-to-r from-amber-500/10 to-orange-500/10 hover:from-amber-500/20 hover:to-orange-500/20 text-amber-700 font-bold text-[10px] px-2.5 py-1 rounded-full border border-amber-300/60 transition flex-shrink-0">
           📖 Hướng dẫn sử dụng
         </button>
-        <button type="button" onclick="sendQuickPrompt('Làm sao để đăng nhập vào thẻ học sinh?')" class="whitespace-nowrap bg-gradient-to-r from-sky-50/10 to-blue-500/10 hover:from-sky-500/20 hover:to-blue-500/20 text-blue-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-blue-300/60 transition">
+        <button type="button" onclick="sendQuickPrompt('Làm sao để đăng nhập vào thẻ học sinh?')" class="whitespace-nowrap bg-gradient-to-r from-sky-50/10 to-blue-500/10 hover:from-sky-500/20 hover:to-blue-500/20 text-blue-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-blue-300/60 transition flex-shrink-0">
           🔑 Cách đăng nhập
         </button>
       `;

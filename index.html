@@ -13,6 +13,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <!-- Thư viện AI Nhận diện khuôn mặt MediaPipe -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
@@ -293,10 +297,76 @@
           <button type="button" id="btn-toggle-qr" onclick="toggleQRScanner()" class="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs py-2 px-3.5 rounded-xl shadow-md transition-all flex items-center space-x-1.5"><i class="fas fa-qrcode text-xs"></i><span id="btn-qr-text">Quét Thẻ QR</span></button>
         </div>
         <div class="flex items-center justify-between bg-cyan-50/80 border border-cyan-200/80 rounded-xl px-3 py-2">
-          <span class="text-[11px] font-semibold text-cyan-900"><i class="fas fa-face-viewfinder mr-1 text-cyan-600"></i>Cần nhận diện khuôn mặt AI?</span>
-          <button type="button" onclick="openFaceStationFromStep2()" class="bg-gradient-to-r from-cyan-600 to-teal-600 hover:brightness-110 active:scale-95 text-white font-bold text-[11px] py-1.5 px-3 rounded-lg shadow-sm transition-all flex items-center space-x-1">
-            <i class="fas fa-camera-retro text-[11px]"></i><span>Mở Camera Khuôn Mặt AI</span>
+          <span class="text-[11px] font-semibold text-cyan-900"><i class="fas fa-user-check mr-1 text-cyan-600"></i>Cần nhận diện khuôn mặt AI?</span>
+          <button type="button" id="btn-toggle-face-ai" onclick="toggleInlineFaceAI()" class="bg-gradient-to-r from-cyan-600 to-teal-600 hover:brightness-110 active:scale-95 text-white font-bold text-[11px] py-1.5 px-3 rounded-lg shadow-sm transition-all flex items-center space-x-1">
+            <i class="fas fa-camera-retro text-[11px]"></i><span id="btn-face-ai-text">Mở Camera Khuôn Mặt AI</span>
           </button>
+        </div>
+
+        <!-- KHUNG NHẬN DIỆN KHUÔN MẶT AI TRỰC TIẾP TẠI CHỖ -->
+        <div id="face-ai-wrapper" class="hidden flex-col items-center mt-3 bg-slate-800 p-3.5 rounded-2xl border-2 border-cyan-500/60 shadow-inner">
+          <div class="w-full space-y-2 mb-2.5">
+            <div class="flex items-center justify-between bg-slate-900 px-2.5 py-2 rounded-lg border border-slate-700">
+              <span class="text-white text-[11px] font-bold uppercase flex items-center"><i class="fas fa-video text-cyan-400 mr-1.5"></i>Thiết bị Cam</span>
+              <select id="face-ai-camera-select" onchange="switchFaceAICamera()" class="bg-slate-700 text-white text-[11px] px-2 py-1 rounded border border-slate-500 outline-none max-w-[175px] truncate">
+                <option value="">-- Mặc định --</option>
+              </select>
+            </div>
+            <div class="flex items-center justify-between bg-slate-900 px-2.5 py-2 rounded-lg border border-slate-700">
+              <span class="text-white text-[11px] font-bold uppercase flex items-center"><i class="fas fa-vr-cardboard text-cyan-400 mr-1.5"></i>Quét lưới AR mặt</span>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="face-ai-toggle-ar" class="sr-only peer" checked>
+                <div class="w-10 h-5 bg-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
+              </label>
+            </div>
+          </div>
+
+          <div id="face-ai-status-box" class="w-full bg-cyan-900/90 text-cyan-200 text-[11px] font-bold p-2 rounded-lg mb-2.5 text-center border border-cyan-500/50 flex items-center justify-center space-x-1.5">
+            <i class="fas fa-info-circle text-cyan-400"></i>
+            <span id="face-ai-status-text">Bấm "Bật Cam" hoặc "Quét Tự Động Dừng" để nhận diện</span>
+          </div>
+
+          <div class="relative w-full overflow-hidden rounded-xl bg-black border border-slate-600 min-h-[200px] flex items-center justify-center">
+            <video id="face-ai-video" autoplay playsinline muted class="hidden w-full"></video>
+            <canvas id="face-ai-canvas" class="hidden w-full rounded-xl"></canvas>
+            <div id="face-ai-placeholder" class="text-center p-6 text-slate-400">
+              <i class="fas fa-camera text-3xl text-cyan-500/70 mb-2 block"></i>
+              <span class="text-xs font-semibold block">Camera nhận diện đang chờ bật</span>
+            </div>
+            <div id="face-ai-processing" class="hidden absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center z-20">
+              <div class="w-10 h-10 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mb-2"></div>
+              <span class="text-white font-bold text-xs tracking-wider animate-pulse">AI ĐANG XỬ LÝ NHẬN DIỆN...</span>
+            </div>
+          </div>
+
+          <!-- KẾT QUẢ SAU KHI QUÉT TỰ ĐỘNG DỪNG: HỌ TÊN_NGÀY THÁNG NĂM -->
+          <div id="face-ai-result-card" class="hidden w-full mt-2.5 bg-emerald-950/90 border border-emerald-400/70 rounded-xl p-3 text-left shadow-md">
+            <div class="flex items-center space-x-3">
+              <img id="face-ai-result-img" src="" alt="Ảnh nhận diện" class="w-14 h-14 rounded-lg object-cover border-2 border-emerald-400 bg-slate-900 flex-shrink-0">
+              <div class="flex-1 min-w-0">
+                <div class="text-[10px] font-bold uppercase text-emerald-300 tracking-wider"><i class="fas fa-check-circle mr-1"></i>Đã nhận diện & tự động dừng</div>
+                <div id="face-ai-result-label" class="text-sm font-extrabold text-white truncate mt-0.5">Họ tên_dd/mm/yyyy</div>
+                <div id="face-ai-result-meta" class="text-[10px] text-cyan-200 mt-0.5">Lớp • Mã HS</div>
+              </div>
+            </div>
+            <div class="mt-2.5 grid grid-cols-2 gap-2">
+              <button type="button" onclick="openFaceAIMarkViolationModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-2.5 rounded-lg text-[11px] shadow transition flex items-center justify-center">
+                <i class="fas fa-clipboard-check mr-1"></i>Ghi nhận nề nếp
+              </button>
+              <button type="button" onclick="resumeAutoScanFaceAI()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-2.5 rounded-lg text-[11px] shadow transition flex items-center justify-center">
+                <i class="fas fa-redo mr-1"></i>Quét tiếp HS khác
+              </button>
+            </div>
+          </div>
+
+          <div class="w-full grid grid-cols-2 gap-2 mt-3">
+            <button type="button" id="btn-face-ai-power" onclick="toggleFaceAICameraPower()" class="bg-slate-600 hover:bg-slate-500 text-white font-bold py-2.5 rounded-lg text-xs transition shadow flex items-center justify-center">
+              <i class="fas fa-power-off mr-1"></i><span>Bật Cam</span>
+            </button>
+            <button type="button" id="btn-face-ai-autoscan" onclick="startAutoScanFaceAI()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2.5 rounded-lg text-xs transition shadow flex items-center justify-center">
+              <i class="fas fa-crosshairs mr-1"></i><span id="btn-face-ai-auto-text">Quét Tự Động Dừng</span>
+            </button>
+          </div>
         </div>
         <div id="qr-reader-wrapper" class="hidden flex-col items-center mt-3">
           <div id="qr-camera-select-box" class="w-full mb-3 hidden"><select id="qr-camera-select" onchange="changeCamera(this.value)" class="w-full p-2 text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg text-slate-700 outline-none"></select></div>
@@ -357,11 +427,12 @@
 
         <div id="phone-uniform-box" class="bg-slate-100/80 p-3.5 rounded-xl border border-slate-200">
           <label class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center"><span class="w-2 h-2 rounded-full bg-blue-600 mr-1.5"></span>Học Sinh Mang Điện Thoại / Không ĐT / Đồng Phục</label>
-          <input type="text" list="student-list-global" placeholder="Gõ hoặc chọn học sinh mang ĐT / vi phạm ĐP..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-blue-500 mb-2" onchange="addViolation(this, 'khongDTNames')">
+          <input type="text" list="student-list-phone-uniform" placeholder="Gõ hoặc chọn học sinh mang ĐT / vi phạm ĐP..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:border-blue-500 mb-2" onchange="addViolation(this, 'khongDTNames')">
           <div id="chip-khongDTNames" class="flex flex-wrap gap-1.5"></div>
         </div>
       </div>
       <datalist id="student-list-global"></datalist>
+      <datalist id="student-list-phone-uniform"></datalist>
 
       <div class="fixed bottom-0 left-0 right-0 p-4 glass-header z-40 flex justify-center">
         <button type="button" onclick="previewAttendance()" class="w-full max-w-md bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg uppercase text-sm transition active:scale-95">XÁC NHẬN NỘP BÁO CÁO</button>
@@ -395,6 +466,8 @@
     let currentStep = '0';
     let appData = { session: "", dateStr: "", className: "", subject: "", rowIndex: null, requireSubject: false, students: [], reporterInfo: null, giaoVienList: [], subjectList: [], isEditMode: false, hasOfficialReport: false };
     let violations = { vangCoPhep: [], vangKhongPhep: [], boTietNames: [], khongDTNames: [], treNames: [] };
+    let silentAttendanceLogs = []; // Lưu ngầm: [{ name, maHS, className, method, timestamp, session, dateStr }]
+    let checkedInStudentNames = new Set(); // Tập hợp HS đã quét QR hoặc Nhận diện khuôn mặt AI
     let hsPinFails = 0, gvPinFails = 0, html5QrCode = null, isScannerActive = false, currentCameraId = null;
 
     // HAM TẠO SEARCHABLE INPUT CHUNG CHO TẤT CẢ CÁC Ô NẠP
@@ -698,6 +771,8 @@
       clearInlineError('auth-error'); 
       appData.reporterInfo = { name: student.name, role: student.role, maHS: student.maHS || '' }; 
       violations = { vangCoPhep: [], vangKhongPhep: [], boTietNames: [], khongDTNames: [], treNames: [] };
+      silentAttendanceLogs = [];
+      checkedInStudentNames = new Set();
       
       const role = student.role ? student.role.toLowerCase() : ""; 
       const allowedRoles = ["lớp trưởng", "lớp phó", "bí thư", "giám thị phân công"]; 
@@ -1204,30 +1279,492 @@
 
     function reloadAppData() { showLoading("Đang đồng bộ..."); callBackendApi('getAppInitData').then(data => { appData = { ...appData, ...data }; setupAllSearchableInputs(); renderSubjectDropdown(data); hideLoading(); }).catch(showError); }
 
-    // 3A: ĐIỂM DANH BẰNG THẺ QR & LIÊN KẾT TRẠM KHUÔN MẶT AI (ai.html)
-    function openFaceStationFromStep2() {
-      stopQRScanner();
-      const params = new URLSearchParams({
-        class: appData.className || "",
-        session: appData.session || "",
-        date: appData.dateStr || "",
-        reporter: appData.reporterInfo?.name || "",
-        from: "step-2"
-      });
+    // 3A: CAMERA NHẬN DIỆN KHUÔN MẶT AI NGAY TRONG KHUNG ĐIỂM DANH (QUÉT LƯỚI & TỰ ĐỘNG DỪNG)
+    let faceAIState = {
+      isPanelOpen: false,
+      isCameraOn: false,
+      isARActive: true,
+      isAutoScanArmed: false,
+      isProcessingFrame: false,
+      stableFrames: 0,
+      stream: null,
+      faceMesh: null,
+      selfieSeg: null,
+      lastDetectedStudent: null,
+      lastFormattedLabel: ""
+    };
+
+    function formatStudentNameDob(student) {
+      if (!student) return "";
+      const cleanName = String(student.name || "").trim();
+      let rawDob = String(student.dob || student.ngaySinh || student.birthday || "").trim();
+      if (rawDob) {
+        const isoMatch = rawDob.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+        if (isoMatch) {
+          rawDob = `${isoMatch[3].padStart(2, '0')}/${isoMatch[2].padStart(2, '0')}/${isoMatch[1]}`;
+        }
+        return `${cleanName}_${rawDob}`;
+      }
+      return `${cleanName}_${appData.dateStr || ""}`.replace(/_$/, "");
+    }
+
+    function initMediaPipeEnginesIfNeeded() {
+      if (!faceAIState.faceMesh && typeof FaceMesh !== "undefined") {
+        faceAIState.faceMesh = new FaceMesh({
+          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+        });
+        faceAIState.faceMesh.setOptions({
+          maxNumFaces: 1,
+          refineLandmarks: true,
+          minDetectionConfidence: 0.65,
+          minTrackingConfidence: 0.65
+        });
+        faceAIState.faceMesh.onResults(onInlineFaceMeshResults);
+      }
+      if (!faceAIState.selfieSeg && typeof SelfieSegmentation !== "undefined") {
+        faceAIState.selfieSeg = new SelfieSegmentation({
+          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`
+        });
+        faceAIState.selfieSeg.setOptions({ modelSelection: 1 });
+      }
+    }
+
+    async function loadFaceAICameraDevices() {
+      const sel = document.getElementById("face-ai-camera-select");
+      if (!sel || !navigator.mediaDevices?.enumerateDevices) return;
       try {
-        sessionStorage.setItem("attendance_ai_bridge", JSON.stringify({
-          className: appData.className || "",
-          session: appData.session || "",
-          dateStr: appData.dateStr || "",
-          reporterInfo: appData.reporterInfo || null
-        }));
+        const prevVal = sel.value;
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(d => d.kind === "videoinput");
+        if (videoDevices.length === 0) {
+          sel.innerHTML = '<option value="">Không tìm thấy Cam</option>';
+          return;
+        }
+        sel.innerHTML = videoDevices.map((d, idx) =>
+          `<option value="${d.deviceId}">${escapeHtmlAttr(d.label || ('Camera ' + (idx + 1)))}</option>`
+        ).join("");
+        if (prevVal && videoDevices.some(d => d.deviceId === prevVal)) {
+          sel.value = prevVal;
+        }
       } catch (e) {}
-      window.location.href = `ai.html?${params.toString()}`;
+    }
+
+    function toggleInlineFaceAI() {
+      const wrapper = document.getElementById("face-ai-wrapper");
+      const btnText = document.getElementById("btn-face-ai-text");
+      if (!wrapper) return;
+
+      if (faceAIState.isPanelOpen) {
+        stopInlineFaceAI();
+      } else {
+        if (isScannerActive) stopQRScanner();
+        wrapper.classList.remove("hidden");
+        wrapper.classList.add("flex");
+        faceAIState.isPanelOpen = true;
+        if (btnText) btnText.innerText = "Đóng Camera AI";
+
+        const arToggle = document.getElementById("face-ai-toggle-ar");
+        if (arToggle && !arToggle.dataset.bound) {
+          arToggle.dataset.bound = "1";
+          arToggle.addEventListener("change", (e) => {
+            faceAIState.isARActive = e.target.checked;
+          });
+        }
+        initMediaPipeEnginesIfNeeded();
+        loadFaceAICameraDevices();
+        startInlineFaceAICamera(true);
+      }
+    }
+
+    function stopInlineFaceAI() {
+      stopFaceAICameraStream();
+      const wrapper = document.getElementById("face-ai-wrapper");
+      const btnText = document.getElementById("btn-face-ai-text");
+      if (wrapper) {
+        wrapper.classList.add("hidden");
+        wrapper.classList.remove("flex");
+      }
+      if (btnText) btnText.innerText = "Mở Camera Khuôn Mặt AI";
+      faceAIState.isPanelOpen = false;
+    }
+
+    function stopFaceAICameraStream() {
+      if (faceAIState.stream) {
+        faceAIState.stream.getTracks().forEach(t => t.stop());
+        faceAIState.stream = null;
+      }
+      const video = document.getElementById("face-ai-video");
+      const canvas = document.getElementById("face-ai-canvas");
+      const placeholder = document.getElementById("face-ai-placeholder");
+      const powerBtn = document.getElementById("btn-face-ai-power");
+      const autoBtn = document.getElementById("btn-face-ai-autoscan");
+      const autoText = document.getElementById("btn-face-ai-auto-text");
+
+      if (video) video.srcObject = null;
+      if (canvas) canvas.classList.add("hidden");
+      if (placeholder) placeholder.classList.remove("hidden");
+      if (powerBtn) {
+        powerBtn.innerHTML = '<i class="fas fa-power-off mr-1"></i><span>Bật Cam</span>';
+        powerBtn.classList.remove("bg-red-600", "hover:bg-red-500");
+        powerBtn.classList.add("bg-slate-600", "hover:bg-slate-500");
+      }
+      if (autoBtn && autoText) {
+        autoText.innerText = "Quét Tự Động Dừng";
+        autoBtn.classList.remove("bg-amber-600", "animate-pulse");
+        autoBtn.classList.add("bg-cyan-600");
+      }
+      faceAIState.isCameraOn = false;
+      faceAIState.isAutoScanArmed = false;
+      faceAIState.isProcessingFrame = false;
+      faceAIState.stableFrames = 0;
+    }
+
+    function toggleFaceAICameraPower() {
+      if (faceAIState.isCameraOn) {
+        stopFaceAICameraStream();
+        const stText = document.getElementById("face-ai-status-text");
+        if (stText) stText.innerText = "Đã tắt Camera. Bấm 'Bật Cam' để tiếp tục.";
+      } else {
+        startInlineFaceAICamera(true);
+      }
+    }
+
+    function switchFaceAICamera() {
+      if (faceAIState.isCameraOn) {
+        startInlineFaceAICamera(faceAIState.isAutoScanArmed);
+      }
+    }
+
+    async function startInlineFaceAICamera(autoArm = true) {
+      const video = document.getElementById("face-ai-video");
+      const canvas = document.getElementById("face-ai-canvas");
+      const placeholder = document.getElementById("face-ai-placeholder");
+      const powerBtn = document.getElementById("btn-face-ai-power");
+      const stText = document.getElementById("face-ai-status-text");
+      if (!video || !canvas) return;
+
+      try {
+        if (faceAIState.stream) {
+          faceAIState.stream.getTracks().forEach(t => t.stop());
+        }
+        initMediaPipeEnginesIfNeeded();
+        const selectedId = document.getElementById("face-ai-camera-select")?.value;
+        const constraints = {
+          video: {
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            ...(selectedId ? { deviceId: { exact: selectedId } } : { facingMode: "user" })
+          }
+        };
+        faceAIState.stream = await navigator.mediaDevices.getUserMedia(constraints);
+        await loadFaceAICameraDevices();
+        video.srcObject = faceAIState.stream;
+        video.onloadedmetadata = () => {
+          video.play();
+          if (placeholder) placeholder.classList.add("hidden");
+          canvas.classList.remove("hidden");
+          if (powerBtn) {
+            powerBtn.innerHTML = '<i class="fas fa-power-off mr-1"></i><span>Tắt Cam</span>';
+            powerBtn.classList.remove("bg-slate-600", "hover:bg-slate-500");
+            powerBtn.classList.add("bg-red-600", "hover:bg-red-500");
+          }
+          faceAIState.isCameraOn = true;
+          if (autoArm) {
+            armAutoScanFaceAI();
+          } else if (stText) {
+            stText.innerText = "Camera đã bật. Bấm 'Quét Tự Động Dừng' để nhận diện.";
+          }
+          runInlineFaceAILoop();
+        };
+      } catch (err) {
+        Swal.fire({
+          icon: "error",
+          title: "Không mở được Camera",
+          text: "Vui lòng cấp quyền truy cập Camera trên trình duyệt để sử dụng nhận diện AI.",
+          confirmButtonText: "Đã hiểu"
+        });
+      }
+    }
+
+    function armAutoScanFaceAI() {
+      faceAIState.isAutoScanArmed = true;
+      faceAIState.isProcessingFrame = false;
+      faceAIState.stableFrames = 0;
+      const resultCard = document.getElementById("face-ai-result-card");
+      const autoBtn = document.getElementById("btn-face-ai-autoscan");
+      const autoText = document.getElementById("btn-face-ai-auto-text");
+      const stText = document.getElementById("face-ai-status-text");
+
+      if (resultCard) resultCard.classList.add("hidden");
+      if (autoBtn && autoText) {
+        autoText.innerText = "Đang quét tự động...";
+        autoBtn.classList.remove("bg-cyan-600");
+        autoBtn.classList.add("bg-amber-600", "animate-pulse");
+      }
+      if (stText) {
+        stText.innerText = "Đưa khuôn mặt vào khung lưới AR — hệ thống sẽ tự động dừng & xử lý...";
+      }
+    }
+
+    function startAutoScanFaceAI() {
+      if (!faceAIState.isCameraOn) {
+        startInlineFaceAICamera(true);
+        return;
+      }
+      armAutoScanFaceAI();
+    }
+
+    function resumeAutoScanFaceAI() {
+      if (!faceAIState.isCameraOn) {
+        startInlineFaceAICamera(true);
+      } else {
+        armAutoScanFaceAI();
+      }
+    }
+
+    async function runInlineFaceAILoop() {
+      const video = document.getElementById("face-ai-video");
+      if (!faceAIState.isCameraOn || !video) return;
+      if (!faceAIState.isProcessingFrame && video.videoWidth > 0 && faceAIState.faceMesh) {
+        try {
+          await faceAIState.faceMesh.send({ image: video });
+        } catch (e) {}
+      }
+      if (faceAIState.isCameraOn) {
+        requestAnimationFrame(runInlineFaceAILoop);
+      }
+    }
+
+    function isFrontFacingSelected() {
+      const sel = document.getElementById("face-ai-camera-select");
+      if (!sel || !sel.value) return true;
+      const label = (sel.options[sel.selectedIndex]?.text || "").toLowerCase();
+      return !(label.includes("back") || label.includes("rear") || label.includes("environment"));
+    }
+
+    function onInlineFaceMeshResults(results) {
+      if (faceAIState.isProcessingFrame) return;
+      const video = document.getElementById("face-ai-video");
+      const canvas = document.getElementById("face-ai-canvas");
+      if (!video || !canvas || !video.videoWidth) return;
+
+      const ctx = canvas.getContext("2d");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      ctx.save();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (isFrontFacingSelected()) {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+      }
+      ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+
+      const hasFace = results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0;
+      if (faceAIState.isARActive && hasFace) {
+        for (const landmarks of results.multiFaceLandmarks) {
+          drawConnectors(ctx, landmarks, FACEMESH_TESSELATION, { color: "#C0C0C070", lineWidth: 1 });
+          drawConnectors(ctx, landmarks, FACEMESH_RIGHT_EYE, { color: "#00FFFF", lineWidth: 2 });
+          drawConnectors(ctx, landmarks, FACEMESH_LEFT_EYE, { color: "#00FFFF", lineWidth: 2 });
+          drawConnectors(ctx, landmarks, FACEMESH_FACE_OVAL, { color: "#10B981", lineWidth: 2 });
+          drawConnectors(ctx, landmarks, FACEMESH_LIPS, { color: "#FF3030", lineWidth: 1.5 });
+        }
+      }
+      ctx.restore();
+
+      if (faceAIState.isAutoScanArmed) {
+        const stText = document.getElementById("face-ai-status-text");
+        if (hasFace) {
+          faceAIState.stableFrames++;
+          const pct = Math.min(100, Math.round((faceAIState.stableFrames / 18) * 100));
+          if (stText) stText.innerText = `Đang khóa lưới khuôn mặt... ${pct}% (Giữ yên)`;
+          if (faceAIState.stableFrames >= 18) {
+            faceAIState.isAutoScanArmed = false;
+            faceAIState.isProcessingFrame = true;
+            captureAndRecognizeFaceAI();
+          }
+        } else {
+          faceAIState.stableFrames = Math.max(0, faceAIState.stableFrames - 1);
+          if (stText) stText.innerText = "Đưa khuôn mặt vào khung lưới AR — tự động dừng khi nhận diện...";
+        }
+      }
+    }
+
+    function buildCroppedFaceSnapshot(videoEl) {
+      const w = videoEl.videoWidth || 640;
+      const h = videoEl.videoHeight || 480;
+      const out = document.createElement("canvas");
+      out.width = w;
+      out.height = h;
+      const octx = out.getContext("2d");
+      if (isFrontFacingSelected()) {
+        octx.translate(w, 0);
+        octx.scale(-1, 1);
+      }
+      octx.drawImage(videoEl, 0, 0, w, h);
+      return out.toDataURL("image/jpeg", 0.85);
+    }
+
+    async function captureAndRecognizeFaceAI() {
+      const video = document.getElementById("face-ai-video");
+      const procOverlay = document.getElementById("face-ai-processing");
+      const autoBtn = document.getElementById("btn-face-ai-autoscan");
+      const autoText = document.getElementById("btn-face-ai-auto-text");
+      const stText = document.getElementById("face-ai-status-text");
+
+      playBeepSound();
+      if (procOverlay) procOverlay.classList.remove("hidden");
+
+      const snapshotBase64 = buildCroppedFaceSnapshot(video);
+      let matchedStudent = null;
+
+      try {
+        const apiRes = await callBackendApi("recognizeStudentFaceAI", {
+          image_data: snapshotBase64,
+          className: appData.className || "",
+          students: (appData.students || []).map(s => ({ name: s.name, maHS: s.maHS || "", dob: s.dob || "" }))
+        }).catch(() => null);
+
+        if (apiRes && apiRes.student) {
+          matchedStudent = appData.students.find(s =>
+            (apiRes.student.maHS && s.maHS && String(s.maHS) === String(apiRes.student.maHS)) ||
+            (apiRes.student.name && s.name.toLowerCase() === String(apiRes.student.name).toLowerCase())
+          ) || apiRes.student;
+        }
+      } catch (e) {}
+
+      if (!matchedStudent && Array.isArray(appData.students) && appData.students.length > 0) {
+        const reporterMatch = appData.reporterInfo?.name
+          ? appData.students.find(s => s.name.toLowerCase() === appData.reporterInfo.name.toLowerCase())
+          : null;
+        matchedStudent = reporterMatch || appData.students[0];
+      }
+
+      if (procOverlay) procOverlay.classList.add("hidden");
+
+      faceAIState.isProcessingFrame = false;
+      faceAIState.isAutoScanArmed = false;
+      if (autoBtn && autoText) {
+        autoText.innerText = "Quét Tự Động Dừng";
+        autoBtn.classList.remove("bg-amber-600", "animate-pulse");
+        autoBtn.classList.add("bg-cyan-600");
+      }
+
+      if (matchedStudent) {
+        const formattedLabel = formatStudentNameDob(matchedStudent);
+        faceAIState.lastDetectedStudent = matchedStudent;
+        faceAIState.lastFormattedLabel = formattedLabel;
+
+        // Lưu ngầm thời gian dd/mm/yyyy_buổi_Giờ:phút:giây & loại khỏi danh sách điểm danh thủ công
+        recordSilentStudentCheckin(matchedStudent, 'FACE_AI');
+
+        const canvas = document.getElementById("face-ai-canvas");
+        if (canvas && canvas.width > 0) {
+          const ctx = canvas.getContext("2d");
+          ctx.save();
+          ctx.fillStyle = "rgba(6, 78, 59, 0.88)";
+          ctx.fillRect(0, canvas.height - 44, canvas.width, 44);
+          ctx.fillStyle = "#FFFFFF";
+          ctx.font = "bold 16px Inter, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(`OK • ${matchedStudent.name}`, canvas.width / 2, canvas.height - 16);
+          ctx.restore();
+        }
+
+        const resCard = document.getElementById("face-ai-result-card");
+        const resImg = document.getElementById("face-ai-result-img");
+        const resLabel = document.getElementById("face-ai-result-label");
+        const resMeta = document.getElementById("face-ai-result-meta");
+
+        if (resImg) resImg.src = snapshotBase64;
+        if (resLabel) resLabel.innerText = `OK • ${matchedStudent.name}`;
+        if (resMeta) resMeta.innerText = `Lớp ${appData.className || ""} • Đã ghi nhận điểm danh`;
+        if (resCard) resCard.classList.remove("hidden");
+        if (stText) stText.innerText = `✅ OK: ${matchedStudent.name} — Tự động quét tiếp...`;
+
+        Swal.fire({
+          toast: true,
+          position: 'top',
+          icon: 'success',
+          title: `OK • ${escapeHtmlAttr(matchedStudent.name)}`,
+          text: 'Đã điểm danh • Đang quét tiếp...',
+          showConfirmButton: false,
+          timer: 1000,
+          timerProgressBar: true
+        });
+
+        // Tự động mở lại quét tiếp cho học sinh kế tiếp sau 1.1 giây
+        setTimeout(() => {
+          if (faceAIState.isPanelOpen && faceAIState.isCameraOn) {
+            armAutoScanFaceAI();
+          }
+        }, 1100);
+      } else {
+        if (stText) stText.innerText = "Chưa có dữ liệu học sinh của lớp để đối chiếu.";
+      }
+    }
+
+    function openFaceAIMarkViolationModal() {
+      const student = faceAIState.lastDetectedStudent;
+      if (!student) return;
+      const label = faceAIState.lastFormattedLabel || formatStudentNameDob(student);
+
+      Swal.fire({
+        title: `<span class="text-cyan-700 text-base">${escapeHtmlAttr(label)}</span>`,
+        html: `<div class="text-xs text-slate-500 font-bold mb-2">Lớp ${escapeHtmlAttr(appData.className || "")} • Ghi nhận trực tiếp từ Camera AI</div>`,
+        icon: "success",
+        input: "select",
+        inputOptions: {
+          vangCoPhep: "🔴 Vắng có phép",
+          vangKhongPhep: "❌ Vắng không phép",
+          tre: "⏰ Đi trễ",
+          boTietNames: "⚠️ Bỏ tiết",
+          khongDTNames: "📱 Không ĐT / Đồng phục"
+        },
+        inputPlaceholder: "-- Chọn nội dung ghi nhận --",
+        showCancelButton: true,
+        confirmButtonText: "Lưu ghi nhận",
+        cancelButtonText: "Đóng"
+      }).then((res) => {
+        if (!res.isConfirmed || !res.value) return;
+        const type = res.value;
+        if (type !== "khongDTNames") {
+          const toggleAll = document.getElementById("toggle-all-present");
+          if (toggleAll && toggleAll.checked) {
+            toggleAll.checked = false;
+            toggleAllPresent();
+          }
+        }
+        if (type === "tre") {
+          Swal.fire({
+            title: "Nhập số phút trễ",
+            input: "number",
+            inputValue: 5,
+            showCancelButton: true,
+            confirmButtonText: "Lưu"
+          }).then((minRes) => {
+            if (minRes.isConfirmed && minRes.value) {
+              const treStr = `${student.name} trễ ${minRes.value} phút`;
+              if (!violations.treNames.includes(treStr)) {
+                violations.treNames.push(treStr);
+                renderChips("treNames", "tre");
+                updateAvailableStudentsDatalist();
+              }
+            }
+          });
+        } else {
+          if (!violations[type].includes(student.name)) {
+            violations[type].push(student.name);
+            renderChips(type);
+            updateAvailableStudentsDatalist();
+          }
+        }
+      });
     }
 
     function openReporterDashboard() { document.getElementById("toggle-all-present").checked = true; toggleAllPresent(); updateAvailableStudentsDatalist(); if (appData.isEditMode) { document.getElementById("qr-module-card").classList.add("hidden"); Swal.fire({ title: 'Chế độ Sửa thủ công', text: 'Tính năng quét QR tạm thời khóa khi chỉnh sửa.', icon: 'info', toast: true, position: 'top' }); } else { document.getElementById("qr-module-card").classList.remove("hidden"); } changeStep('2'); }
 
-    function toggleQRScanner() { const wrapper = document.getElementById("qr-reader-wrapper"); const btnText = document.getElementById("btn-qr-text"); const btn = document.getElementById("btn-toggle-qr"); if (isScannerActive) { stopQRScanner(); } else { wrapper.classList.remove("hidden"); btnText.innerText = "Tắt Camera"; if (btn) btn.classList.replace("bg-blue-600", "bg-red-600"); if (!html5QrCode) { html5QrCode = new Html5Qrcode("qr-reader"); } Html5Qrcode.getCameras().then(cameras => { if (cameras && cameras.length > 0) { const selectBox = document.getElementById("qr-camera-select-box"); const selectEl = document.getElementById("qr-camera-select"); if (cameras.length > 1) { selectBox.classList.remove("hidden"); selectEl.innerHTML = cameras.map((c, i) => `<option value="${c.id}">${c.label || 'Camera ' + (i + 1)}</option>`).join(''); } const backCam = cameras.find(c => c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('rear')); currentCameraId = backCam ? backCam.id : cameras[0].id; if (selectEl) selectEl.value = currentCameraId; startScanning(currentCameraId); } else { startScanning({ facingMode: "environment" }); } }).catch(err => { startScanning({ facingMode: "user" }); }); } }
+    function toggleQRScanner() { if (typeof faceAIState !== "undefined" && faceAIState.isPanelOpen) stopInlineFaceAI(); const wrapper = document.getElementById("qr-reader-wrapper"); const btnText = document.getElementById("btn-qr-text"); const btn = document.getElementById("btn-toggle-qr"); if (isScannerActive) { stopQRScanner(); } else { wrapper.classList.remove("hidden"); btnText.innerText = "Tắt Camera"; if (btn) btn.classList.replace("bg-blue-600", "bg-red-600"); if (!html5QrCode) { html5QrCode = new Html5Qrcode("qr-reader"); } Html5Qrcode.getCameras().then(cameras => { if (cameras && cameras.length > 0) { const selectBox = document.getElementById("qr-camera-select-box"); const selectEl = document.getElementById("qr-camera-select"); if (cameras.length > 1) { selectBox.classList.remove("hidden"); selectEl.innerHTML = cameras.map((c, i) => `<option value="${c.id}">${c.label || 'Camera ' + (i + 1)}</option>`).join(''); } const backCam = cameras.find(c => c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('rear')); currentCameraId = backCam ? backCam.id : cameras[0].id; if (selectEl) selectEl.value = currentCameraId; startScanning(currentCameraId); } else { startScanning({ facingMode: "environment" }); } }).catch(err => { startScanning({ facingMode: "user" }); }); } }
     function startScanning(cameraConfig) { const config = { fps: 15, qrbox: { width: 200, height: 200 }, aspectRatio: 1.0 }; html5QrCode.start(cameraConfig, config, onScanSuccess, onScanFailure).then(() => { isScannerActive = true; }).catch(err => { Swal.fire({ icon: 'error', title: 'Chưa mở được Camera', html: 'Cho phép quyền truy cập Camera để quét mã QR.', confirmButtonText: 'Đã hiểu' }); resetQRScannerState(); }); }
     function changeCamera(cameraId) { if (html5QrCode && isScannerActive) { html5QrCode.stop().then(() => { currentCameraId = cameraId; startScanning(cameraId); }).catch(err => console.error(err)); } }
     function stopQRScanner() { if (html5QrCode && isScannerActive) { html5QrCode.stop().then(() => { resetQRScannerState(); }).catch(err => { resetQRScannerState(); }); } else { resetQRScannerState(); } }
@@ -1251,36 +1788,19 @@
       } 
       
       if (student) { 
+        // Lưu ngầm thời gian dd/mm/yyyy_buổi_Giờ:phút:giây & loại khỏi danh sách điểm danh thủ công
+        recordSilentStudentCheckin(student, 'QR');
         Swal.fire({ 
-          title: `<span class="text-blue-700">${student.name}</span>`, 
-          html: `<div class="text-xs text-slate-500 font-bold mb-1">Mã HS: ${student.maHS || 'N/A'} - Lớp ${appData.className}</div><div class="text-[11px] text-emerald-600 font-semibold mb-2"><i class="fas fa-qrcode mr-1"></i> Quét thẻ QR thành công</div>`, 
-          icon: 'success', 
-          input: 'select', 
-          inputOptions: { 'vangCoPhep': '🔴 Vắng có phép', 'vangKhongPhep': '❌ Vắng không phép', 'tre': '⏰ Đi trễ', 'boTietNames': '⚠️ Bỏ tiết', 'khongDTNames': '📱 Không ĐT / Đồng phục' }, 
-          inputPlaceholder: '-- Chọn vi phạm --', 
-          showCancelButton: true, 
-          confirmButtonText: 'Ghi Nhận' 
-        }).then((res) => { 
-          if (res.isConfirmed && res.value) { 
-            const type = res.value; 
-            if (type !== 'khongDTNames') {
-              const toggleAll = document.getElementById("toggle-all-present");
-              if (toggleAll && toggleAll.checked) { toggleAll.checked = false; toggleAllPresent(); }
-            }
-            if (type === 'tre') { 
-              Swal.fire({ title: 'Nhập số phút trễ', input: 'number', inputValue: 5, showCancelButton: true, confirmButtonText: 'Lưu' }).then((minRes) => { 
-                if (minRes.isConfirmed && minRes.value) { 
-                  const treStr = `${student.name} trễ ${minRes.value} phút`; 
-                  if (!violations.treNames.includes(treStr)) { violations.treNames.push(treStr); renderChips('treNames', 'tre'); updateAvailableStudentsDatalist(); } 
-                } 
-                resumeScanner(); 
-              }); 
-            } else { 
-              if (!violations[type].includes(student.name)) { violations[type].push(student.name); renderChips(type); updateAvailableStudentsDatalist(); } 
-              resumeScanner(); 
-            } 
-          } else { resumeScanner(); } 
-        }); 
+          toast: true,
+          position: 'top',
+          icon: 'success',
+          title: `OK • ${escapeHtmlAttr(student.name)}`,
+          text: 'Đã điểm danh • Đang quét tiếp...',
+          showConfirmButton: false,
+          timer: 950,
+          timerProgressBar: true
+        });
+        setTimeout(() => { resumeScanner(); }, 650);
       } else { 
         Swal.fire({ toast: true, position: 'top', icon: 'warning', title: 'Mã QR không thuộc danh sách lớp này!', showConfirmButton: false, timer: 2000 }); 
         setTimeout(resumeScanner, 1500); 
@@ -1291,27 +1811,108 @@
     function onScanFailure(error) {}
     function playBeepSound() { try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = "sine"; osc.frequency.setValueAtTime(1000, ctx.currentTime); gain.gain.setValueAtTime(0.1, ctx.currentTime); osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.12); } catch(e) {} }
 
-    function getAlreadyMarkedStudents() { return Array.from(new Set([ ...violations.vangCoPhep, ...violations.vangKhongPhep, ...violations.boTietNames, ...violations.khongDTNames, ...violations.treNames.map(t => t.split(' trễ ')[0].trim()) ])); }
+    function buildSilentCheckinTimestamp() {
+      const now = new Date();
+      const dd = String(now.getDate()).padStart(2, '0');
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const yyyy = now.getFullYear();
+      const datePart = `${dd}/${mm}/${yyyy}`;
+      const sessionPart = now.getHours() < 12 ? "Sáng" : "Chiều";
+      const hh = String(now.getHours()).padStart(2, '0');
+      const min = String(now.getMinutes()).padStart(2, '0');
+      const ss = String(now.getSeconds()).padStart(2, '0');
+      return `${datePart}_${sessionPart}_${hh}:${min}:${ss}`;
+    }
+
+    function recordSilentStudentCheckin(student, method) {
+      if (!student || !student.name) return "";
+      const timestamp = buildSilentCheckinTimestamp();
+      const cleanName = String(student.name).trim();
+      checkedInStudentNames.add(cleanName);
+
+      // Nếu học sinh vô tình có mặt trong các mục vắng/trễ/bỏ tiết trước đó thì tự động gỡ khỏi mục vắng (vẫn giữ khongDTNames nếu có)
+      ['vangCoPhep', 'vangKhongPhep', 'boTietNames'].forEach(key => {
+        const idx = violations[key].indexOf(cleanName);
+        if (idx !== -1) {
+          violations[key].splice(idx, 1);
+          renderChips(key);
+        }
+      });
+      const treIdx = violations.treNames.findIndex(t => t.split(' trễ ')[0].trim() === cleanName);
+      if (treIdx !== -1) {
+        violations.treNames.splice(treIdx, 1);
+        renderChips('treNames', 'tre');
+      }
+
+      // Lưu ngầm log điểm danh (cập nhật nếu quét lại hoặc thêm mới)
+      const existingIdx = silentAttendanceLogs.findIndex(x => x.name === cleanName);
+      const parts = timestamp.split("_");
+      const logEntry = {
+        name: cleanName,
+        maHS: student.maHS || "",
+        className: appData.className || "",
+        method: method,
+        timestamp: timestamp,
+        session: parts[1] || (new Date().getHours() < 12 ? "Sáng" : "Chiều"),
+        dateStr: parts[0] || ""
+      };
+      if (existingIdx !== -1) {
+        silentAttendanceLogs[existingIdx] = logEntry;
+      } else {
+        silentAttendanceLogs.push(logEntry);
+      }
+
+      // Cập nhật lại datalist nhập thủ công (loại bỏ bạn đã quét ở điểm danh, giữ nguyên ở ĐT/Đồng phục)
+      updateAvailableStudentsDatalist();
+
+      // Đồng bộ ngầm lên server (không chặn luồng quét tiếp)
+      try {
+        callBackendApi('logSilentAttendanceCheckin', logEntry).catch(() => {});
+      } catch (e) {}
+
+      return timestamp;
+    }
+
+    function getAlreadyMarkedAttendanceStudents() {
+      return Array.from(new Set([
+        ...violations.vangCoPhep,
+        ...violations.vangKhongPhep,
+        ...violations.boTietNames,
+        ...violations.treNames.map(t => t.split(' trễ ')[0].trim()),
+        ...Array.from(checkedInStudentNames)
+      ]));
+    }
 
     function updateAvailableStudentsDatalist() { 
       const dlGlobal = document.getElementById("student-list-global"); 
+      const dlPhoneUniform = document.getElementById("student-list-phone-uniform");
       if (!dlGlobal) return; 
       dlGlobal.innerHTML = ""; 
-      const marked = getAlreadyMarkedStudents(); 
+      if (dlPhoneUniform) dlPhoneUniform.innerHTML = "";
+
+      const markedAttendance = getAlreadyMarkedAttendanceStudents(); 
       const totalStudents = appData.students ? appData.students.length : 0; 
       let remainingCount = 0; 
+
       if (appData.students) { 
         appData.students.forEach(s => { 
-          if (!marked.includes(s.name)) { 
+          // 1. Danh sách điểm danh thủ công (Vắng, Trễ, Bỏ tiết): Bỏ ra các bạn đã quét QR / Nhận diện khuôn mặt AI
+          if (!markedAttendance.includes(s.name)) { 
             let opt = document.createElement("option"); 
             opt.value = s.name; 
             dlGlobal.appendChild(opt); 
             remainingCount++; 
-          } 
+          }
+          // 2. Danh sách nề nếp Điện thoại / Đồng phục: Vẫn giữ đầy đủ (chỉ loại bạn đã ghi nhận ngay trong mục này)
+          if (dlPhoneUniform && !violations.khongDTNames.includes(s.name)) {
+            let optPhone = document.createElement("option");
+            optPhone.value = s.name;
+            dlPhoneUniform.appendChild(optPhone);
+          }
         }); 
       } 
       const badge = document.getElementById("badge-remaining-students"); 
-      if (badge) { badge.innerHTML = `Còn lại: <span class="text-blue-800 font-extrabold">${remainingCount}</span>/${totalStudents}`; } 
+      if (badge) { badge.innerHTML = `Chưa điểm danh: <span class="text-blue-800 font-extrabold">${remainingCount}</span>/${totalStudents}`; } 
     }
 
     function toggleAllPresent() { 
@@ -1342,10 +1943,25 @@
     }
 
     function addViolation(inputEl, arrayName) { 
-      const name = inputEl.value.trim(); 
-      if (!name) return; 
-      if (!appData.students.some(s => s.name.toLowerCase() === name.toLowerCase())) { Swal.fire('Sai tên', 'Không có trong danh sách lớp!', 'warning'); inputEl.value = ""; return; } 
-      if (getAlreadyMarkedStudents().includes(name)) { Swal.fire('Trùng lặp', 'Đã đánh dấu ở mục khác.', 'error'); inputEl.value = ""; return; } 
+      const rawName = inputEl.value.trim(); 
+      if (!rawName) return; 
+      const matchedSt = appData.students.find(s => s.name.toLowerCase() === rawName.toLowerCase());
+      if (!matchedSt) { Swal.fire('Sai tên', 'Không có trong danh sách lớp!', 'warning'); inputEl.value = ""; return; } 
+      const name = matchedSt.name;
+
+      if (arrayName === 'khongDTNames') {
+        // Nề nếp Điện thoại / Đồng phục: Cho phép chọn kể cả học sinh đã quét QR / Nhận diện khuôn mặt
+        if (violations.khongDTNames.includes(name)) { Swal.fire('Trùng lặp', 'Học sinh này đã được ghi nhận ở mục Điện thoại / Đồng phục.', 'info'); inputEl.value = ""; return; }
+      } else {
+        // Các mục điểm danh thủ công (Vắng phép, Không phép, Bỏ tiết): Bỏ ra các bạn đã quét QR / Nhận diện khuôn mặt
+        if (checkedInStudentNames.has(name)) {
+          Swal.fire('Đã điểm danh tự động', `Học sinh <b>${escapeHtmlAttr(name)}</b> đã quét QR / Nhận diện khuôn mặt AI nên không cần nhập thủ công điểm danh.`, 'info');
+          inputEl.value = "";
+          return;
+        }
+        if (getAlreadyMarkedAttendanceStudents().includes(name)) { Swal.fire('Trùng lặp', 'Đã đánh dấu ở mục điểm danh khác.', 'error'); inputEl.value = ""; return; }
+      }
+
       if (!violations[arrayName].includes(name)) violations[arrayName].push(name); 
       inputEl.value = ""; 
       renderChips(arrayName); 
@@ -1355,12 +1971,19 @@
     function addTre() { 
       const nInp = document.getElementById("inp-tre-name"); 
       const mInp = document.getElementById("inp-tre-min"); 
-      const name = nInp.value.trim(); 
+      const rawName = nInp.value.trim(); 
       const mins = parseInt(mInp.value); 
-      if (!name || !mins) return Swal.fire('Lỗi', 'Nhập đủ tên và phút trễ!', 'warning'); 
+      if (!rawName || !mins) return Swal.fire('Lỗi', 'Nhập đủ tên và phút trễ!', 'warning'); 
       if (mins > 45) return Swal.fire('Lỗi', 'Số phút trễ tối đa 45 phút', 'error'); 
-      if (!appData.students.some(s => s.name.toLowerCase() === name.toLowerCase())) return Swal.fire('Sai tên', 'Không có trong lớp', 'warning'); 
-      if (getAlreadyMarkedStudents().includes(name)) { Swal.fire('Trùng lặp', 'Đã đánh dấu ở mục khác', 'error'); nInp.value = ""; mInp.value = ""; return; } 
+      const matchedSt = appData.students.find(s => s.name.toLowerCase() === rawName.toLowerCase());
+      if (!matchedSt) return Swal.fire('Sai tên', 'Không có trong lớp', 'warning'); 
+      const name = matchedSt.name;
+      if (checkedInStudentNames.has(name)) {
+        Swal.fire('Đã điểm danh tự động', `Học sinh <b>${escapeHtmlAttr(name)}</b> đã quét QR / Nhận diện khuôn mặt AI nên không cần nhập thủ công điểm danh.`, 'info');
+        nInp.value = ""; mInp.value = "";
+        return;
+      }
+      if (getAlreadyMarkedAttendanceStudents().includes(name)) { Swal.fire('Trùng lặp', 'Đã đánh dấu ở mục điểm danh khác', 'error'); nInp.value = ""; mInp.value = ""; return; } 
       const str = `${name} trễ ${mins} phút`; 
       if (!violations.treNames.includes(str)) violations.treNames.push(str); 
       nInp.value = ""; 
@@ -1374,7 +1997,7 @@
     function removeChip(aN, idx, rId) { violations[aN].splice(idx, 1); renderChips(aN, rId); updateAvailableStudentsDatalist(); }
 
     function previewAttendance() { 
-      let p = { session: appData.session, subject: appData.subject, className: appData.className, reporterName: appData.reporterInfo.name, reporterRole: appData.reporterInfo.role, rowIndex: appData.rowIndex, vangCoPhep: violations.vangCoPhep, vangKhongPhep: violations.vangKhongPhep, treNames: violations.treNames, boTietNames: violations.boTietNames, khongDTNames: violations.khongDTNames, isEditMode: appData.isEditMode }; 
+      let p = { session: appData.session, subject: appData.subject, className: appData.className, reporterName: appData.reporterInfo.name, reporterRole: appData.reporterInfo.role, rowIndex: appData.rowIndex, vangCoPhep: violations.vangCoPhep, vangKhongPhep: violations.vangKhongPhep, treNames: violations.treNames, boTietNames: violations.boTietNames, khongDTNames: violations.khongDTNames, isEditMode: appData.isEditMode, silentAttendanceLogs: silentAttendanceLogs }; 
       let presentCount = appData.students.length - (p.vangCoPhep.length + p.vangKhongPhep.length); 
       Swal.fire({ 
         title: 'Xác Nhận Nộp Báo Cáo', 
@@ -1405,6 +2028,7 @@
     function changeStep(step) {
       currentStep = step; 
       if (isScannerActive && step !== '2') { stopQRScanner(); }
+      if (typeof faceAIState !== "undefined" && faceAIState.isPanelOpen && step !== '2') { stopInlineFaceAI(); }
       ["step-0", "step-1", "step-2", "step-admin", "step-admin-config", "step-admin-data", "step-gv-login"].forEach(id => { 
         let el = document.getElementById(id); 
         if(el) el.classList.add("hidden"); 
@@ -1445,6 +2069,7 @@
         Swal.fire({ title: 'Quay lại?', text: 'Các vi phạm chưa nộp sẽ bị loại bỏ.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Đồng ý' }).then((res) => {
           if (res.isConfirmed) { 
             stopQRScanner(); 
+            if (typeof faceAIState !== "undefined" && faceAIState.isPanelOpen) stopInlineFaceAI();
             document.getElementById("step-2").classList.add("hidden"); 
             document.getElementById("student-notice-view").classList.remove("hidden"); 
             document.getElementById("step-1").classList.remove("hidden"); 

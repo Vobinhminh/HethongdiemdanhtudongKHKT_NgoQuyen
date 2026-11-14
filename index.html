@@ -282,17 +282,23 @@
     <!-- STEP 2: MÀN HÌNH ĐIỂM DANH & QUÉT QR -->
     <div id="step-2" class="hidden flex-1 flex flex-col p-4 w-full items-center">
       <div id="qr-module-card" class="glass-card p-5 rounded-2xl mb-5 shadow-xl border border-blue-100 max-w-md w-full">
-        <div class="flex items-center justify-between border-b pb-3 mb-4">
+        <div class="flex items-center justify-between border-b pb-3 mb-3">
           <div class="flex items-center space-x-2">
             <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center font-bold"><i class="fas fa-qrcode text-lg"></i></div>
             <div>
-              <h4 class="font-bold text-slate-800 text-sm leading-tight">Điểm danh bằng QR / Khuôn mặt</h4>
-              <p class="text-[11px] text-slate-400">Quét thẻ QR hoặc nhận diện khuôn mặt AI</p>
+              <h4 class="font-bold text-slate-800 text-sm leading-tight">Điểm danh nhanh bằng Thẻ QR</h4>
+              <p class="text-[11px] text-slate-400">Quét mã QR thẻ học sinh tốc độ cao</p>
             </div>
           </div>
-          <button type="button" id="btn-toggle-qr" onclick="toggleQRScanner()" class="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs py-2 px-3.5 rounded-xl shadow-md transition-all flex items-center space-x-1.5"><i class="fas fa-camera text-xs"></i><span id="btn-qr-text">Bật Camera</span></button>
+          <button type="button" id="btn-toggle-qr" onclick="toggleQRScanner()" class="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs py-2 px-3.5 rounded-xl shadow-md transition-all flex items-center space-x-1.5"><i class="fas fa-qrcode text-xs"></i><span id="btn-qr-text">Quét Thẻ QR</span></button>
         </div>
-        <div id="qr-reader-wrapper" class="hidden flex-col items-center">
+        <div class="flex items-center justify-between bg-cyan-50/80 border border-cyan-200/80 rounded-xl px-3 py-2">
+          <span class="text-[11px] font-semibold text-cyan-900"><i class="fas fa-face-viewfinder mr-1 text-cyan-600"></i>Cần nhận diện khuôn mặt AI?</span>
+          <button type="button" onclick="openFaceStationFromStep2()" class="bg-gradient-to-r from-cyan-600 to-teal-600 hover:brightness-110 active:scale-95 text-white font-bold text-[11px] py-1.5 px-3 rounded-lg shadow-sm transition-all flex items-center space-x-1">
+            <i class="fas fa-camera-retro text-[11px]"></i><span>Mở Camera Khuôn Mặt AI</span>
+          </button>
+        </div>
+        <div id="qr-reader-wrapper" class="hidden flex-col items-center mt-3">
           <div id="qr-camera-select-box" class="w-full mb-3 hidden"><select id="qr-camera-select" onchange="changeCamera(this.value)" class="w-full p-2 text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg text-slate-700 outline-none"></select></div>
           <div class="relative w-full rounded-2xl overflow-hidden border-2 border-blue-500/50 bg-black shadow-inner">
             <div id="qr-reader" class="w-full"></div>
@@ -303,7 +309,7 @@
               </div>
             </div>
           </div>
-          <div class="mt-3 flex items-center space-x-2 text-xs text-slate-500 font-medium"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span><span>Đưa mã QR hoặc khuôn mặt học sinh vào khung hình</span></div>
+          <div class="mt-3 flex items-center space-x-2 text-xs text-slate-500 font-medium"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span><span>Đưa mã QR trên thẻ học sinh vào khung hình</span></div>
         </div>
       </div>
       
@@ -550,12 +556,88 @@
       }
     }
 
-    function onClassDataReady(res) {
+    // 1B: Băm SHA-256 kèm Salt để bảo vệ PIN học sinh phía Client
+    async function sha256Hex(message) {
+      if (window.crypto && window.crypto.subtle) {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await window.crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+      // Dự phòng SHA-256 thuần JS khi chạy qua HTTP không bảo mật
+      function rightRotate(value, amount) { return (value >>> amount) | (value << (32 - amount)); }
+      const mathPow = Math.pow;
+      const maxWord = mathPow(2, 32);
+      let result = '';
+      const words = [];
+      const asciiBitLength = message.length * 8;
+      const hash = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
+      const k = [
+        0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+        0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+        0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+        0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+        0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+        0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+        0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+        0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+      ];
+      message += '';
+      while (message.length % 64 - 56) message += ' ';
+      for (let i = 0; i < message.length; i++) {
+        const j = message.charCodeAt(i);
+        words[i >> 2] |= j << ((3 - i) % 4) * 8;
+      }
+      words[words.length] = ((asciiBitLength / maxWord) | 0);
+      words[words.length] = (asciiBitLength);
+      for (let j = 0; j < words.length;) {
+        const w = words.slice(j, j += 16);
+        const oldHash = hash.slice(0);
+        for (let i = 0; i < 64; i++) {
+          const w15 = w[i - 15], w2 = w[i - 2];
+          const a = hash[0], e = hash[4];
+          const temp1 = hash[7] + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) + ((e & hash[5]) ^ ((~e) & hash[6])) + k[i] + (w[i] = (i < 16) ? w[i] : (w[i - 16] + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3)) + w[i - 7] + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))) | 0);
+          const temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+          hash.unshift((temp1 + temp2) | 0);
+          hash[4] = (hash[4] + temp1) | 0;
+          hash.pop();
+        }
+        for (let i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;
+      }
+      for (let i = 0; i < 8; i++) {
+        for (let j = 3; j + 1; j--) {
+          const b = (hash[i] >> (j * 8)) & 255;
+          result += ((b < 16) ? '0' : '') + b.toString(16);
+        }
+      }
+      return result;
+    }
+
+    async function computeSaltedPinHash(student, rawPin) {
+      const salt = (student && student.salt) ? String(student.salt) : String(student?.maHS || student?.name || "");
+      return await sha256Hex(`${salt}:${String(rawPin).trim()}`);
+    }
+
+    async function sanitizeStudentsPinCache(studentsList) {
+      if (!Array.isArray(studentsList)) return [];
+      return Promise.all(studentsList.map(async (st) => {
+        const cleanSt = { ...st };
+        if (cleanSt.pin !== undefined && cleanSt.pin !== null && cleanSt.pin !== "") {
+          if (!cleanSt.pinHash) {
+            cleanSt.pinHash = await computeSaltedPinHash(cleanSt, cleanSt.pin);
+          }
+          delete cleanSt.pin;
+        }
+        return cleanSt;
+      }));
+    }
+
+    async function onClassDataReady(res) {
       document.getElementById("auth-loading-text").classList.add("hidden"); 
       clearInlineError('auth-error');
       appData.isEditMode = false; 
       appData.hasOfficialReport = false; 
-      appData.students = res.students;
+      appData.students = await sanitizeStudentsPinCache(res.students || []);
       if (res.status === "LOCKED") { appData.hasOfficialReport = true; appData.rowIndex = res.rowIndex; }
       
       // Bind Searchable Input cho danh sách Tên Học sinh trong lớp
@@ -568,14 +650,17 @@
       document.getElementById("personal-info-section").classList.remove("opacity-50", "pointer-events-none");
     }
 
-    function verifyStudentLogin() { 
+    async function verifyStudentLogin() { 
       const idx = document.getElementById("auth-name").value; 
-      const pin = document.getElementById("auth-pin").value; 
+      const pin = document.getElementById("auth-pin").value.trim(); 
       if (idx === "") { showInlineError('auth-error', '❌ Vui lòng chọn Tên học sinh!'); return; } 
       if (!pin) { showInlineError('auth-error', '❌ Vui lòng nhập mật khẩu PIN!'); return; } 
       
       const student = appData.students[idx]; 
-      if (student.pin.toString() !== pin.toString()) { 
+      const enteredHash = await computeSaltedPinHash(student, pin);
+      const expectedHash = (student.pinHash || "").toLowerCase();
+
+      if (!expectedHash || enteredHash !== expectedHash) { 
         hsPinFails++; 
         if(hsPinFails >= 3) { 
           showInlineError('auth-error', '🔒 Nhập sai 3 lần! Đang về trang chính...'); 
@@ -597,10 +682,11 @@
       } 
       
       if (student.isFirstLogin) { 
-        promptChangePin('HS', appData.className, student.name, pin, () => { 
+        promptChangePin('HS', appData.className, student.name, pin, async (updatedPin) => { 
           student.isFirstLogin = false; 
-          student.pin = pin; 
-          proceedStudentLogin(student, pin); 
+          student.pinHash = await computeSaltedPinHash(student, updatedPin || pin);
+          delete student.pin;
+          proceedStudentLogin(student, updatedPin || pin); 
         }); 
       } else { 
         proceedStudentLogin(student, pin); 
@@ -850,19 +936,68 @@
         loadOnlineLeavesGV();
     }
 
-    // TÍNH NĂNG DÀNH CHO GVCN & GIÁO VIÊN
+    // 2A: TÍNH NĂNG DÀNH CHO GVCN & GIÁO VIÊN (ĐỒNG BỘ API THẬT VỚI GOOGLE SHEETS)
+    function escapeHtmlAttr(str) {
+      return String(str || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
     function loadOnlineLeavesGV() {
       const container = document.getElementById("gv-leave-requests-list");
-      container.innerHTML = '<p class="text-blue-500 text-center py-2"><i class="fas fa-spinner fa-spin mr-1"></i> Đang tải đơn xin nghỉ...</p>';
+      container.innerHTML = '<p class="text-blue-500 text-center py-2"><i class="fas fa-spinner fa-spin mr-1"></i> Đang tải đơn xin nghỉ từ hệ thống...</p>';
       
-      callBackendApi('getStudentHistory', '', '', '2026-01-01', '2026-12-31').then(res => {
-         // Trích xuất hiển thị đơn xin nghỉ online
-         container.innerHTML = `<div class="p-2 bg-white rounded border flex justify-between items-center mb-1">
-           <div><span class="font-bold text-slate-800">Nguyễn Văn A (10A1)</span><br><span class="text-[10px] text-slate-500">20/11/2026 - Nghỉ sốt cao</span></div>
-           <button onclick="Swal.fire('Đã duyệt','Đã ghi nhận duyệt phép cho học sinh','success')" class="bg-emerald-600 text-white font-bold px-2 py-1 rounded text-[10px]">Duyệt Phép</button>
-         </div>`;
-      }).catch(() => {
-         container.innerHTML = '<p class="text-slate-400 text-center py-2">Không có đơn xin phép online mới.</p>';
+      const gvName = appData.reporterInfo?.name || "";
+      const gvRole = appData.reporterInfo?.role || "";
+
+      callBackendApi('getPendingLeaveRequests', gvName, gvRole).then(list => {
+         if (!Array.isArray(list) || list.length === 0) {
+            container.innerHTML = '<p class="text-slate-400 text-center py-3 italic">Hiện không có đơn xin phép online nào đang chờ duyệt.</p>';
+            return;
+         }
+         container.innerHTML = list.map(item => {
+            const safeName = escapeHtmlAttr(item.studentName || item.name || "Học sinh");
+            const safeCls = escapeHtmlAttr(item.className || "");
+            const safeDate = escapeHtmlAttr(item.date || "");
+            const safeSession = escapeHtmlAttr(item.session || "Cả ngày");
+            const safeReason = escapeHtmlAttr(item.reason || "");
+            const rowIdx = Number(item.rowIndex);
+            return `<div id="leave-row-${rowIdx}" class="p-2.5 bg-white rounded-xl border border-purple-100 shadow-sm flex justify-between items-center gap-2">
+              <div class="flex-1 min-w-0">
+                <div class="font-bold text-slate-800 truncate">${safeName} <span class="text-purple-700">(${safeCls})</span></div>
+                <div class="text-[10px] text-slate-500 mt-0.5"><i class="far fa-calendar-check mr-1 text-purple-500"></i>${safeDate} • <b>${safeSession}</b></div>
+                <div class="text-[11px] text-slate-600 mt-0.5 break-words">Lý do: ${safeReason}</div>
+              </div>
+              <div class="flex flex-col gap-1 flex-shrink-0">
+                <button type="button" onclick="approveOnlineLeave(${rowIdx}, 'Đã duyệt', '${safeName}', '${safeCls}', '${safeDate}')" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold px-2.5 py-1 rounded-lg text-[10px] shadow-sm transition">Duyệt Phép</button>
+                <button type="button" onclick="approveOnlineLeave(${rowIdx}, 'Từ chối', '${safeName}', '${safeCls}', '${safeDate}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold px-2.5 py-0.5 rounded-lg text-[10px] transition">Từ chối</button>
+              </div>
+            </div>`;
+         }).join('');
+      }).catch(err => {
+         container.innerHTML = `<p class="text-amber-600 text-center py-2 text-[11px]">Chưa tải được danh sách đơn (${escapeHtmlAttr(err.message || err)}). Vui lòng kiểm tra hàm <b>getPendingLeaveRequests</b> trên Google Apps Script.</p>`;
+      });
+    }
+
+    function approveOnlineLeave(rowIndex, decision, studentName, className, leaveDate) {
+      const approverName = appData.reporterInfo?.name || "Giáo viên";
+      const isApprove = decision === "Đã duyệt";
+      Swal.fire({
+        title: isApprove ? 'Xác nhận duyệt phép?' : 'Từ chối đơn xin nghỉ?',
+        html: `${isApprove ? 'Duyệt đơn nghỉ phép' : 'Từ chối đơn nghỉ phép'} của học sinh <b>${studentName}</b> (${className}) ngày <b>${leaveDate}</b>?`,
+        icon: isApprove ? 'question' : 'warning',
+        showCancelButton: true,
+        confirmButtonText: isApprove ? 'Đồng ý duyệt' : 'Xác nhận từ chối',
+        cancelButtonText: 'Hủy'
+      }).then(res => {
+        if (!res.isConfirmed) return;
+        showLoading("Đang cập nhật trạng thái đơn...");
+        callBackendApi('approveLeaveRequest', rowIndex, decision, approverName).then(msg => {
+          hideLoading();
+          Swal.fire('Hoàn tất', msg || `Đã cập nhật trạng thái: ${decision}`, 'success');
+          loadOnlineLeavesGV();
+        }).catch(err => {
+          hideLoading();
+          Swal.fire('Lỗi cập nhật', err.message || String(err), 'error');
+        });
       });
     }
 
@@ -877,21 +1012,25 @@
       
       const resDiv = document.getElementById("gvcn-class-summary-result");
       resDiv.classList.remove("hidden");
-      resDiv.innerHTML = '<p class="text-blue-500 text-center py-2"><i class="fas fa-spinner fa-spin mr-1"></i> Đang tổng hợp dữ liệu lớp ' + cls + '...</p>';
+      resDiv.innerHTML = '<p class="text-blue-500 text-center py-2"><i class="fas fa-spinner fa-spin mr-1"></i> Đang tổng hợp dữ liệu lớp ' + escapeHtmlAttr(cls) + '...</p>';
       
-      callBackendApi('getStudentHistory', '', cls, startParsed.iso, endParsed.iso).then(data => {
-         if (!data || data.length === 0) {
-            resDiv.innerHTML = `<p class="text-emerald-600 font-bold text-center py-2">Lớp ${cls} không có lượt vắng/trễ nào trong khoảng thời gian này!</p>`;
+      callBackendApi('getClassAbsenceReport', cls, startParsed.iso, endParsed.iso).then(data => {
+         if (!Array.isArray(data) || data.length === 0) {
+            resDiv.innerHTML = `<p class="text-emerald-600 font-bold text-center py-2">Lớp ${escapeHtmlAttr(cls)} không có lượt vắng/trễ nào trong khoảng thời gian này!</p>`;
             return;
          }
-         let html = `<table class="w-full text-left border-collapse"><thead><tr class="bg-slate-100"><th class="p-1 border">Học sinh</th><th class="p-1 border">Ngày</th><th class="p-1 border">Chi tiết</th></tr></thead><tbody>`;
+         let html = `<table class="w-full text-left border-collapse"><thead><tr class="bg-slate-100"><th class="p-1.5 border">Học sinh</th><th class="p-1.5 border">Ngày</th><th class="p-1.5 border">Buổi</th><th class="p-1.5 border">Chi tiết</th></tr></thead><tbody>`;
          data.forEach(d => {
-            html += `<tr><td class="p-1 border font-bold">${d.session}</td><td class="p-1 border">${d.date}</td><td class="p-1 border text-red-600 font-semibold">${d.violation}</td></tr>`;
+            const stName = escapeHtmlAttr(d.studentName || d.name || "Không rõ");
+            const stDate = escapeHtmlAttr(d.date || "");
+            const stSess = escapeHtmlAttr(d.session || "");
+            const stViol = escapeHtmlAttr(d.violation || "");
+            html += `<tr><td class="p-1.5 border font-bold text-slate-800">${stName}</td><td class="p-1.5 border whitespace-nowrap">${stDate}</td><td class="p-1.5 border">${stSess}</td><td class="p-1.5 border text-red-600 font-semibold">${stViol}</td></tr>`;
          });
          html += `</tbody></table>`;
          resDiv.innerHTML = html;
       }).catch(err => {
-         resDiv.innerHTML = `<p class="text-red-500 text-center py-2">Lỗi: ${err}</p>`;
+         resDiv.innerHTML = `<p class="text-red-500 text-center py-2">Lỗi: ${escapeHtmlAttr(err.message || err)}</p>`;
       });
     }
 
@@ -978,7 +1117,7 @@
           callBackendApi('changeUserPin', type, className, nameOrId, oldPin, result.value).then(res => {
             hideLoading();
             if (res.status === 'success') {
-              Swal.fire('Thành công!', 'Mã PIN của bạn đã được cập nhật.', 'success').then(() => { if (callback) callback(); });
+              Swal.fire('Thành công!', 'Mã PIN của bạn đã được cập nhật.', 'success').then(() => { if (callback) callback(result.value); });
             } else { Swal.fire('Lỗi', res.msg, 'error'); }
           }).catch(showError);
         }
@@ -1065,40 +1204,56 @@
 
     function reloadAppData() { showLoading("Đang đồng bộ..."); callBackendApi('getAppInitData').then(data => { appData = { ...appData, ...data }; setupAllSearchableInputs(); renderSubjectDropdown(data); hideLoading(); }).catch(showError); }
 
-    // ĐIỂM DANH & QUÉT CAMERA QR
+    // 3A: ĐIỂM DANH BẰNG THẺ QR & LIÊN KẾT TRẠM KHUÔN MẶT AI (ai.html)
+    function openFaceStationFromStep2() {
+      stopQRScanner();
+      const params = new URLSearchParams({
+        class: appData.className || "",
+        session: appData.session || "",
+        date: appData.dateStr || "",
+        reporter: appData.reporterInfo?.name || "",
+        from: "step-2"
+      });
+      try {
+        sessionStorage.setItem("attendance_ai_bridge", JSON.stringify({
+          className: appData.className || "",
+          session: appData.session || "",
+          dateStr: appData.dateStr || "",
+          reporterInfo: appData.reporterInfo || null
+        }));
+      } catch (e) {}
+      window.location.href = `ai.html?${params.toString()}`;
+    }
+
     function openReporterDashboard() { document.getElementById("toggle-all-present").checked = true; toggleAllPresent(); updateAvailableStudentsDatalist(); if (appData.isEditMode) { document.getElementById("qr-module-card").classList.add("hidden"); Swal.fire({ title: 'Chế độ Sửa thủ công', text: 'Tính năng quét QR tạm thời khóa khi chỉnh sửa.', icon: 'info', toast: true, position: 'top' }); } else { document.getElementById("qr-module-card").classList.remove("hidden"); } changeStep('2'); }
 
     function toggleQRScanner() { const wrapper = document.getElementById("qr-reader-wrapper"); const btnText = document.getElementById("btn-qr-text"); const btn = document.getElementById("btn-toggle-qr"); if (isScannerActive) { stopQRScanner(); } else { wrapper.classList.remove("hidden"); btnText.innerText = "Tắt Camera"; if (btn) btn.classList.replace("bg-blue-600", "bg-red-600"); if (!html5QrCode) { html5QrCode = new Html5Qrcode("qr-reader"); } Html5Qrcode.getCameras().then(cameras => { if (cameras && cameras.length > 0) { const selectBox = document.getElementById("qr-camera-select-box"); const selectEl = document.getElementById("qr-camera-select"); if (cameras.length > 1) { selectBox.classList.remove("hidden"); selectEl.innerHTML = cameras.map((c, i) => `<option value="${c.id}">${c.label || 'Camera ' + (i + 1)}</option>`).join(''); } const backCam = cameras.find(c => c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('rear')); currentCameraId = backCam ? backCam.id : cameras[0].id; if (selectEl) selectEl.value = currentCameraId; startScanning(currentCameraId); } else { startScanning({ facingMode: "environment" }); } }).catch(err => { startScanning({ facingMode: "user" }); }); } }
-    function startScanning(cameraConfig) { const config = { fps: 15, qrbox: { width: 200, height: 200 }, aspectRatio: 1.0 }; html5QrCode.start(cameraConfig, config, onScanSuccess, onScanFailure).then(() => { isScannerActive = true; }).catch(err => { Swal.fire({ icon: 'error', title: 'Chưa mở được Camera', html: 'Cho phép quyền truy cập Camera để tiếp tục.', confirmButtonText: 'Đã hiểu' }); resetQRScannerState(); }); }
+    function startScanning(cameraConfig) { const config = { fps: 15, qrbox: { width: 200, height: 200 }, aspectRatio: 1.0 }; html5QrCode.start(cameraConfig, config, onScanSuccess, onScanFailure).then(() => { isScannerActive = true; }).catch(err => { Swal.fire({ icon: 'error', title: 'Chưa mở được Camera', html: 'Cho phép quyền truy cập Camera để quét mã QR.', confirmButtonText: 'Đã hiểu' }); resetQRScannerState(); }); }
     function changeCamera(cameraId) { if (html5QrCode && isScannerActive) { html5QrCode.stop().then(() => { currentCameraId = cameraId; startScanning(cameraId); }).catch(err => console.error(err)); } }
     function stopQRScanner() { if (html5QrCode && isScannerActive) { html5QrCode.stop().then(() => { resetQRScannerState(); }).catch(err => { resetQRScannerState(); }); } else { resetQRScannerState(); } }
-    function resetQRScannerState() { const wrapper = document.getElementById("qr-reader-wrapper"); if (wrapper) wrapper.classList.add("hidden"); const btnText = document.getElementById("btn-qr-text"); if (btnText) btnText.innerText = "Bật Camera"; const btn = document.getElementById("btn-toggle-qr"); if (btn) btn.classList.replace("bg-red-600", "bg-blue-600"); isScannerActive = false; }
+    function resetQRScannerState() { const wrapper = document.getElementById("qr-reader-wrapper"); if (wrapper) wrapper.classList.add("hidden"); const btnText = document.getElementById("btn-qr-text"); if (btnText) btnText.innerText = "Quét Thẻ QR"; const btn = document.getElementById("btn-toggle-qr"); if (btn) btn.classList.replace("bg-red-600", "bg-blue-600"); isScannerActive = false; }
     
     function onScanSuccess(decodedText) { 
       if (!isScannerActive) return; 
       html5QrCode.pause(true); 
       playBeepSound(); 
       let student = null; 
-      let detectionType = "Mã QR"; 
       try { 
         let data = JSON.parse(decodedText); 
-        student = appData.students.find(s => (data.maHS && s.maHS === data.maHS) || (data.name && s.name.toLowerCase() === data.name.toLowerCase()) || (data.image && s.image && data.image === s.image)); 
-        if (data.type === 'FACE' || data.image) { detectionType = "Khuôn mặt AI"; } 
+        student = appData.students.find(s => (data.maHS && s.maHS && String(s.maHS) === String(data.maHS)) || (data.name && s.name.toLowerCase() === String(data.name).toLowerCase())); 
       } catch (e) { 
         let textVal = decodedText.trim().toLowerCase(); 
         student = appData.students.find(s => { 
           let nameMatch = s.name && s.name.toLowerCase() === textVal; 
           let idMatch = s.maHS && s.maHS.toString().toLowerCase() === textVal; 
-          let faceMatch = s.image && s.image.toLowerCase().includes(textVal); 
-          if (faceMatch) detectionType = "Khuôn mặt AI"; 
-          return nameMatch || idMatch || faceMatch; 
+          return nameMatch || idMatch; 
         }); 
       } 
       
       if (student) { 
         Swal.fire({ 
           title: `<span class="text-blue-700">${student.name}</span>`, 
-          html: `<div class="text-xs text-slate-500 font-bold mb-1">Mã HS: ${student.maHS || 'N/A'} - Lớp ${appData.className}</div><div class="text-[11px] text-emerald-600 font-semibold mb-2"><i class="fas fa-check-circle mr-1"></i> Nhận diện: ${detectionType}</div>`, 
+          html: `<div class="text-xs text-slate-500 font-bold mb-1">Mã HS: ${student.maHS || 'N/A'} - Lớp ${appData.className}</div><div class="text-[11px] text-emerald-600 font-semibold mb-2"><i class="fas fa-qrcode mr-1"></i> Quét thẻ QR thành công</div>`, 
           icon: 'success', 
           input: 'select', 
           inputOptions: { 'vangCoPhep': '🔴 Vắng có phép', 'vangKhongPhep': '❌ Vắng không phép', 'tre': '⏰ Đi trễ', 'boTietNames': '⚠️ Bỏ tiết', 'khongDTNames': '📱 Không ĐT / Đồng phục' }, 
@@ -1127,7 +1282,7 @@
           } else { resumeScanner(); } 
         }); 
       } else { 
-        Swal.fire({ toast: true, position: 'top', icon: 'warning', title: 'Không tìm thấy học sinh trong lớp!', showConfirmButton: false, timer: 2000 }); 
+        Swal.fire({ toast: true, position: 'top', icon: 'warning', title: 'Mã QR không thuộc danh sách lớp này!', showConfirmButton: false, timer: 2000 }); 
         setTimeout(resumeScanner, 1500); 
       } 
     }

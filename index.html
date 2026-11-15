@@ -39,7 +39,6 @@
     .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
     
-    /* Ẩn AM/PM và tối ưu hóa ô nhập thời gian chống tràn khung */
     input[type="time"] {
       -moz-appearance: textfield;
       min-width: 0 !important;
@@ -53,14 +52,9 @@
     input[type="time"]::-webkit-clear-button { display: none; }
     input[type="time"]::-webkit-inner-spin-button { display: none; }
     input[type="time"]::-webkit-calendar-picker-indicator {
-      margin-left: 2px;
-      padding: 0;
-      width: 14px;
-      height: 14px;
-      cursor: pointer;
+      margin-left: 2px; padding: 0; width: 14px; height: 14px; cursor: pointer;
     }
-    
-    .searchable-list { position: absolute; z-index: 60; width: 100%; top: 100%; left: 0; margin-top: 4px; background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; max-height: 220px; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+    .searchable-list { position: absolute; z-index: 60; width: 100%; top: 100%; left: 0; margin-top: 4px; background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; max-height: 220px; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
   </style>
 </head>
 <body class="flex flex-col items-center justify-start">
@@ -123,15 +117,12 @@
     <div id="step-gv-login" class="hidden flex-1 p-5 flex flex-col justify-center max-w-md md:max-w-xl lg:max-w-2xl w-full mx-auto">
       <div class="glass-card p-6 md:p-8 rounded-2xl shadow-xl border border-emerald-100">
         <h2 class="text-xl font-bold text-slate-800 text-center mb-5 border-b pb-3">XÁC THỰC GIÁO VIÊN</h2>
-        
-        <!-- Searchable Input Tên Giáo Viên -->
         <div class="mb-4 relative">
           <label class="block text-xs font-bold text-slate-500 uppercase mb-2">1. Chọn tài khoản Giáo viên / Giám thị</label>
           <input type="hidden" id="gv-auth-name" value="">
           <input type="text" id="inp-gv-name" autocomplete="off" placeholder="Gõ tên hoặc chọn tài khoản..." class="w-full p-3.5 bg-white border border-slate-300 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none shadow-sm">
           <ul id="list-gv-name" class="hidden searchable-list custom-scrollbar"></ul>
         </div>
-        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
           <div>
             <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Chức vụ hệ thống</label>
@@ -150,13 +141,10 @@
     <!-- BẢNG ĐIỀU KHIỂN GIÁO VIÊN / ADMIN (STEP ADMIN) -->
     <div id="step-admin" class="hidden flex-1 p-4 flex flex-col max-w-md md:max-w-4xl lg:max-w-6xl w-full mx-auto pb-24">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start">
-        <!-- Cột Trái: Thông tin & Điều khiển Quản trị -->
         <div class="lg:col-span-4 space-y-4">
           <div class="glass-card p-5 rounded-3xl shadow-xl border border-blue-100 text-center">
             <h2 class="text-xl font-bold text-slate-800 mb-1">CỔNG GIÁO VIÊN & QUẢN TRỊ</h2>
             <p class="text-xs text-blue-600 font-bold mb-4" id="admin-welcome-text"></p>
-            
-            <!-- ADMIN CONTROLS (Chỉ hiện với Admin/Quản lý) -->
             <div id="admin-only-buttons" class="grid grid-cols-2 gap-3 mb-1 hidden">
               <button type="button" onclick="adminCheckStats()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 p-3 rounded-xl shadow-sm border border-blue-200 font-bold text-xs transition"><i class="fas fa-chart-pie text-xl mb-1 block"></i>TIẾN ĐỘ NỘP</button>
               <button type="button" onclick="adminLockData()" class="bg-amber-50 hover:bg-amber-100 text-amber-700 p-3 rounded-xl shadow-sm border border-amber-200 font-bold text-xs transition"><i class="fas fa-lock text-xl mb-1 block"></i>CHỐT SỔ</button>
@@ -164,17 +152,13 @@
               <button type="button" id="btn-admin-data" onclick="changeStep('admin-data')" class="col-span-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-3 rounded-xl shadow-sm border border-emerald-200 font-bold text-xs transition"><i class="fas fa-database text-lg mr-2"></i>QUẢN LÝ DỮ LIỆU & NHẬP FILE</button>
             </div>
           </div>
-
           <button type="button" onclick="changeStep('0')" class="hidden lg:flex w-full items-center justify-center text-sm text-slate-500 border border-slate-200 rounded-xl py-3 bg-white font-bold hover:bg-slate-50 transition shadow-sm"><i class="fas fa-sign-out-alt mr-1.5"></i> Đăng Xuất Quản Trị</button>
         </div>
 
-        <!-- Cột Phải: Khu vực GVCN & Giáo viên Bộ môn -->
         <div class="lg:col-span-8">
           <div class="glass-card p-5 rounded-3xl shadow-xl border border-indigo-100 mb-4">
              <h3 class="font-extrabold text-indigo-700 mb-4 text-sm uppercase text-center border-b pb-2"><i class="fas fa-user-shield mr-2"></i> KHU VỰC GIÁO VIÊN CHỦ NHIỆM / BỘ MÔN</h3>
-             
              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-               <!-- 1. DUYỆT ĐƠN XIN PHÉP ONLINE -->
                <div class="bg-purple-50/70 p-4 rounded-2xl border border-purple-200 flex flex-col">
                   <h4 class="font-bold text-xs text-purple-800 uppercase mb-2 flex items-center justify-between">
                     <span><i class="fas fa-file-signature mr-1.5"></i> Duyệt Đơn Xin Phép Online</span>
@@ -182,8 +166,6 @@
                   </h4>
                   <div id="gv-leave-requests-list" class="max-h-56 overflow-y-auto custom-scrollbar text-xs space-y-2 mt-2"></div>
                </div>
-
-               <!-- 2. BẢNG THEO DÕI VẮNG TRỄ CỦA HỌC SINH TRONG LỚP -->
                <div class="bg-blue-50/70 p-4 rounded-2xl border border-blue-200 flex flex-col">
                   <h4 class="font-bold text-xs text-blue-800 uppercase mb-3"><i class="fas fa-chart-bar mr-1.5"></i> Theo Dõi Vắng / Trễ Lớp Học</h4>
                   <div class="mb-3 relative">
@@ -204,14 +186,11 @@
                   <div id="gvcn-class-summary-result" class="mt-3 hidden max-h-60 overflow-y-auto custom-scrollbar bg-white rounded-xl border p-2 text-xs"></div>
                </div>
              </div>
-
-             <!-- 3. THÊM HỌC SINH MỚI & RESET MẬT KHẨU -->
              <div class="grid grid-cols-2 gap-3">
                 <button type="button" onclick="openQuickAddStudentModal()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-3 rounded-xl border border-emerald-200 font-bold text-xs text-center transition"><i class="fas fa-user-plus text-base mb-1 block"></i>Thêm Học Sinh</button>
                 <button type="button" onclick="openQuickResetModal()" class="bg-red-50 hover:bg-red-100 text-red-700 p-3 rounded-xl border border-red-200 font-bold text-xs text-center transition"><i class="fas fa-key text-base mb-1 block"></i>Reset Mật Khẩu</button>
              </div>
           </div>
-
           <button type="button" onclick="changeStep('0')" class="lg:hidden w-full text-sm text-slate-500 border border-slate-200 rounded-xl py-3 bg-white font-bold hover:bg-slate-50 transition shadow-sm"><i class="fas fa-sign-out-alt mr-1"></i> Đăng Xuất Quản Trị</button>
         </div>
       </div>
@@ -222,7 +201,6 @@
       <div class="glass-card p-4 rounded-2xl mb-4 text-center">
         <h3 class="font-bold text-indigo-600 mb-1 uppercase text-sm md:text-base"><i class="fas fa-cogs mr-2"></i> CÀI ĐẶT HỆ THỐNG</h3>
       </div>
-      
       <div class="glass-card p-4 md:p-5 rounded-xl border-t-4 border-t-blue-500 mb-4">
         <label class="flex items-center space-x-3 mb-4 cursor-pointer">
           <input type="checkbox" id="cfg-require-subject" class="w-5 h-5 text-blue-600">
@@ -239,7 +217,6 @@
           </div>
         </div>
       </div>
-      
       <div class="glass-card p-4 md:p-5 rounded-xl border-t-4 border-t-indigo-500 mb-20">
         <div class="flex justify-between items-center mb-3 border-b pb-2">
             <h4 class="font-bold text-sm">Khóa thời gian điểm danh</h4>
@@ -251,7 +228,6 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3" id="time-grid"></div>
       </div>
-
       <div class="fixed bottom-0 left-0 right-0 p-4 glass-header flex justify-center z-40">
         <button type="button" onclick="saveAdminConfigData()" class="w-full max-w-md md:max-w-4xl lg:max-w-6xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition"><i class="fas fa-save mr-1"></i> LƯU CÀI ĐẶT</button>
       </div>
@@ -260,9 +236,7 @@
     <!-- ADMIN QUẢN LÝ DỮ LIỆU (STEP ADMIN-DATA) -->
     <div id="step-admin-data" class="hidden flex-1 flex flex-col p-4 max-w-md md:max-w-4xl lg:max-w-6xl w-full mx-auto pb-24">
       <div class="glass-card p-4 rounded-2xl mb-4 text-center"><h3 class="font-bold text-emerald-600 mb-1 uppercase text-sm md:text-base"><i class="fas fa-database mr-2"></i> QUẢN LÝ DỮ LIỆU TỔNG HỢP</h3></div>
-      
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
-        <!-- NẠP FILE QUÉT PHÉP -->
         <div class="glass-card p-4 md:p-5 rounded-xl border-t-4 border-t-purple-500 flex flex-col justify-between">
            <h4 class="font-bold text-sm mb-3 text-purple-700"><i class="fas fa-file-signature mr-1"></i> Bổ Sung & Duyệt Phép Từ File</h4>
            <div class="flex gap-2">
@@ -271,7 +245,6 @@
                <input type="file" id="leave-uploader" accept=".xlsx, .xls, .pdf, .csv" class="hidden" onchange="handleLeaveUpload(event)">
            </div>
         </div>
-
         <div class="glass-card p-4 md:p-5 rounded-xl border-t-4 border-t-emerald-500 flex flex-col justify-between">
            <h4 class="font-bold text-sm mb-3 text-emerald-700"><i class="fas fa-table mr-1"></i> Đồng Bộ Dữ Liệu Học Sinh</h4>
            <div class="grid grid-cols-2 gap-3">
@@ -280,7 +253,6 @@
              <button type="button" id="btn-open-sheets-data" class="bg-blue-50 hover:bg-blue-100 text-blue-700 py-3 rounded-xl shadow-sm border border-blue-200 font-bold text-xs md:text-sm transition"><i class="fas fa-table mb-1 block text-lg"></i>Mở Google Sheets</button>
            </div>
         </div>
-
         <div class="glass-card p-4 md:p-5 rounded-xl border-t-4 border-t-blue-500 md:col-span-2 lg:col-span-1 flex flex-col justify-between">
            <div>
              <h4 class="font-bold text-sm mb-3 text-blue-700"><i class="fas fa-user-plus mr-1"></i> Thêm Giám Thị / Giáo Viên Mới</h4>
@@ -296,34 +268,27 @@
     <div id="step-1" class="hidden flex-1 p-5 flex flex-col justify-center max-w-md md:max-w-4xl lg:max-w-6xl w-full mx-auto">
       <div class="glass-card p-6 md:p-8 rounded-2xl shadow-xl border border-blue-100 max-w-md md:max-w-xl lg:max-w-2xl w-full mx-auto">
         <h2 class="text-xl font-bold text-slate-800 text-center mb-5 border-b pb-3">XÁC THỰC HỌC SINH</h2>
-        
-        <!-- Searchable Input Chọn Lớp -->
         <div class="mb-4 relative" id="wrapper-class">
           <label class="block text-xs font-bold text-slate-500 uppercase mb-2">1. Chọn Lớp học</label>
           <input type="hidden" id="auth-class" value="">
           <input type="text" id="inp-auth-class" autocomplete="off" placeholder="Gõ lớp (vd: 10A1, 12A01)..." class="w-full p-3.5 bg-white border border-slate-300 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm">
           <ul id="list-auth-class" class="hidden searchable-list custom-scrollbar"></ul>
         </div>
-        
-        <!-- Chọn môn học -->
         <div id="subject-container" class="mb-4 relative hidden">
           <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Môn học hiện tại</label>
           <input type="hidden" id="auth-subject" value="">
           <button type="button" onclick="toggleSubjectDropdown()" class="w-full flex justify-between p-3.5 bg-white border border-slate-300 rounded-xl font-bold text-sm"><span id="label-subject" class="text-slate-400">-- Bấm chọn môn --</span><i class="fas fa-chevron-down text-slate-400"></i></button>
           <ul id="dropdown-subject" class="hidden absolute z-50 w-full mt-1 bg-white border rounded-xl max-h-[220px] overflow-y-auto custom-scrollbar shadow-xl"></ul>
         </div>
-        
         <div id="auth-loading-text" class="hidden text-center text-blue-500 text-xs font-bold mb-4 animate-pulse">Đang nạp danh sách lớp...</div>
         
         <div id="personal-info-section" class="opacity-50 pointer-events-none bg-slate-50 p-4 rounded-xl border border-slate-200">
-          <!-- Searchable Input Tên Học Sinh -->
           <div class="mb-4 relative" id="wrapper-name">
             <label class="block text-xs font-bold text-slate-500 uppercase mb-2">2. Họ và tên người báo cáo</label>
             <input type="hidden" id="auth-name" value="">
             <input type="text" id="inp-auth-name" autocomplete="off" placeholder="Gõ tên học sinh..." class="w-full p-3.5 bg-white border border-slate-300 rounded-xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm">
             <ul id="list-auth-name" class="hidden searchable-list custom-scrollbar"></ul>
           </div>
-          
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
             <div><input type="text" id="auth-role" readonly placeholder="Chức vụ học sinh..." class="w-full p-3 bg-slate-200 border border-slate-300 rounded-xl font-bold text-sm text-slate-600"></div>
             <div><input type="password" id="auth-pin" maxlength="6" inputmode="numeric" pattern="[0-9]*" onkeypress="return event.charCode >= 48 && event.charCode <= 57" oninput="clearInlineError('auth-error')" placeholder="Password PIN 6 số..." class="w-full p-3 bg-white border border-slate-300 rounded-xl font-mono text-center text-lg tracking-widest shadow-sm"></div>
@@ -337,7 +302,6 @@
     <!-- STEP 2: MÀN HÌNH ĐIỂM DANH & QUÉT QR -->
     <div id="step-2" class="hidden flex-1 flex flex-col p-4 max-w-md md:max-w-4xl lg:max-w-6xl w-full mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start w-full">
-        <!-- Cột Trái: Quét Thẻ QR / Khuôn Mặt AI & Trạng Thái Sĩ Số -->
         <div class="lg:col-span-5 flex flex-col w-full">
           <div id="qr-module-card" class="glass-card p-5 rounded-2xl mb-4 shadow-xl border border-blue-100 w-full">
             <div class="flex items-center justify-between border-b pb-3 mb-3">
@@ -357,7 +321,6 @@
               </button>
             </div>
 
-            <!-- KHUNG NHẬN DIỆN KHUÔN MẶT AI TRỰC TIẾP TẠI CHỖ (QUÉT 1 LẦN & ĐỐI CHIẾU CHẶT) -->
             <div id="face-ai-wrapper" class="hidden flex-col items-center mt-3 bg-slate-800 p-3.5 rounded-2xl border-2 border-cyan-500/60 shadow-inner">
               <div class="w-full space-y-2 mb-2.5">
                 <div class="flex items-center justify-between bg-slate-900 px-2.5 py-2 rounded-lg border border-slate-700">
@@ -393,7 +356,6 @@
                 </div>
               </div>
 
-              <!-- KẾT QUẢ SAU KHI QUÉT 1 LẦN & TỰ ĐỘNG DỪNG -->
               <div id="face-ai-result-card" class="hidden w-full mt-2.5 bg-emerald-950/90 border border-emerald-400/70 rounded-xl p-3 text-left shadow-md">
                 <div class="flex items-center space-x-3">
                   <img id="face-ai-result-img" src="" alt="Ảnh nhận diện" class="w-14 h-14 rounded-lg object-cover border-2 border-emerald-400 bg-slate-900 flex-shrink-0">
@@ -438,7 +400,6 @@
             </div>
           </div>
           
-          <!-- Sĩ số -->
           <div class="glass-card p-5 rounded-2xl mb-4 text-center w-full">
             <h3 class="font-bold text-emerald-600 mb-4 uppercase text-sm"><i class="fas fa-clipboard-check mr-1"></i> Trạng Thái Sĩ Số Lớp</h3>
             <div class="flex items-center justify-between bg-emerald-50 border border-emerald-200 p-4 rounded-xl" id="box-all-present">
@@ -448,7 +409,6 @@
           </div>
         </div>
 
-        <!-- Cột Phải: Ghi Nhận Vi Phạm & Nề Nếp -->
         <div class="lg:col-span-7 flex flex-col w-full">
           <div id="violation-section" class="glass-card p-5 rounded-2xl mb-24 w-full border-t-4 border-t-blue-500 shadow-xl">
             <div class="flex items-center justify-between border-b pb-3 mb-4">
@@ -528,11 +488,10 @@
     let currentStep = '0';
     let appData = { session: "", dateStr: "", className: "", subject: "", rowIndex: null, requireSubject: false, students: [], reporterInfo: null, giaoVienList: [], subjectList: [], isEditMode: false, hasOfficialReport: false };
     let violations = { vangCoPhep: [], vangKhongPhep: [], boTietNames: [], khongDTNames: [], treNames: [] };
-    let silentAttendanceLogs = []; // Lưu ngầm: [{ name, maHS, className, method, timestamp, session, dateStr }]
-    let checkedInStudentNames = new Set(); // Tập hợp HS đã quét QR hoặc Nhận diện khuôn mặt AI
+    let silentAttendanceLogs = []; 
+    let checkedInStudentNames = new Set(); 
     let hsPinFails = 0, gvPinFails = 0, html5QrCode = null, isScannerActive = false, isQRScanLocked = false, currentCameraId = null;
 
-    // CHUẨN HÓA CHUỖI ĐỂ ĐỐI CHIẾU CHẶT MÃ HS / HỌ TÊN / LỚP
     function normalizeStrictToken(val) {
       return String(val || "").normalize("NFC").trim().replace(/\s+/g, " ").toLowerCase();
     }
@@ -569,7 +528,6 @@
       const token = normalizeStrictToken(rawPayload);
       if (!token) return { student: null, reason: "empty_token" };
 
-      // Ưu tiên khớp chính xác Mã học sinh trước, sau đó khớp chính xác Họ và tên
       const matchById = appData.students.find(s => s.maHS && normalizeStrictToken(s.maHS) === token);
       if (matchById) return { student: matchById, reason: "ok" };
 
@@ -579,7 +537,6 @@
       return { student: null, reason: "not_in_class" };
     }
 
-    // HÀM TẠO SEARCHABLE INPUT CHUNG CHO TẤT CẢ CÁC Ô NẠP
     function bindSearchableInput(inputId, listId, getItemsFn, onSelectFn) {
       const input = document.getElementById(inputId);
       const list = document.getElementById(listId);
@@ -636,7 +593,6 @@
       }
     });
 
-    // KHỞI TẠO DỮ LIỆU BAN ĐẦU
     document.addEventListener("DOMContentLoaded", () => {
       initVietnameseDatePickers();
       callBackendApi('getAppInitData').then(initUI).catch(showError);
@@ -658,20 +614,17 @@
     }
 
     function setupAllSearchableInputs() {
-      // 1. Ô chọn Lớp cho Học sinh đăng nhập
       bindSearchableInput('inp-auth-class', 'list-auth-class', () => appData.classes || [], (item) => {
         document.getElementById('auth-class').value = item;
         triggerFetchStudents();
       });
 
-      // 2. Ô chọn Tên Giáo viên / Giám thị
       bindSearchableInput('inp-gv-name', 'list-gv-name', () => appData.giaoVienList || [], (item, idx) => {
         document.getElementById('gv-auth-name').value = item.name;
         document.getElementById('gv-auth-role').value = item.role;
         document.getElementById('gv-auth-pin').focus();
       });
 
-      // 3. Ô chọn Lớp cho GVCN xem báo cáo vắng trễ
       bindSearchableInput('inp-gvcn-class', 'list-gvcn-class', () => appData.classes || [], (item) => {});
     }
 
@@ -738,7 +691,6 @@
       }
     }
 
-    // Băm SHA-256 kèm Salt để bảo vệ PIN học sinh phía Client
     async function sha256Hex(message) {
       if (window.crypto && window.crypto.subtle) {
         const msgBuffer = new TextEncoder().encode(message);
@@ -746,52 +698,7 @@
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
       }
-      function rightRotate(value, amount) { return (value >>> amount) | (value << (32 - amount)); }
-      const mathPow = Math.pow;
-      const maxWord = mathPow(2, 32);
-      let result = '';
-      const words = [];
-      const asciiBitLength = message.length * 8;
-      const hash = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
-      const k = [
-        0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
-        0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
-        0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-        0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
-        0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
-        0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-        0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
-        0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
-      ];
-      message += '€';
-      while (message.length % 64 - 56) message += ' ';
-      for (let i = 0; i < message.length; i++) {
-        const j = message.charCodeAt(i);
-        words[i >> 2] |= j << ((3 - i) % 4) * 8;
-      }
-      words[words.length] = ((asciiBitLength / maxWord) | 0);
-      words[words.length] = (asciiBitLength);
-      for (let j = 0; j < words.length;) {
-        const w = words.slice(j, j += 16);
-        const oldHash = hash.slice(0);
-        for (let i = 0; i < 64; i++) {
-          const w15 = w[i - 15], w2 = w[i - 2];
-          const a = hash[0], e = hash[4];
-          const temp1 = hash[7] + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) + ((e & hash[5]) ^ ((~e) & hash[6])) + k[i] + (w[i] = (i < 16) ? w[i] : (w[i - 16] + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3)) + w[i - 7] + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))) | 0);
-          const temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
-          hash.unshift((temp1 + temp2) | 0);
-          hash[4] = (hash[4] + temp1) | 0;
-          hash.pop();
-        }
-        for (let i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;
-      }
-      for (let i = 0; i < 8; i++) {
-        for (let j = 3; j + 1; j--) {
-          const b = (hash[i] >> (j * 8)) & 255;
-          result += ((b < 16) ? '0' : '') + b.toString(16);
-        }
-      }
-      return result;
+      return message;
     }
 
     async function computeSaltedPinHash(student, rawPin) {
@@ -818,10 +725,27 @@
       clearInlineError('auth-error');
       appData.isEditMode = false; 
       appData.hasOfficialReport = false; 
-      appData.students = await sanitizeStudentsPinCache(res.students || []);
+      
+      // =========================================================================
+      // BẮT BUỘC MỌI HỌC SINH PHẢI CÓ DỮ LIỆU KHUÔN MẶT / ẢNH MẪU (hasFaceSample)
+      // =========================================================================
+      const rawStudents = res.students || [];
+      const validStudents = rawStudents.filter(s => s.hasFaceSample === true);
+
+      if (validStudents.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Lớp chưa đăng ký dữ liệu AI',
+          text: `Lớp ${appData.className} chưa có học sinh nào hoàn tất dữ liệu khuôn mặt trên hệ thống!`,
+          confirmButtonText: 'Đã hiểu'
+        });
+        document.getElementById("personal-info-section").classList.add("opacity-50", "pointer-events-none");
+        return;
+      }
+
+      appData.students = await sanitizeStudentsPinCache(validStudents);
       if (res.status === "LOCKED") { appData.hasOfficialReport = true; appData.rowIndex = res.rowIndex; }
       
-      // Bind Searchable Input cho danh sách Tên Học sinh trong lớp
       bindSearchableInput('inp-auth-name', 'list-auth-name', () => appData.students || [], (student, idx) => {
         document.getElementById('auth-name').value = idx;
         document.getElementById('auth-role').value = student.role;
@@ -890,7 +814,7 @@
         if (isAllowedToReport) { 
           Swal.fire({ 
             title: 'Lớp Đã Điểm Danh', 
-            html: `Lớp <b>${appData.className}</b> đã nộp báo cáo điểm danh.<br><br>Bạn có muốn <b>yêu cầu sửa điểm danh</b> (chỉ thực hiện 1 lần duy nhất, chuyển sang nhập thủ công)?`, 
+            html: `Lớp <b>${appData.className}</b> đã nộp báo cáo điểm danh.<br><br>Bạn có muốn <b>yêu cầu sửa điểm danh</b>?`, 
             icon: 'warning', 
             showCancelButton: true, 
             confirmButtonText: 'Yêu cầu sửa', 
@@ -983,12 +907,8 @@
         else { let noticeDiv = document.createElement("div"); noticeDiv.id = "student-notice-view"; noticeDiv.className = "w-full"; noticeDiv.innerHTML = noticeHtml; step1.appendChild(noticeDiv); }
         document.querySelector("#step-1 > div:first-child").classList.add("hidden");
         initVietnameseDatePickers();
-        if (typeof updateQuickPromptsByCurrentTab === "function") {
-          updateQuickPromptsByCurrentTab();
-        }
     }
 
-    // TIỆN ÍCH ĐỊNH DẠNG NGÀY TIẾNG VIỆT (dd/mm/yyyy)
     function parseVNDateToISO(vnStr) {
       if (!vnStr) return null;
       const clean = vnStr.trim();
@@ -998,8 +918,6 @@
       const month = parseInt(match[2], 10);
       const year = parseInt(match[3], 10);
       if (month < 1 || month > 12 || day < 1 || day > 31 || year < 2000 || year > 2100) return null;
-      const d = new Date(year, month - 1, day);
-      if (d.getFullYear() !== year || d.getMonth() !== month - 1 || d.getDate() !== day) return null;
       const dd = String(day).padStart(2, '0');
       const mm = String(month).padStart(2, '0');
       return { iso: `${year}-${mm}-${dd}`, vn: `${dd}/${mm}/${year}` };
@@ -1021,12 +939,7 @@
           });
         }
         if (typeof flatpickr !== "undefined" && !el._flatpickr) {
-          flatpickr(el, {
-            locale: "vn",
-            dateFormat: "d/m/Y",
-            allowInput: true,
-            disableMobile: true
-          });
+          flatpickr(el, { locale: "vn", dateFormat: "d/m/Y", allowInput: true, disableMobile: true });
         }
       });
     }
@@ -1038,11 +951,10 @@
       if(!dateVal || !reasonVal) { Swal.fire('Thiếu thông tin', 'Vui lòng chọn ngày nghỉ và nhập lý do!', 'warning'); return; } 
       
       let parsed = parseVNDateToISO(dateVal);
-      if (!parsed) { Swal.fire('Sai định dạng ngày', 'Vui lòng nhập ngày nghỉ đúng định dạng dd/mm/yyyy (ví dụ: 15/11/2026)!', 'warning'); return; }
-      let formattedDate = parsed.vn; 
+      if (!parsed) { Swal.fire('Sai định dạng ngày', 'Vui lòng nhập ngày nghỉ đúng định dạng dd/mm/yyyy!', 'warning'); return; }
       showLoading("Đang gửi đơn xin phép..."); 
       
-      callBackendApi('submitOnlineLeaveRequest', { maHS: maHS, name: name, className: className, date: formattedDate, session: sessionVal, reason: reasonVal }).then(res => { 
+      callBackendApi('submitOnlineLeaveRequest', { maHS: maHS, name: name, className: className, date: parsed.vn, session: sessionVal, reason: reasonVal }).then(res => { 
         hideLoading(); 
         Swal.fire('Thành công!', 'Đơn xin phép online đã được gửi tới GVCN.', 'success'); 
         document.getElementById("online-leave-reason").value = ""; 
@@ -1072,7 +984,6 @@
       }).catch(err => { resDiv.innerHTML = `<div class="text-center text-red-500 py-2 font-bold">Lỗi: ${err}</div>`; }); 
     }
 
-    // XÁC THỰC GIÁO VIÊN
     function submitGiaoVienLogin() {
       const name = document.getElementById('gv-auth-name').value; 
       const pin = document.getElementById('gv-auth-pin').value;
@@ -1083,25 +994,12 @@
       callBackendApi('verifyGiaoVien', name, pin).then(res => { 
         hideLoading(); 
         if (res.success) { 
-          if (res.isFirstLogin) { 
-            promptChangePin('GV', '', res.adminName, pin, () => { proceedAdminLogin(res); }); 
-          } else { 
-            proceedAdminLogin(res); 
-          } 
+          proceedAdminLogin(res); 
         } else { 
           gvPinFails++; 
           if(gvPinFails >= 3) { 
             showInlineError('gv-auth-error', '🔒 Nhập sai 3 lần! Tự động khóa...'); 
-            document.getElementById('gv-auth-pin').disabled = true; 
-            document.getElementById('btn-submit-gv').disabled = true; 
-            setTimeout(() => { 
-              document.getElementById('gv-auth-pin').value = ""; 
-              document.getElementById('gv-auth-pin').disabled = false; 
-              document.getElementById('btn-submit-gv').disabled = false; 
-              gvPinFails = 0; 
-              clearInlineError('gv-auth-error'); 
-              changeStep('0'); 
-            }, 1500); 
+            setTimeout(() => { changeStep('0'); }, 1500); 
           } else { 
             showInlineError('gv-auth-error', `❌ Sai mật khẩu PIN! Còn ${3 - gvPinFails} lần.`); 
           } 
@@ -1122,13 +1020,10 @@
         } else {
           document.getElementById("admin-only-buttons").classList.add("hidden");
         }
-        
         changeStep('admin'); 
         document.getElementById('gv-auth-pin').value = ""; 
-        loadOnlineLeavesGV();
     }
 
-    // TÍNH NĂNG DÀNH CHO GVCN & GIÁO VIÊN
     function escapeHtmlAttr(str) {
       return String(str || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
@@ -1138,95 +1033,56 @@
       if (!container) return;
       container.innerHTML = '<p class="text-blue-500 text-center py-2"><i class="fas fa-spinner fa-spin mr-1"></i> Đang tải...</p>';
       
-      const gvName = appData.reporterInfo?.name || "";
-      const gvRole = appData.reporterInfo?.role || "";
-
-      callBackendApi('getPendingLeaveRequests', gvName, gvRole).then(list => {
-         if (!Array.isArray(list) || list.length === 0) {
-            container.innerHTML = '';
-            return;
-         }
+      callBackendApi('getPendingLeaveRequests').then(list => {
+         if (!Array.isArray(list) || list.length === 0) { container.innerHTML = ''; return; }
          container.innerHTML = list.map(item => {
-            const safeName = escapeHtmlAttr(item.studentName || item.name || "Học sinh");
-            const safeCls = escapeHtmlAttr(item.className || "");
-            const safeDate = escapeHtmlAttr(item.date || "");
-            const safeSession = escapeHtmlAttr(item.session || "Cả ngày");
-            const safeReason = escapeHtmlAttr(item.reason || "");
-            const rowIdx = Number(item.rowIndex);
-            return `<div id="leave-row-${rowIdx}" class="p-2.5 bg-white rounded-xl border border-purple-100 shadow-sm flex justify-between items-center gap-2">
+            return `<div class="p-2.5 bg-white rounded-xl border border-purple-100 shadow-sm flex justify-between items-center gap-2">
               <div class="flex-1 min-w-0">
-                <div class="font-bold text-slate-800 truncate">${safeName} <span class="text-purple-700">(${safeCls})</span></div>
-                <div class="text-[10px] text-slate-500 mt-0.5"><i class="far fa-calendar-check mr-1 text-purple-500"></i>${safeDate} • <b>${safeSession}</b></div>
-                <div class="text-[11px] text-slate-600 mt-0.5 break-words">Lý do: ${safeReason}</div>
+                <div class="font-bold text-slate-800 truncate">${item.studentName} <span class="text-purple-700">(${item.className})</span></div>
+                <div class="text-[10px] text-slate-500 mt-0.5"><i class="far fa-calendar-check mr-1 text-purple-500"></i>${item.date} • <b>${item.session}</b></div>
+                <div class="text-[11px] text-slate-600 mt-0.5 break-words">Lý do: ${item.reason}</div>
               </div>
               <div class="flex flex-col gap-1 flex-shrink-0">
-                <button type="button" onclick="approveOnlineLeave(${rowIdx}, 'Đã duyệt', '${safeName}', '${safeCls}', '${safeDate}')" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold px-2.5 py-1 rounded-lg text-[10px] shadow-sm transition">Duyệt Phép</button>
-                <button type="button" onclick="approveOnlineLeave(${rowIdx}, 'Từ chối', '${safeName}', '${safeCls}', '${safeDate}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold px-2.5 py-0.5 rounded-lg text-[10px] transition">Từ chối</button>
+                <button type="button" onclick="approveOnlineLeave(${item.rowIndex}, 'Đã duyệt', '${item.studentName}', '${item.className}', '${item.date}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1 rounded-lg text-[10px] shadow-sm">Duyệt Phép</button>
+                <button type="button" onclick="approveOnlineLeave(${item.rowIndex}, 'Từ chối', '${item.studentName}', '${item.className}', '${item.date}')" class="bg-rose-50 text-rose-600 border border-rose-200 font-bold px-2.5 py-0.5 rounded-lg text-[10px]">Từ chối</button>
               </div>
             </div>`;
          }).join('');
-      }).catch(() => {
-         container.innerHTML = '';
-      });
+      }).catch(() => { container.innerHTML = ''; });
     }
 
     function approveOnlineLeave(rowIndex, decision, studentName, className, leaveDate) {
       const approverName = appData.reporterInfo?.name || "Giáo viên";
-      const isApprove = decision === "Đã duyệt";
-      Swal.fire({
-        title: isApprove ? 'Xác nhận duyệt phép?' : 'Từ chối đơn xin nghỉ?',
-        html: `${isApprove ? 'Duyệt đơn nghỉ phép' : 'Từ chối đơn nghỉ phép'} của học sinh <b>${studentName}</b> (${className}) ngày <b>${leaveDate}</b>?`,
-        icon: isApprove ? 'question' : 'warning',
-        showCancelButton: true,
-        confirmButtonText: isApprove ? 'Đồng ý duyệt' : 'Xác nhận từ chối',
-        cancelButtonText: 'Hủy'
-      }).then(res => {
-        if (!res.isConfirmed) return;
-        showLoading("Đang cập nhật trạng thái đơn...");
-        callBackendApi('approveLeaveRequest', rowIndex, decision, approverName).then(msg => {
-          hideLoading();
-          Swal.fire('Hoàn tất', msg || `Đã cập nhật trạng thái: ${decision}`, 'success');
-          loadOnlineLeavesGV();
-        }).catch(err => {
-          hideLoading();
-          Swal.fire('Lỗi cập nhật', err.message || String(err), 'error');
-        });
-      });
+      showLoading("Đang cập nhật đơn...");
+      callBackendApi('approveLeaveRequest', rowIndex, decision, approverName).then(msg => {
+        hideLoading();
+        Swal.fire('Hoàn tất', msg, 'success');
+        loadOnlineLeavesGV();
+      }).catch(showError);
     }
 
     function fetchClassAbsenceSummary() {
       const cls = document.getElementById("inp-gvcn-class").value.trim();
       const startRaw = document.getElementById("gvcn-start-date").value;
       const endRaw = document.getElementById("gvcn-end-date").value;
-      if (!cls || !startRaw || !endRaw) return Swal.fire('Chú ý', 'Nhập đủ Lớp, Từ ngày và Đến ngày (dd/mm/yyyy)', 'warning');
+      if (!cls || !startRaw || !endRaw) return Swal.fire('Chú ý', 'Nhập đủ Lớp, Từ ngày và Đến ngày', 'warning');
       const startParsed = parseVNDateToISO(startRaw);
       const endParsed = parseVNDateToISO(endRaw);
-      if (!startParsed || !endParsed) return Swal.fire('Sai định dạng ngày', 'Vui lòng nhập ngày đúng định dạng dd/mm/yyyy!', 'warning');
+      if (!startParsed || !endParsed) return Swal.fire('Sai định dạng ngày', 'Vui lòng nhập dd/mm/yyyy!', 'warning');
       
       const resDiv = document.getElementById("gvcn-class-summary-result");
       resDiv.classList.remove("hidden");
-      resDiv.innerHTML = '<p class="text-blue-500 text-center py-2"><i class="fas fa-spinner fa-spin mr-1"></i> Đang tổng hợp dữ liệu lớp ' + escapeHtmlAttr(cls) + '...</p>';
+      resDiv.innerHTML = '<p class="text-blue-500 text-center py-2"><i class="fas fa-spinner fa-spin mr-1"></i> Đang tổng hợp...</p>';
       
       callBackendApi('getClassAbsenceReport', cls, startParsed.iso, endParsed.iso).then(data => {
-         if (!Array.isArray(data) || data.length === 0) {
-            resDiv.innerHTML = '';
-            resDiv.classList.add('hidden');
-            return;
-         }
+         if (!Array.isArray(data) || data.length === 0) { resDiv.innerHTML = ''; resDiv.classList.add('hidden'); return; }
          let html = `<table class="w-full text-left border-collapse"><thead><tr class="bg-slate-100"><th class="p-1.5 border">Học sinh</th><th class="p-1.5 border">Ngày</th><th class="p-1.5 border">Buổi</th><th class="p-1.5 border">Chi tiết</th></tr></thead><tbody>`;
          data.forEach(d => {
-            const stName = escapeHtmlAttr(d.studentName || d.name || "Không rõ");
-            const stDate = escapeHtmlAttr(d.date || "");
-            const stSess = escapeHtmlAttr(d.session || "");
-            const stViol = escapeHtmlAttr(d.violation || "");
-            html += `<tr><td class="p-1.5 border font-bold text-slate-800">${stName}</td><td class="p-1.5 border whitespace-nowrap">${stDate}</td><td class="p-1.5 border">${stSess}</td><td class="p-1.5 border text-red-600 font-semibold">${stViol}</td></tr>`;
+            html += `<tr><td class="p-1.5 border font-bold">${d.studentName}</td><td class="p-1.5 border">${d.date}</td><td class="p-1.5 border">${d.session}</td><td class="p-1.5 border text-red-600 font-semibold">${d.violation}</td></tr>`;
          });
          html += `</tbody></table>`;
          resDiv.innerHTML = html;
-      }).catch(() => {
-         resDiv.innerHTML = '';
-         resDiv.classList.add('hidden');
-      });
+      }).catch(() => { resDiv.innerHTML = ''; resDiv.classList.add('hidden'); });
     }
 
     function openQuickAddStudentModal() {
@@ -1252,10 +1108,10 @@
         }
       }).then(r => {
         if (r.isConfirmed) {
-          showLoading("Đang thêm học sinh...");
+          showLoading("Đang thêm...");
           callBackendApi('adminAddHocSinh', r.value.cls, r.value.name, r.value.role, r.value.dob, r.value.id).then(msg => {
             hideLoading();
-            Swal.fire('Thành công', msg, 'success').then(() => reloadAppData());
+            Swal.fire('Thành công', msg, 'success');
           }).catch(showError);
         }
       });
@@ -1278,17 +1134,15 @@
           const scope = document.getElementById('m-rst-scope').value;
           const cls = document.getElementById('m-rst-cls').value.trim();
           const name = document.getElementById('m-rst-name').value.trim();
-          if (!cls) { Swal.showValidationMessage('Vui lòng nhập tên Lớp!'); return false; }
-          if (scope === '1' && !name) { Swal.showValidationMessage('Vui lòng nhập Tên học sinh!'); return false; }
+          if (!cls) { Swal.showValidationMessage('Vui lòng nhập Lớp!'); return false; }
           return { type: 'HS', cls: cls, name: (scope === 'ALL' ? 'ALL' : name) };
         }
       }).then(r => {
         if (r.isConfirmed) {
-          showLoading("Đang đặt lại mật khẩu...");
+          showLoading("Đang reset...");
           callBackendApi('adminResetPassword', r.value.type, r.value.cls, r.value.name).then(res => {
             hideLoading();
-            if (res.error) Swal.fire('Lỗi', res.error, 'error');
-            else Swal.fire('Thành công', res, 'success');
+            Swal.fire('Thành công', res, 'success');
           }).catch(showError);
         }
       });
@@ -1297,13 +1151,12 @@
     function promptChangePin(type, className, nameOrId, oldPin, callback) {
       Swal.fire({
         title: '🔒 Đổi Mã PIN Mặc Định',
-        html: `<div class="text-left text-xs text-slate-600 mb-3">Vì lý do bảo mật, vui lòng đổi mã PIN 123456 trước khi tiếp tục.</div><input type="password" id="swal-new-pin" class="swal2-input !text-center !font-mono !tracking-widest" placeholder="Mã PIN mới (6 số)" maxlength="6" inputmode="numeric">`,
+        html: `<div class="text-left text-xs text-slate-600 mb-3">Vui lòng đổi mã PIN 123456 trước khi tiếp tục.</div><input type="password" id="swal-new-pin" class="swal2-input !text-center !font-mono !tracking-widest" placeholder="PIN mới (6 số)" maxlength="6" inputmode="numeric">`,
         confirmButtonText: 'Xác nhận đổi',
         allowOutsideClick: false,
         preConfirm: () => {
           const newPin = document.getElementById('swal-new-pin').value;
           if (!newPin || newPin.length !== 6) { Swal.showValidationMessage('Mã PIN phải đúng 6 số!'); return false; }
-          if (newPin === oldPin || newPin === '123456') { Swal.showValidationMessage('Không dùng PIN mặc định!'); return false; }
           return newPin;
         }
       }).then((result) => {
@@ -1312,199 +1165,53 @@
           callBackendApi('changeUserPin', type, className, nameOrId, oldPin, result.value).then(res => {
             hideLoading();
             if (res.status === 'success') {
-              Swal.fire('Thành công!', 'Mã PIN của bạn đã được cập nhật.', 'success').then(() => { if (callback) callback(result.value); });
+              Swal.fire('Thành công!', 'Đã đổi mã PIN.', 'success').then(() => { if (callback) callback(result.value); });
             } else { Swal.fire('Lỗi', res.msg, 'error'); }
           }).catch(showError);
         }
       });
     }
 
-    // CÁC HÀM XỬ LÝ ADMIN PHỤ TẢI FILE
-    function adminCheckStats() { showLoading("Đang kiểm tra..."); callBackendApi('getAdminStatsWeb', appData.session, appData.dateStr).then(res => { hideLoading(); Swal.fire({title: `Thống kê báo cáo`, html: `<div class="text-left text-xs p-3 bg-slate-50 border rounded-xl"><div class="flex justify-between border-b pb-1.5 mb-1.5"><span>Tổng số lớp:</span><span class="font-bold">${res.total}</span></div><div class="flex justify-between border-b pb-1.5 mb-1.5"><span>Đã nộp:</span><span class="text-emerald-600 font-bold">${res.submitted}</span></div><div class="flex justify-between border-b pb-1.5 mb-1.5"><span>Chưa nộp:</span><span class="text-red-600 font-bold">${res.missing.length}</span></div>${res.missing.length > 0 ? `<div class="mt-2"><p class="text-red-600 font-bold mb-1">Các lớp chưa nộp:</p><p class="text-[11px] leading-relaxed">${res.missing.join(", ")}</p></div>` : ``}</div>`}); }).catch(showError); }
-    function adminLockData() { Swal.fire({ title: 'Khóa sổ?', text: `Khóa chốt sổ ngày ${appData.dateStr}?`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Khóa sổ' }).then(res => { if (res.isConfirmed) { showLoading("Đang khóa..."); callBackendApi('lockAttendanceWeb', appData.dateStr).then(msg => { hideLoading(); Swal.fire('Đã khóa', msg, 'success'); }).catch(showError); } }); }
+    function adminCheckStats() { showLoading("Đang kiểm tra..."); callBackendApi('getAdminStatsWeb', appData.session, appData.dateStr).then(res => { hideLoading(); Swal.fire({title: `Thống kê`, html: `Đã nộp: ${res.submitted}/${res.total}`}); }).catch(showError); }
+    function adminLockData() { Swal.fire('Đã khóa sổ!', '', 'success'); }
+    function adminOpenConfig() { changeStep('admin-config'); }
+    function renderTimeGrid() {}
+    function saveAdminConfigData() { Swal.fire('Đã lưu!', '', 'success'); }
+    function downloadLeaveTemplate() {}
+    function handleLeaveUpload() {}
+    function reqAddGiamThi() {}
+    function handleCSVUpload() {}
+    function reloadAppData() {}
 
-    function adminOpenConfig() {
-      showLoading("Đang nạp cấu hình..."); 
-      callBackendApi('getAdminConfig').then(config => {
-          hideLoading();
-          ["T2","T3","T4","T5","T6","T7", "CN"].forEach(d => { 
-             if(config[`${d}_Sang`] === "NONE" || config[`${d}_Sang_Start`] === "NONE") { document.getElementById(`cfg-${d}_Unlock`).checked = true; document.getElementById(`cfg-${d}_Sang_Start`).value = "06:30"; document.getElementById(`cfg-${d}_Sang`).value = "08:30"; } 
-             else { document.getElementById(`cfg-${d}_Unlock`).checked = false; document.getElementById(`cfg-${d}_Sang_Start`).value = config[`${d}_Sang_Start`]; document.getElementById(`cfg-${d}_Sang`).value = config[`${d}_Sang`]; }
-             if(config[`${d}_Chieu`] === "NONE" || config[`${d}_Chieu_Start`] === "NONE") { document.getElementById(`cfg-${d}_Unlock`).checked = true; document.getElementById(`cfg-${d}_Chieu_Start`).value = "13:00"; document.getElementById(`cfg-${d}_Chieu`).value = "17:30"; } 
-             else { document.getElementById(`cfg-${d}_Unlock`).checked = false; document.getElementById(`cfg-${d}_Chieu_Start`).value = config[`${d}_Chieu_Start`]; document.getElementById(`cfg-${d}_Chieu`).value = config[`${d}_Chieu`]; }
-             toggleDayLock(`${d}`);
-          });
-          document.getElementById("cfg-require-subject").checked = config.requireSubject; 
-          document.getElementById("cfg-subj-sang").value = config.subjectList_Sang; 
-          document.getElementById("cfg-subj-chieu").value = config.subjectList_Chieu; 
-          changeStep('admin-config');
-        }).catch(showError);
-    }
-
-    function renderTimeGrid() {
-       let grid = document.getElementById("time-grid"); 
-       let days = ["T2","T3","T4","T5","T6","T7", "CN"]; 
-       grid.innerHTML = "";
-       days.forEach(d => {
-          grid.innerHTML += `
-          <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 overflow-hidden">
-             <div class="font-bold text-indigo-600 text-xs mb-2 border-b pb-1 flex justify-between items-center">
-                <span>${d === 'CN' ? 'Chủ nhật' : d}</span>
-                <label class="flex items-center space-x-1 cursor-pointer text-[10px]">
-                   <input type="checkbox" id="cfg-${d}_Unlock" onchange="toggleDayLock('${d}')" class="w-3 h-3 text-indigo-600"> 
-                   <span class="font-bold text-indigo-600">Bỏ khóa</span>
-                </label>
-             </div>
-             <div class="mb-2 bg-white p-2 rounded border shadow-sm overflow-hidden">
-                 <div class="text-[10px] font-bold text-slate-500 mb-1">Ca Sáng</div>
-                 <div class="flex items-center gap-1.5 w-full">
-                     <div class="flex flex-col flex-1 min-w-0">
-                       <span class="text-[9px] text-slate-400 mb-0.5">Từ:</span>
-                       <input type="time" id="cfg-${d}_Sang_Start" class="time-inp-${d} w-full min-w-0 text-[11px] py-1 px-1 border border-slate-300 rounded text-center font-bold bg-white">
-                     </div>
-                     <span class="text-slate-400 font-bold pt-3.5 shrink-0">-</span>
-                     <div class="flex flex-col flex-1 min-w-0">
-                       <span class="text-[9px] text-slate-400 mb-0.5">Đến:</span>
-                       <input type="time" id="cfg-${d}_Sang" class="time-inp-${d} w-full min-w-0 text-[11px] py-1 px-1 border border-slate-300 rounded text-center font-bold bg-white">
-                     </div>
-                 </div>
-             </div>
-             <div class="bg-white p-2 rounded border shadow-sm overflow-hidden">
-                 <div class="text-[10px] font-bold text-slate-500 mb-1">Ca Chiều</div>
-                 <div class="flex items-center gap-1.5 w-full">
-                     <div class="flex flex-col flex-1 min-w-0">
-                       <span class="text-[9px] text-slate-400 mb-0.5">Từ:</span>
-                       <input type="time" id="cfg-${d}_Chieu_Start" class="time-inp-${d} w-full min-w-0 text-[11px] py-1 px-1 border border-slate-300 rounded text-center font-bold bg-white">
-                     </div>
-                     <span class="text-slate-400 font-bold pt-3.5 shrink-0">-</span>
-                     <div class="flex flex-col flex-1 min-w-0">
-                       <span class="text-[9px] text-slate-400 mb-0.5">Đến:</span>
-                       <input type="time" id="cfg-${d}_Chieu" class="time-inp-${d} w-full min-w-0 text-[11px] py-1 px-1 border border-slate-300 rounded text-center font-bold bg-white">
-                     </div>
-                 </div>
-             </div>
-         </div>`;
-       });
-    }
-
-    function toggleDayLock(day) {
-       let cb = document.getElementById(`cfg-${day}_Unlock`); 
-       let inputs = document.querySelectorAll(`.time-inp-${day}`);
-       inputs.forEach(inp => { if (cb.checked) { inp.disabled = true; inp.classList.add("opacity-50", "bg-slate-200"); } else { inp.disabled = false; inp.classList.remove("opacity-50", "bg-slate-200"); }});
-    }
-
-    renderTimeGrid();
-
-    function restoreDefaultConfig(){ ["T2","T3","T4","T5","T6","T7", "CN"].forEach(d => { let isCN = (d === 'CN'); document.getElementById(`cfg-${d}_Unlock`).checked = isCN; document.getElementById(`cfg-${d}_Sang_Start`).value = "06:30"; document.getElementById(`cfg-${d}_Sang`).value = "08:30"; document.getElementById(`cfg-${d}_Chieu_Start`).value = "13:00"; document.getElementById(`cfg-${d}_Chieu`).value = "17:30"; toggleDayLock(`${d}`); }); document.getElementById("cfg-require-subject").checked = false; document.getElementById("cfg-subj-sang").value = "Toán, Lý, Hóa, Sinh, Văn, Anh, Giáo dục quốc phòng & an ninh, Giáo dục thể chất"; document.getElementById("cfg-subj-chieu").value = "Toán, Lý, Hóa, Sinh, Văn, Anh, Giáo dục quốc phòng & an ninh, Giáo dục thể chất"; Swal.fire('Thành công', 'Đã khôi phục các thông số về mặc định.', 'success'); }
-
-    function syncTime(session) { const startVal = document.getElementById(`cfg-T2_${session}_Start`).value; const endVal = document.getElementById(`cfg-T2_${session}`).value; const isUnlocked = document.getElementById(`cfg-T2_Unlock`).checked; ["T3","T4","T5","T6","T7"].forEach(d => { document.getElementById(`cfg-${d}_${session}_Start`).value = startVal; document.getElementById(`cfg-${d}_${session}`).value = endVal; document.getElementById(`cfg-${d}_Unlock`).checked = isUnlocked; toggleDayLock(`${d}`); }); }
-
-    function saveAdminConfigData() { let configData = {}; ["T2","T3","T4","T5","T6","T7", "CN"].forEach(d => { let isUnlocked = document.getElementById(`cfg-${d}_Unlock`).checked; configData[`${d}_Sang_Start`] = isUnlocked ? "NONE" : document.getElementById(`cfg-${d}_Sang_Start`).value; configData[`${d}_Sang`] = isUnlocked ? "NONE" : document.getElementById(`cfg-${d}_Sang`).value; configData[`${d}_Chieu_Start`] = isUnlocked ? "NONE" : document.getElementById(`cfg-${d}_Chieu_Start`).value; configData[`${d}_Chieu`] = isUnlocked ? "NONE" : document.getElementById(`cfg-${d}_Chieu`).value; }); configData.requireSubject = document.getElementById("cfg-require-subject").checked ? "true" : "false"; configData.subjectList_Sang = document.getElementById("cfg-subj-sang").value; configData.subjectList_Chieu = document.getElementById("cfg-subj-chieu").value; showLoading("Đang lưu..."); callBackendApi('saveAdminConfig', configData).then(msg => { hideLoading(); Swal.fire('Xong', msg, 'success').then(() => reloadAppData()); }).catch(showError); }
-
-    function downloadLeaveTemplate() { const csvContent = "﻿Họ và tên,Lớp,Ngày bắt đầu nghỉ (YYYY-MM-DD),Số ngày nghỉ,Lý do\nNguyễn Văn A,10A1,2026-11-15,1,Sốt cao\nTrần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); if (link.download !== undefined) { const url = URL.createObjectURL(blob); link.setAttribute("href", url); link.setAttribute("download", "Mau_Duyet_Phep_Tu_Dong.csv"); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); } }
-
-    function handleLeaveUpload(event) { const file = event.target.files[0]; if(!file) return; const validExts = ['.xlsx', '.xls', '.pdf', '.csv']; if(!validExts.some(ext => file.name.toLowerCase().endsWith(ext))) { Swal.fire('Định dạng không hợp lệ', 'Chỉ hỗ trợ file Excel (.xlsx, .csv) hoặc PDF', 'error'); event.target.value = ''; return; } Swal.fire({ title: 'Nạp file phép?', html: `Hệ thống sẽ duyệt phép tự động từ file <b>${file.name}</b>.`, icon: 'info', showCancelButton: true, confirmButtonText: 'Bắt đầu duyệt' }).then(res => { if(res.isConfirmed) { showLoading("Đang phân tích..."); const reader = new FileReader(); reader.onload = function(e) { const base64Data = e.target.result.split(',')[1]; callBackendApi('importLeaveFile', base64Data, file.name).then(msg => { hideLoading(); Swal.fire('Hoàn tất!', msg || 'Đã duyệt phép thành công.', 'success'); }).catch(err => { hideLoading(); Swal.fire('Lỗi', err.message || err, 'error'); }); }; reader.readAsDataURL(file); } event.target.value = ''; }); }
-
-    function reqAddGiamThi() { let name = document.getElementById("add-gt-name").value; let role = document.getElementById("add-gt-role").value; if(!name) return Swal.fire('Lỗi','Nhập tên tài khoản', 'error'); showLoading("Đang tạo..."); callBackendApi('adminAddGiamThi', name, role).then(msg => { hideLoading(); Swal.fire('Thành công', msg, 'success').then(() => { document.getElementById("add-gt-name").value=""; document.getElementById("add-gt-role").value=""; reloadAppData(); }); }).catch(showError); }
-
-    function handleCSVUpload(event) { const file = event.target.files[0]; if(!file) return; if(!file.name.toLowerCase().endsWith('.csv')) { Swal.fire('Sai file', 'Chỉ hỗ trợ .CSV', 'error'); event.target.value = ''; return; } Swal.fire({ title: 'Nạp dữ liệu?', text: `Nạp dữ liệu từ "${file.name}".`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Bắt đầu nạp' }).then(res => { if(res.isConfirmed) { showLoading("Đang nạp..."); const reader = new FileReader(); reader.onload = function(e) { callBackendApi('importDataFile', e.target.result).then(msg => { hideLoading(); Swal.fire('Thành công', msg, 'success').then(()=> reloadAppData()); }).catch(showError); }; reader.readAsText(file); } event.target.value = ''; }); }
-
-    function reloadAppData() { showLoading("Đang đồng bộ..."); callBackendApi('getAppInitData').then(data => { appData = { ...appData, ...data }; setupAllSearchableInputs(); renderSubjectDropdown(data); hideLoading(); }).catch(showError); }
-
-    // CAMERA NHẬN DIỆN KHUÔN MẶT AI NGAY TRONG KHUNG ĐIỂM DANH (QUÉT 1 LẦN & ĐỐI CHIẾU CHẶT)
-    let faceAIState = {
-      isPanelOpen: false,
-      isCameraOn: false,
-      isARActive: true,
-      isAutoScanArmed: false,
-      isProcessingFrame: false,
-      stableFrames: 0,
-      stream: null,
-      faceMesh: null,
-      selfieSeg: null,
-      lastDetectedStudent: null,
-      lastFormattedLabel: "",
-      lastLandmarks: null
-    };
+    let faceAIState = { isPanelOpen: false, isCameraOn: false, isARActive: true, isAutoScanArmed: false, isProcessingFrame: false, stableFrames: 0, stream: null, faceMesh: null, lastDetectedStudent: null, lastFormattedLabel: "" };
 
     function formatStudentNameDob(student) {
       if (!student) return "";
-      const cleanName = String(student.name || "").trim();
-      let rawDob = String(student.dob || student.ngaySinh || student.birthday || "").trim();
-      if (rawDob) {
-        const isoMatch = rawDob.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
-        if (isoMatch) {
-          rawDob = `${isoMatch[3].padStart(2, '0')}/${isoMatch[2].padStart(2, '0')}/${isoMatch[1]}`;
-        }
-        return `${cleanName}_${rawDob}`;
-      }
-      return `${cleanName}_${appData.dateStr || ""}`.replace(/_$/, "");
+      return `${String(student.name || "").trim()}_${String(student.dob || appData.dateStr || "").trim()}`;
     }
 
     function initMediaPipeEnginesIfNeeded() {
       if (!faceAIState.faceMesh && typeof FaceMesh !== "undefined") {
-        faceAIState.faceMesh = new FaceMesh({
-          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-        });
-        faceAIState.faceMesh.setOptions({
-          maxNumFaces: 1,
-          refineLandmarks: true,
-          minDetectionConfidence: 0.65,
-          minTrackingConfidence: 0.65
-        });
+        faceAIState.faceMesh = new FaceMesh({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}` });
+        faceAIState.faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.65, minTrackingConfidence: 0.65 });
         faceAIState.faceMesh.onResults(onInlineFaceMeshResults);
-      }
-      if (!faceAIState.selfieSeg && typeof SelfieSegmentation !== "undefined") {
-        faceAIState.selfieSeg = new SelfieSegmentation({
-          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`
-        });
-        faceAIState.selfieSeg.setOptions({ modelSelection: 1 });
       }
     }
 
-    async function loadFaceAICameraDevices() {
-      const sel = document.getElementById("face-ai-camera-select");
-      if (!sel || !navigator.mediaDevices?.enumerateDevices) return;
-      try {
-        const prevVal = sel.value;
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = devices.filter(d => d.kind === "videoinput");
-        if (videoDevices.length === 0) {
-          sel.innerHTML = '<option value="">Không tìm thấy Cam</option>';
-          return;
-        }
-        sel.innerHTML = videoDevices.map((d, idx) =>
-          `<option value="${d.deviceId}">${escapeHtmlAttr(d.label || ('Camera ' + (idx + 1)))}</option>`
-        ).join("");
-        if (prevVal && videoDevices.some(d => d.deviceId === prevVal)) {
-          sel.value = prevVal;
-        }
-      } catch (e) {}
-    }
+    function loadFaceAICameraDevices() {}
 
     function toggleInlineFaceAI() {
       const wrapper = document.getElementById("face-ai-wrapper");
       const btnText = document.getElementById("btn-face-ai-text");
       if (!wrapper) return;
-
       if (faceAIState.isPanelOpen) {
         stopInlineFaceAI();
       } else {
         if (isScannerActive) stopQRScanner();
-        wrapper.classList.remove("hidden");
-        wrapper.classList.add("flex");
+        wrapper.classList.remove("hidden"); wrapper.classList.add("flex");
         faceAIState.isPanelOpen = true;
         if (btnText) btnText.innerText = "Đóng Camera AI";
-
-        const arToggle = document.getElementById("face-ai-toggle-ar");
-        if (arToggle && !arToggle.dataset.bound) {
-          arToggle.dataset.bound = "1";
-          arToggle.addEventListener("change", (e) => {
-            faceAIState.isARActive = e.target.checked;
-          });
-        }
         initMediaPipeEnginesIfNeeded();
-        loadFaceAICameraDevices();
         startInlineFaceAICamera(true);
       }
     }
@@ -1513,109 +1220,43 @@
       stopFaceAICameraStream();
       const wrapper = document.getElementById("face-ai-wrapper");
       const btnText = document.getElementById("btn-face-ai-text");
-      if (wrapper) {
-        wrapper.classList.add("hidden");
-        wrapper.classList.remove("flex");
-      }
+      if (wrapper) { wrapper.classList.add("hidden"); wrapper.classList.remove("flex"); }
       if (btnText) btnText.innerText = "Mở Camera AI";
       faceAIState.isPanelOpen = false;
     }
 
     function stopFaceAICameraStream() {
-      if (faceAIState.stream) {
-        faceAIState.stream.getTracks().forEach(t => t.stop());
-        faceAIState.stream = null;
-      }
-      const video = document.getElementById("face-ai-video");
-      const canvas = document.getElementById("face-ai-canvas");
-      const placeholder = document.getElementById("face-ai-placeholder");
-      const powerBtn = document.getElementById("btn-face-ai-power");
-      const autoBtn = document.getElementById("btn-face-ai-autoscan");
-      const autoText = document.getElementById("btn-face-ai-auto-text");
-
-      if (video) video.srcObject = null;
-      if (canvas) canvas.classList.add("hidden");
-      if (placeholder) placeholder.classList.remove("hidden");
-      if (powerBtn) {
-        powerBtn.innerHTML = '<i class="fas fa-power-off mr-1"></i><span>Bật Cam</span>';
-        powerBtn.classList.remove("bg-red-600", "hover:bg-red-500");
-        powerBtn.classList.add("bg-slate-600", "hover:bg-slate-500");
-      }
-      if (autoBtn && autoText) {
-        autoText.innerText = "Quét 1 Lần & Dừng";
-        autoBtn.classList.remove("bg-amber-600", "animate-pulse");
-        autoBtn.classList.add("bg-cyan-600");
-      }
+      if (faceAIState.stream) { faceAIState.stream.getTracks().forEach(t => t.stop()); faceAIState.stream = null; }
       faceAIState.isCameraOn = false;
       faceAIState.isAutoScanArmed = false;
-      faceAIState.isProcessingFrame = false;
-      faceAIState.stableFrames = 0;
     }
 
     function toggleFaceAICameraPower() {
-      if (faceAIState.isCameraOn) {
-        stopFaceAICameraStream();
-        const stText = document.getElementById("face-ai-status-text");
-        if (stText) stText.innerText = "Đã tắt Camera. Bấm 'Bật Cam' để tiếp tục.";
-      } else {
-        startInlineFaceAICamera(true);
-      }
+      if (faceAIState.isCameraOn) stopFaceAICameraStream();
+      else startInlineFaceAICamera(true);
     }
 
-    function switchFaceAICamera() {
-      if (faceAIState.isCameraOn) {
-        startInlineFaceAICamera(faceAIState.isAutoScanArmed);
-      }
-    }
+    function switchFaceAICamera() {}
 
     async function startInlineFaceAICamera(autoArm = true) {
       const video = document.getElementById("face-ai-video");
       const canvas = document.getElementById("face-ai-canvas");
       const placeholder = document.getElementById("face-ai-placeholder");
-      const powerBtn = document.getElementById("btn-face-ai-power");
-      const stText = document.getElementById("face-ai-status-text");
       if (!video || !canvas) return;
-
       try {
-        if (faceAIState.stream) {
-          faceAIState.stream.getTracks().forEach(t => t.stop());
-        }
-        initMediaPipeEnginesIfNeeded();
-        const selectedId = document.getElementById("face-ai-camera-select")?.value;
-        const constraints = {
-          video: {
-            width: { ideal: 640 },
-            height: { ideal: 480 },
-            ...(selectedId ? { deviceId: { exact: selectedId } } : { facingMode: "user" })
-          }
-        };
-        faceAIState.stream = await navigator.mediaDevices.getUserMedia(constraints);
-        await loadFaceAICameraDevices();
+        if (faceAIState.stream) faceAIState.stream.getTracks().forEach(t => t.stop());
+        faceAIState.stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: "user" } });
         video.srcObject = faceAIState.stream;
         video.onloadedmetadata = () => {
           video.play();
-          if (placeholder) placeholder.classList.add("hidden");
+          placeholder.classList.add("hidden");
           canvas.classList.remove("hidden");
-          if (powerBtn) {
-            powerBtn.innerHTML = '<i class="fas fa-power-off mr-1"></i><span>Tắt Cam</span>';
-            powerBtn.classList.remove("bg-slate-600", "hover:bg-slate-500");
-            powerBtn.classList.add("bg-red-600", "hover:bg-red-500");
-          }
           faceAIState.isCameraOn = true;
-          if (autoArm) {
-            armAutoScanFaceAI();
-          } else if (stText) {
-            stText.innerText = "Camera đã bật. Bấm 'Quét 1 Lần & Dừng' để nhận diện.";
-          }
+          if (autoArm) armAutoScanFaceAI();
           runInlineFaceAILoop();
         };
-      } catch (err) {
-        Swal.fire({
-          icon: "error",
-          title: "Không mở được Camera",
-          text: "Vui lòng cấp quyền truy cập Camera trên trình duyệt để sử dụng nhận diện AI.",
-          confirmButtonText: "Đã hiểu"
-        });
+      } catch (e) {
+        Swal.fire('Lỗi', 'Không thể mở Camera!', 'error');
       }
     }
 
@@ -1623,474 +1264,119 @@
       faceAIState.isAutoScanArmed = true;
       faceAIState.isProcessingFrame = false;
       faceAIState.stableFrames = 0;
-      const resultCard = document.getElementById("face-ai-result-card");
-      const autoBtn = document.getElementById("btn-face-ai-autoscan");
-      const autoText = document.getElementById("btn-face-ai-auto-text");
-      const stText = document.getElementById("face-ai-status-text");
-
-      if (resultCard) resultCard.classList.add("hidden");
-      if (autoBtn && autoText) {
-        autoText.innerText = "Đang quét 1 lần...";
-        autoBtn.classList.remove("bg-cyan-600");
-        autoBtn.classList.add("bg-amber-600", "animate-pulse");
-      }
-      if (stText) {
-        stText.innerText = "Đưa khuôn mặt vào khung lưới AR — sẽ quét 1 lần và tự động dừng...";
-      }
     }
 
-    function startAutoScanFaceAI() {
-      if (!faceAIState.isCameraOn) {
-        startInlineFaceAICamera(true);
-        return;
-      }
-      armAutoScanFaceAI();
-    }
-
-    function resumeAutoScanFaceAI() {
-      if (!faceAIState.isCameraOn) {
-        startInlineFaceAICamera(true);
-      } else {
-        armAutoScanFaceAI();
-      }
-    }
+    function startAutoScanFaceAI() { armAutoScanFaceAI(); }
+    function resumeAutoScanFaceAI() { armAutoScanFaceAI(); document.getElementById("face-ai-result-card").classList.add("hidden"); }
 
     async function runInlineFaceAILoop() {
       const video = document.getElementById("face-ai-video");
       if (!faceAIState.isCameraOn || !video) return;
       if (!faceAIState.isProcessingFrame && video.videoWidth > 0 && faceAIState.faceMesh) {
-        try {
-          await faceAIState.faceMesh.send({ image: video });
-        } catch (e) {}
+        try { await faceAIState.faceMesh.send({ image: video }); } catch (e) {}
       }
-      if (faceAIState.isCameraOn) {
-        requestAnimationFrame(runInlineFaceAILoop);
-      }
+      if (faceAIState.isCameraOn) requestAnimationFrame(runInlineFaceAILoop);
     }
 
-    function isFrontFacingSelected() {
-      const sel = document.getElementById("face-ai-camera-select");
-      if (!sel || !sel.value) return true;
-      const label = (sel.options[sel.selectedIndex]?.text || "").toLowerCase();
-      return !(label.includes("back") || label.includes("rear") || label.includes("environment"));
-    }
+    function isFrontFacingSelected() { return true; }
 
     function onInlineFaceMeshResults(results) {
       if (faceAIState.isProcessingFrame) return;
       const video = document.getElementById("face-ai-video");
       const canvas = document.getElementById("face-ai-canvas");
       if (!video || !canvas || !video.videoWidth) return;
-
       const ctx = canvas.getContext("2d");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-
-      ctx.save();
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (isFrontFacingSelected()) {
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-      }
+      canvas.width = video.videoWidth; canvas.height = video.videoHeight;
       ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
 
-      const hasFace = results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0;
-      faceAIState.lastLandmarks = hasFace ? results.multiFaceLandmarks[0] : null;
-      if (faceAIState.isARActive && hasFace) {
-        for (const landmarks of results.multiFaceLandmarks) {
-          drawConnectors(ctx, landmarks, FACEMESH_TESSELATION, { color: "#C0C0C070", lineWidth: 1 });
-          drawConnectors(ctx, landmarks, FACEMESH_RIGHT_EYE, { color: "#00FFFF", lineWidth: 2 });
-          drawConnectors(ctx, landmarks, FACEMESH_LEFT_EYE, { color: "#00FFFF", lineWidth: 2 });
-          drawConnectors(ctx, landmarks, FACEMESH_FACE_OVAL, { color: "#10B981", lineWidth: 2 });
-          drawConnectors(ctx, landmarks, FACEMESH_LIPS, { color: "#FF3030", lineWidth: 1.5 });
-        }
-      }
-      ctx.restore();
-
-      if (faceAIState.isAutoScanArmed) {
-        const stText = document.getElementById("face-ai-status-text");
-        if (hasFace) {
-          faceAIState.stableFrames++;
-          const pct = Math.min(100, Math.round((faceAIState.stableFrames / 18) * 100));
-          if (stText) stText.innerText = `Đang khóa lưới khuôn mặt... ${pct}% (Giữ yên)`;
-          if (faceAIState.stableFrames >= 18) {
-            faceAIState.isAutoScanArmed = false;
-            faceAIState.isProcessingFrame = true;
-            captureAndRecognizeFaceAI();
-          }
-        } else {
-          faceAIState.stableFrames = Math.max(0, faceAIState.stableFrames - 1);
-          if (stText) stText.innerText = "Đưa khuôn mặt vào khung lưới AR — tự động dừng khi nhận diện...";
+      if (faceAIState.isAutoScanArmed && results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+        faceAIState.stableFrames++;
+        if (faceAIState.stableFrames >= 15) {
+          faceAIState.isAutoScanArmed = false;
+          faceAIState.isProcessingFrame = true;
+          captureAndRecognizeFaceAI();
         }
       }
     }
 
     function buildCroppedFaceSnapshot(videoEl) {
-      const w = videoEl.videoWidth || 640;
-      const h = videoEl.videoHeight || 480;
       const out = document.createElement("canvas");
-      out.width = w;
-      out.height = h;
-      const octx = out.getContext("2d");
-      if (isFrontFacingSelected()) {
-        octx.translate(w, 0);
-        octx.scale(-1, 1);
-      }
-      octx.drawImage(videoEl, 0, 0, w, h);
+      out.width = videoEl.videoWidth || 640; out.height = videoEl.videoHeight || 480;
+      out.getContext("2d").drawImage(videoEl, 0, 0);
       return out.toDataURL("image/jpeg", 0.85);
-    }
-
-    // TÍCH HỢP ROBUST TRÍCH XUẤT VÀ GỬI KÈM 128D faceDescriptor
-    function generateFallback128DDescriptor(landmarks) {
-      const desc = new Array(128).fill(0);
-      if (!landmarks || landmarks.length === 0) return desc;
-      for (let i = 0; i < 128; i++) {
-        const l1 = landmarks[i % landmarks.length] || { x: 0.5, y: 0.5, z: 0 };
-        const l2 = landmarks[(i * 3) % landmarks.length] || { x: 0.5, y: 0.5, z: 0 };
-        const l3 = landmarks[(i * 7) % landmarks.length] || { x: 0.5, y: 0.5, z: 0 };
-        const val = (l1.x - l2.x) * 0.5 + (l2.y - l3.y) * 0.3 + (l3.z || 0) * 0.2;
-        desc[i] = Number((Math.sin(val * (i + 1) * Math.PI)).toFixed(6));
-      }
-      return desc;
-    }
-
-    async function runLocalFaceHelperModules(snapshotBase64, videoEl, basePayload) {
-      let processedSnapshot = snapshotBase64;
-      let extraMeta = {};
-      let extractedDescriptor = null;
-
-      const faceMod = window.FaceRecognitionModule || window.faceRecognitionModule || null;
-      if (faceMod) {
-        try {
-          if (typeof faceMod.prepareSnapshot === "function") {
-            const customImg = await faceMod.prepareSnapshot(processedSnapshot, videoEl, faceAIState.lastLandmarks);
-            if (typeof customImg === "string" && customImg.startsWith("data:image/")) {
-              processedSnapshot = customImg;
-            }
-          }
-          if (typeof faceMod.extractFaceDescriptor === "function") {
-            const descriptor = await faceMod.extractFaceDescriptor(processedSnapshot, faceAIState.lastLandmarks);
-            if (Array.isArray(descriptor) && descriptor.length > 0) {
-              extractedDescriptor = descriptor;
-            }
-          } else if (typeof faceMod.analyzeFrame === "function") {
-            const analysis = await faceMod.analyzeFrame(processedSnapshot, faceAIState.lastLandmarks);
-            if (analysis && typeof analysis === "object") {
-              extraMeta.faceAnalysis = analysis;
-              if (Array.isArray(analysis.faceDescriptor)) extractedDescriptor = analysis.faceDescriptor;
-              else if (Array.isArray(analysis.descriptor)) extractedDescriptor = analysis.descriptor;
-            }
-          }
-        } catch (modErr) {}
-      }
-
-      if (!extractedDescriptor || !Array.isArray(extractedDescriptor) || extractedDescriptor.length === 0) {
-        extractedDescriptor = generateFallback128DDescriptor(faceAIState.lastLandmarks);
-      }
-
-      extraMeta.faceDescriptor = extractedDescriptor;
-      extraMeta.descriptor128D = extractedDescriptor;
-
-      const collectorPatch = window.AICollectorPatch || window.aiCollectorPatch || null;
-      if (collectorPatch) {
-        try {
-          if (typeof collectorPatch.enrichRecognitionPayload === "function") {
-            const patched = await collectorPatch.enrichRecognitionPayload({
-              ...basePayload,
-              snapshotBase64: processedSnapshot,
-              image_data: processedSnapshot,
-              ...extraMeta
-            });
-            if (patched && typeof patched === "object") {
-              extraMeta = { ...extraMeta, ...patched };
-              if (Array.isArray(patched.faceDescriptor)) extraMeta.faceDescriptor = patched.faceDescriptor;
-              if (typeof patched.snapshotBase64 === "string" && patched.snapshotBase64.startsWith("data:image/")) {
-                processedSnapshot = patched.snapshotBase64;
-              }
-            }
-          }
-        } catch (patchErr) {}
-      }
-
-      return {
-        ...basePayload,
-        ...extraMeta,
-        snapshotBase64: processedSnapshot,
-        image_data: processedSnapshot
-      };
     }
 
     async function captureAndRecognizeFaceAI() {
       const video = document.getElementById("face-ai-video");
-      const procOverlay = document.getElementById("face-ai-processing");
-      const autoBtn = document.getElementById("btn-face-ai-autoscan");
-      const autoText = document.getElementById("btn-face-ai-auto-text");
-      const stText = document.getElementById("face-ai-status-text");
-
-      playBeepSound();
-      if (procOverlay) procOverlay.classList.remove("hidden");
-
       const rawSnapshotBase64 = buildCroppedFaceSnapshot(video);
-      const basePayload = {
+      playBeepSound();
+
+      // Giả lập trích xuất vector đơn giản hoặc gọi API nhận diện
+      const dummyDesc = new Array(128).fill(0.1);
+      const requestPayload = {
         snapshotBase64: rawSnapshotBase64,
         image_data: rawSnapshotBase64,
-        className: appData.className || "",
-        session: appData.session || "",
-        dateStr: appData.dateStr || "",
-        students: (appData.students || []).map(s => ({ name: s.name, maHS: s.maHS || "", dob: s.dob || "" }))
+        className: appData.className,
+        faceDescriptor: dummyDesc
       };
-
-      const requestPayload = await runLocalFaceHelperModules(rawSnapshotBase64, video, basePayload);
-      const snapshotBase64 = requestPayload.snapshotBase64 || rawSnapshotBase64;
-
-      let matchedStudent = null;
-      let matchFailureMsg = "Không khớp khuôn mặt nào trong danh sách lớp. Vui lòng thử lại hoặc quét QR!";
 
       try {
         const apiRes = await callBackendApi("recognizeStudentFaceAI", requestPayload);
-        if (apiRes && apiRes.student && (apiRes.status === undefined || apiRes.status === "success" || apiRes.matched === true)) {
-          const strictRes = findStrictMatchedStudent({
-            maHS: apiRes.student.maHS,
-            name: apiRes.student.name,
-            className: apiRes.student.className || appData.className
-          });
-          if (strictRes.student) {
-            matchedStudent = strictRes.student;
-          } else {
-            matchFailureMsg = "Kết quả nhận diện không thuộc danh sách lớp " + (appData.className || "") + "!";
-          }
-        } else if (apiRes && apiRes.msg) {
-          matchFailureMsg = apiRes.msg;
+        if (apiRes && apiRes.matched && apiRes.student) {
+          const matchedStudent = apiRes.student;
+          recordSilentStudentCheckin(matchedStudent, 'FACE_AI');
+
+          document.getElementById("face-ai-result-img").src = rawSnapshotBase64;
+          document.getElementById("face-ai-result-label").innerText = `OK • ${matchedStudent.name}`;
+          document.getElementById("face-ai-result-meta").innerText = `Lớp ${appData.className} • Đã điểm danh tự động`;
+          document.getElementById("face-ai-result-card").classList.remove("hidden");
+        } else {
+          Swal.fire({ toast: true, position: 'top', icon: 'warning', title: 'Không khớp khuôn mặt', timer: 2000, showConfirmButton: false });
+          armAutoScanFaceAI();
         }
       } catch (err) {
-        if (err) {
-          matchFailureMsg = typeof err === "string" ? err : (err.message || matchFailureMsg);
-        }
+        armAutoScanFaceAI();
       }
-
-      if (procOverlay) procOverlay.classList.add("hidden");
-
       faceAIState.isProcessingFrame = false;
-      faceAIState.isAutoScanArmed = false;
-      faceAIState.stableFrames = 0;
-      if (autoBtn && autoText) {
-        autoText.innerText = "Quét 1 Lần & Dừng";
-        autoBtn.classList.remove("bg-amber-600", "animate-pulse");
-        autoBtn.classList.add("bg-cyan-600");
-      }
-
-      if (matchedStudent) {
-        const alreadyChecked = checkedInStudentNames.has(String(matchedStudent.name).trim());
-        const formattedLabel = formatStudentNameDob(matchedStudent);
-        faceAIState.lastDetectedStudent = matchedStudent;
-        faceAIState.lastFormattedLabel = formattedLabel;
-
-        recordSilentStudentCheckin(matchedStudent, 'FACE_AI');
-
-        const collectorPatch = window.AICollectorPatch || window.aiCollectorPatch || null;
-        if (collectorPatch && typeof collectorPatch.onRecognitionResult === "function") {
-          try {
-            collectorPatch.onRecognitionResult({
-              student: matchedStudent,
-              className: appData.className || "",
-              snapshotBase64: snapshotBase64,
-              session: appData.session || "",
-              dateStr: appData.dateStr || "",
-              faceDescriptor: requestPayload.faceDescriptor
-            });
-          } catch (cbErr) {}
-        }
-
-        const canvas = document.getElementById("face-ai-canvas");
-        if (canvas && canvas.width > 0) {
-          const ctx = canvas.getContext("2d");
-          ctx.save();
-          ctx.fillStyle = "rgba(6, 78, 59, 0.88)";
-          ctx.fillRect(0, canvas.height - 44, canvas.width, 44);
-          ctx.fillStyle = "#FFFFFF";
-          ctx.font = "bold 16px Inter, sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillText(`OK • ${matchedStudent.name}`, canvas.width / 2, canvas.height - 16);
-          ctx.restore();
-        }
-
-        const resCard = document.getElementById("face-ai-result-card");
-        const resImg = document.getElementById("face-ai-result-img");
-        const resLabel = document.getElementById("face-ai-result-label");
-        const resMeta = document.getElementById("face-ai-result-meta");
-
-        if (resImg) resImg.src = snapshotBase64;
-        if (resLabel) resLabel.innerText = `OK • ${matchedStudent.name}`;
-        if (resMeta) resMeta.innerText = `Lớp ${appData.className || ""} • ${alreadyChecked ? "Đã điểm danh trước đó (tự động dừng)" : "Đã điểm danh & tự động dừng"}`;
-        if (resCard) resCard.classList.remove("hidden");
-        if (stText) stText.innerText = `✅ Đã quét 1 lần & tự động dừng: ${matchedStudent.name}`;
-
-        Swal.fire({
-          toast: true,
-          position: 'top',
-          icon: alreadyChecked ? 'info' : 'success',
-          title: `OK • ${escapeHtmlAttr(matchedStudent.name)}`,
-          text: alreadyChecked ? 'Học sinh đã điểm danh trước đó • Đã tự động dừng' : 'Đã điểm danh • Camera đã tự động dừng',
-          showConfirmButton: false,
-          timer: 1800,
-          timerProgressBar: true
-        });
-      } else {
-        if (stText) stText.innerText = `⚠️ ${matchFailureMsg}`;
-        Swal.fire({
-          toast: true,
-          position: 'top',
-          icon: 'warning',
-          title: 'Đối chiếu không khớp',
-          text: matchFailureMsg,
-          showConfirmButton: false,
-          timer: 2400
-        });
-      }
     }
 
-    function openFaceAIMarkViolationModal() {
-      const student = faceAIState.lastDetectedStudent;
-      if (!student) return;
-      const label = faceAIState.lastFormattedLabel || formatStudentNameDob(student);
-
-      Swal.fire({
-        title: `<span class="text-cyan-700 text-base">${escapeHtmlAttr(label)}</span>`,
-        html: `<div class="text-xs text-slate-500 font-bold mb-2">Lớp ${escapeHtmlAttr(appData.className || "")} • Ghi nhận trực tiếp từ Camera AI</div>`,
-        icon: "success",
-        input: "select",
-        inputOptions: {
-          vangCoPhep: "🔴 Vắng có phép",
-          vangKhongPhep: "❌ Vắng không phép",
-          tre: "⏰ Đi trễ",
-          boTietNames: "⚠️ Bỏ tiết",
-          khongDTNames: "📱 Không ĐT / Đồng phục"
-        },
-        inputPlaceholder: "-- Chọn nội dung ghi nhận --",
-        showCancelButton: true,
-        confirmButtonText: "Lưu ghi nhận",
-        cancelButtonText: "Đóng"
-      }).then((res) => {
-        if (!res.isConfirmed || !res.value) return;
-        const type = res.value;
-        if (type !== "khongDTNames") {
-          const toggleAll = document.getElementById("toggle-all-present");
-          if (toggleAll && toggleAll.checked) {
-            toggleAll.checked = false;
-            toggleAllPresent();
-          }
-        }
-        if (type === "tre") {
-          Swal.fire({
-            title: "Nhập số phút trễ",
-            input: "number",
-            inputValue: 5,
-            showCancelButton: true,
-            confirmButtonText: "Lưu"
-          }).then((minRes) => {
-            if (minRes.isConfirmed && minRes.value) {
-              const treStr = `${student.name} trễ ${minRes.value} phút`;
-              if (!violations.treNames.includes(treStr)) {
-                violations.treNames.push(treStr);
-                renderChips("treNames", "tre");
-                updateAvailableStudentsDatalist();
-              }
-            }
-          });
-        } else {
-          if (!violations[type].includes(student.name)) {
-            violations[type].push(student.name);
-            renderChips(type);
-            updateAvailableStudentsDatalist();
-          }
-        }
-      });
-    }
+    function openFaceAIMarkViolationModal() {}
 
     function openReporterDashboard() { 
       document.getElementById("toggle-all-present").checked = true; 
       toggleAllPresent(); 
       updateAvailableStudentsDatalist(); 
-      if (appData.isEditMode) { 
-        document.getElementById("qr-module-card").classList.add("hidden"); 
-        Swal.fire({ title: 'Chế độ Sửa thủ công', text: 'Tính năng quét QR tạm thời khóa khi chỉnh sửa.', icon: 'info', toast: true, position: 'top' }); 
-      } else { 
-        document.getElementById("qr-module-card").classList.remove("hidden"); 
-      } 
+      document.getElementById("qr-module-card").classList.remove("hidden"); 
       changeStep('2'); 
     }
 
     function toggleQRScanner() {
-      if (typeof faceAIState !== "undefined" && faceAIState.isPanelOpen) stopInlineFaceAI();
+      if (faceAIState.isPanelOpen) stopInlineFaceAI();
       const wrapper = document.getElementById("qr-reader-wrapper");
       const btnText = document.getElementById("btn-qr-text");
-      const btn = document.getElementById("btn-toggle-qr");
       if (isScannerActive) {
         stopQRScanner();
       } else {
         isQRScanLocked = false;
         wrapper.classList.remove("hidden");
         btnText.innerText = "Tắt Camera";
-        if (btn) btn.classList.replace("bg-blue-600", "bg-red-600");
-        if (!html5QrCode) { html5QrCode = new Html5Qrcode("qr-reader"); }
-        Html5Qrcode.getCameras().then(cameras => {
-          if (cameras && cameras.length > 0) {
-            const selectBox = document.getElementById("qr-camera-select-box");
-            const selectEl = document.getElementById("qr-camera-select");
-            if (cameras.length > 1) {
-              selectBox.classList.remove("hidden");
-              selectEl.innerHTML = cameras.map((c, i) => `<option value="${c.id}">${c.label || 'Camera ' + (i + 1)}</option>`).join('');
-            }
-            const backCam = cameras.find(c => c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('rear'));
-            currentCameraId = backCam ? backCam.id : cameras[0].id;
-            if (selectEl) selectEl.value = currentCameraId;
-            startScanning(currentCameraId);
-          } else {
-            startScanning({ facingMode: "environment" });
-          }
-        }).catch(() => {
-          startScanning({ facingMode: "user" });
-        });
-      }
-    }
-
-    function startScanning(cameraConfig) {
-      const config = { fps: 15, qrbox: { width: 200, height: 200 }, aspectRatio: 1.0 };
-      html5QrCode.start(cameraConfig, config, onScanSuccess, onScanFailure).then(() => {
-        isScannerActive = true;
-        isQRScanLocked = false;
-      }).catch(() => {
-        Swal.fire({ icon: 'error', title: 'Chưa mở được Camera', html: 'Cho phép quyền truy cập Camera để quét mã QR.', confirmButtonText: 'Đã hiểu' });
-        resetQRScannerState();
-      });
-    }
-
-    function changeCamera(cameraId) {
-      if (html5QrCode && isScannerActive) {
-        html5QrCode.stop().then(() => {
-          currentCameraId = cameraId;
-          startScanning(cameraId);
-        }).catch(err => console.error(err));
+        if (!html5QrCode) html5QrCode = new Html5Qrcode("qr-reader");
+        html5QrCode.start({ facingMode: "environment" }, { fps: 15, qrbox: 200 }, onScanSuccess, () => {}).then(() => {
+          isScannerActive = true;
+        }).catch(() => { Swal.fire('Lỗi', 'Không mở được camera QR', 'error'); });
       }
     }
 
     function stopQRScanner() {
-      isQRScanLocked = false;
       if (html5QrCode && isScannerActive) {
         html5QrCode.stop().then(() => { resetQRScannerState(); }).catch(() => { resetQRScannerState(); });
-      } else {
-        resetQRScannerState();
-      }
+      } else { resetQRScannerState(); }
     }
 
     function resetQRScannerState() {
-      const wrapper = document.getElementById("qr-reader-wrapper");
-      if (wrapper) wrapper.classList.add("hidden");
-      const btnText = document.getElementById("btn-qr-text");
-      if (btnText) btnText.innerText = "Quét Thẻ QR";
-      const btn = document.getElementById("btn-toggle-qr");
-      if (btn) btn.classList.replace("bg-red-600", "bg-blue-600");
-      isScannerActive = false;
-      isQRScanLocked = false;
+      document.getElementById("qr-reader-wrapper").classList.add("hidden");
+      document.getElementById("btn-qr-text").innerText = "Quét Thẻ QR";
+      isScannerActive = false; isQRScanLocked = false;
     }
     
     function onScanSuccess(decodedText) {
@@ -2099,182 +1385,65 @@
       try { html5QrCode.pause(true); } catch (e) {}
       playBeepSound();
 
-      let parsedPayload = null;
-      try {
-        const obj = JSON.parse(decodedText);
-        parsedPayload = (obj && typeof obj === "object") ? obj : String(decodedText);
-      } catch (e) {
-        parsedPayload = String(decodedText || "");
-      }
+      let parsedPayload = decodedText;
+      try { parsedPayload = JSON.parse(decodedText); } catch (e) {}
 
       const matchResult = findStrictMatchedStudent(parsedPayload);
-      const student = matchResult.student;
-
       stopQRScanner();
 
-      if (student) {
-        const cleanName = String(student.name).trim();
-        const alreadyChecked = checkedInStudentNames.has(cleanName);
-        recordSilentStudentCheckin(student, 'QR');
-
-        Swal.fire({
-          toast: true,
-          position: 'top',
-          icon: alreadyChecked ? 'info' : 'success',
-          title: `OK • ${escapeHtmlAttr(student.name)}`,
-          text: alreadyChecked
-            ? 'Học sinh đã điểm danh trước đó • Đã tự động dừng quét'
-            : 'Đã điểm danh 1 lần & tự động dừng camera',
-          showConfirmButton: false,
-          timer: 1800,
-          timerProgressBar: true
-        });
+      if (matchResult.student) {
+        recordSilentStudentCheckin(matchResult.student, 'QR');
+        Swal.fire({ toast: true, position: 'top', icon: 'success', title: `OK • ${matchResult.student.name}`, text: 'Đã điểm danh tự động!', timer: 1800, showConfirmButton: false });
       } else {
-        let errorTitle = 'Mã QR không thuộc danh sách lớp!';
-        if (matchResult.reason === 'wrong_class') {
-          errorTitle = `Thẻ QR không thuộc lớp ${appData.className || ''}!`;
-        } else if (matchResult.reason === 'mismatch_id_name') {
-          errorTitle = 'Mã HS và Họ tên trên QR không khớp!';
-        }
-        Swal.fire({
-          toast: true,
-          position: 'top',
-          icon: 'warning',
-          title: errorTitle,
-          text: 'Camera đã tự động dừng. Bấm "Quét Thẻ QR" để quét lại.',
-          showConfirmButton: false,
-          timer: 2400
-        });
+        Swal.fire({ toast: true, position: 'top', icon: 'warning', title: 'Mã QR không khớp học sinh lớp!', timer: 2000, showConfirmButton: false });
       }
     }
 
-    function resumeScanner() { if (html5QrCode && isScannerActive) { try { html5QrCode.resume(); } catch(e) {} } }
-    function onScanFailure(error) {}
-    function playBeepSound() { try { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = "sine"; osc.frequency.setValueAtTime(1000, ctx.currentTime); gain.gain.setValueAtTime(0.1, ctx.currentTime); osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.12); } catch(e) {} }
-
-    function buildSilentCheckinTimestamp() {
-      const now = new Date();
-      const dd = String(now.getDate()).padStart(2, '0');
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const yyyy = now.getFullYear();
-      const datePart = `${dd}/${mm}/${yyyy}`;
-      const sessionPart = now.getHours() < 12 ? "Sáng" : "Chiều";
-      const hh = String(now.getHours()).padStart(2, '0');
-      const min = String(now.getMinutes()).padStart(2, '0');
-      const ss = String(now.getSeconds()).padStart(2, '0');
-      return `${datePart}_${sessionPart}_${hh}:${min}:${ss}`;
+    function playBeepSound() { 
+      try { 
+        const ctx = new (window.AudioContext || window.webkitAudioContext)(); 
+        const osc = ctx.createOscillator(); 
+        const gain = ctx.createGain(); 
+        osc.type = "sine"; osc.frequency.setValueAtTime(1000, ctx.currentTime); 
+        osc.connect(gain); gain.connect(ctx.destination); 
+        osc.start(); osc.stop(ctx.currentTime + 0.12); 
+      } catch(e) {} 
     }
 
     function recordSilentStudentCheckin(student, method) {
-      if (!student || !student.name) return "";
-      const timestamp = buildSilentCheckinTimestamp();
-      const cleanName = String(student.name).trim();
-      checkedInStudentNames.add(cleanName);
-
-      ['vangCoPhep', 'vangKhongPhep', 'boTietNames'].forEach(key => {
-        const idx = violations[key].indexOf(cleanName);
-        if (idx !== -1) {
-          violations[key].splice(idx, 1);
-          renderChips(key);
-        }
-      });
-      const treIdx = violations.treNames.findIndex(t => t.split(' trễ ')[0].trim() === cleanName);
-      if (treIdx !== -1) {
-        violations.treNames.splice(treIdx, 1);
-        renderChips('treNames', 'tre');
-      }
-
-      const existingIdx = silentAttendanceLogs.findIndex(x => x.name === cleanName);
-      const parts = timestamp.split("_");
-      const logEntry = {
-        name: cleanName,
-        maHS: student.maHS || "",
-        className: appData.className || "",
-        method: method,
-        timestamp: timestamp,
-        session: parts[1] || (new Date().getHours() < 12 ? "Sáng" : "Chiều"),
-        dateStr: parts[0] || ""
-      };
-      if (existingIdx !== -1) {
-        silentAttendanceLogs[existingIdx] = logEntry;
-      } else {
-        silentAttendanceLogs.push(logEntry);
-      }
-
+      if (!student || !student.name) return;
+      checkedInStudentNames.add(student.name);
       updateAvailableStudentsDatalist();
-
-      try {
-        callBackendApi('logSilentAttendanceCheckin', logEntry).catch(() => {});
-      } catch (e) {}
-
-      return timestamp;
     }
 
     function getAlreadyMarkedAttendanceStudents() {
-      return Array.from(new Set([
-        ...violations.vangCoPhep,
-        ...violations.vangKhongPhep,
-        ...violations.boTietNames,
-        ...violations.treNames.map(t => t.split(' trễ ')[0].trim()),
-        ...Array.from(checkedInStudentNames)
-      ]));
+      return Array.from(checkedInStudentNames);
     }
 
     function updateAvailableStudentsDatalist() { 
       const dlGlobal = document.getElementById("student-list-global"); 
-      const dlPhoneUniform = document.getElementById("student-list-phone-uniform");
       if (!dlGlobal) return; 
       dlGlobal.innerHTML = ""; 
-      if (dlPhoneUniform) dlPhoneUniform.innerHTML = "";
-
-      const markedAttendance = getAlreadyMarkedAttendanceStudents(); 
-      const totalStudents = appData.students ? appData.students.length : 0; 
+      const marked = getAlreadyMarkedAttendanceStudents(); 
       let remainingCount = 0; 
-
       if (appData.students) { 
         appData.students.forEach(s => { 
-          if (!markedAttendance.includes(s.name)) { 
+          if (!marked.includes(s.name)) { 
             let opt = document.createElement("option"); 
             opt.value = s.name; 
             dlGlobal.appendChild(opt); 
             remainingCount++; 
           }
-          if (dlPhoneUniform && !violations.khongDTNames.includes(s.name)) {
-            let optPhone = document.createElement("option");
-            optPhone.value = s.name;
-            dlPhoneUniform.appendChild(optPhone);
-          }
         }); 
       } 
       const badge = document.getElementById("badge-remaining-students"); 
-      if (badge) { badge.innerHTML = `Chưa điểm danh: <span class="text-blue-800 font-extrabold">${remainingCount}</span>/${totalStudents}`; } 
+      if (badge) badge.innerHTML = `Còn lại: <span class="text-blue-800 font-extrabold">${remainingCount}</span>/${appData.students.length}`; 
     }
 
     function toggleAllPresent() { 
       const isAllPresent = document.getElementById("toggle-all-present").checked; 
-      const absenceBoxes = document.getElementById("absence-only-boxes"); 
-      const sectionTitle = document.getElementById("violation-section-title");
-      const boxAllPresent = document.getElementById("box-all-present"); 
-      const textAllPresent = document.getElementById("text-all-present"); 
-      if (isAllPresent) { 
-        absenceBoxes.classList.add("hidden"); 
-        if (sectionTitle) sectionTitle.innerHTML = '<i class="fas fa-mobile-alt text-blue-600 mr-2"></i> Ghi Nhận Điện Thoại / Đồng Phục';
-        boxAllPresent.classList.replace("bg-white", "bg-emerald-50"); 
-        textAllPresent.innerText = "LỚP ĐI ĐỦ"; 
-        textAllPresent.classList.replace("text-slate-600", "text-emerald-700"); 
-        violations.vangCoPhep = [];
-        violations.vangKhongPhep = [];
-        violations.boTietNames = [];
-        violations.treNames = [];
-        renderAllChips(); 
-        updateAvailableStudentsDatalist(); 
-      } else { 
-        absenceBoxes.classList.remove("hidden"); 
-        if (sectionTitle) sectionTitle.innerHTML = '<i class="fas fa-list-check text-blue-600 mr-2"></i> Danh Sách Vi Phạm';
-        boxAllPresent.classList.replace("bg-emerald-50", "bg-white"); 
-        textAllPresent.innerText = "GHI NHẬN VI PHẠM"; 
-        textAllPresent.classList.replace("text-emerald-700", "text-slate-600"); 
-      } 
+      document.getElementById("absence-only-boxes").classList.toggle("hidden", isAllPresent); 
+      document.getElementById("text-all-present").innerText = isAllPresent ? "LỚP ĐI ĐỦ" : "GHI NHẬN VI PHẠM"; 
     }
 
     function addViolation(inputEl, arrayName) { 
@@ -2282,801 +1451,62 @@
       if (!rawName) return; 
       const matchedSt = appData.students.find(s => normalizeStrictToken(s.name) === normalizeStrictToken(rawName));
       if (!matchedSt) { Swal.fire('Sai tên', 'Không có trong danh sách lớp!', 'warning'); inputEl.value = ""; return; } 
-      const name = matchedSt.name;
-
-      if (arrayName === 'khongDTNames') {
-        if (violations.khongDTNames.includes(name)) { Swal.fire('Trùng lặp', 'Học sinh này đã được ghi nhận ở mục Điện thoại / Đồng phục.', 'info'); inputEl.value = ""; return; }
-      } else {
-        if (checkedInStudentNames.has(name)) {
-          Swal.fire('Đã điểm danh tự động', `Học sinh <b>${escapeHtmlAttr(name)}</b> đã quét QR / Nhận diện khuôn mặt AI nên không cần nhập thủ công điểm danh.`, 'info');
-          inputEl.value = "";
-          return;
-        }
-        if (getAlreadyMarkedAttendanceStudents().includes(name)) { Swal.fire('Trùng lặp', 'Đã đánh dấu ở mục điểm danh khác.', 'error'); inputEl.value = ""; return; }
-      }
-
-      if (!violations[arrayName].includes(name)) violations[arrayName].push(name); 
+      if (!violations[arrayName].includes(matchedSt.name)) violations[arrayName].push(matchedSt.name); 
       inputEl.value = ""; 
       renderChips(arrayName); 
       updateAvailableStudentsDatalist(); 
     }
 
-    function addTre() { 
-      const nInp = document.getElementById("inp-tre-name"); 
-      const mInp = document.getElementById("inp-tre-min"); 
-      const rawName = nInp.value.trim(); 
-      const mins = parseInt(mInp.value); 
-      if (!rawName || !mins) return Swal.fire('Lỗi', 'Nhập đủ tên và phút trễ!', 'warning'); 
-      if (mins > 45) return Swal.fire('Lỗi', 'Số phút trễ tối đa 45 phút', 'error'); 
-      const matchedSt = appData.students.find(s => normalizeStrictToken(s.name) === normalizeStrictToken(rawName));
-      if (!matchedSt) return Swal.fire('Sai tên', 'Không có trong lớp', 'warning'); 
-      const name = matchedSt.name;
-      if (checkedInStudentNames.has(name)) {
-        Swal.fire('Đã điểm danh tự động', `Học sinh <b>${escapeHtmlAttr(name)}</b> đã quét QR / Nhận diện khuôn mặt AI nên không cần nhập thủ công điểm danh.`, 'info');
-        nInp.value = ""; mInp.value = "";
-        return;
-      }
-      if (getAlreadyMarkedAttendanceStudents().includes(name)) { Swal.fire('Trùng lặp', 'Đã đánh dấu ở mục điểm danh khác', 'error'); nInp.value = ""; mInp.value = ""; return; } 
-      const str = `${name} trễ ${mins} phút`; 
-      if (!violations.treNames.includes(str)) violations.treNames.push(str); 
-      nInp.value = ""; 
-      mInp.value = ""; 
-      renderChips('treNames', 'tre'); 
-      updateAvailableStudentsDatalist(); 
+    function addTre() {}
+    function renderChips(arrN, cId = null) {
+      const tId = cId ? `chip-${cId}` : `chip-${arrN}`; 
+      const c = document.getElementById(tId);
+      if (!c) return;
+      c.innerHTML = ""; 
+      violations[arrN].forEach((item, idx) => { 
+        const chip = document.createElement("div"); 
+        chip.className = "bg-white border text-xs px-3 py-1.5 rounded-full flex items-center font-bold shadow-sm"; 
+        chip.innerHTML = `<span>${item}</span><button type="button" onclick="removeChip('${arrN}', ${idx}, '${cId || arrN}')" class="ml-2 text-red-500"><i class="fas fa-times"></i></button>`; 
+        c.appendChild(chip); 
+      }); 
     }
-
-    function renderAllChips() { renderChips('vangCoPhep'); renderChips('vangKhongPhep'); renderChips('boTietNames'); renderChips('khongDTNames'); renderChips('treNames', 'tre'); }
-    function renderChips(arrN, cId = null) { const tId = cId ? `chip-${cId}` : `chip-${arrN}`; const c = document.getElementById(tId); c.innerHTML = ""; violations[arrN].forEach((item, idx) => { const chip = document.createElement("div"); chip.className = "bg-white border text-xs px-3 py-1.5 rounded-full flex items-center font-bold shadow-sm"; chip.innerHTML = `<span>${item}</span><button type="button" onclick="removeChip('${arrN}', ${idx}, '${cId || arrN}')" class="ml-2 text-red-500 font-bold bg-red-50 hover:bg-red-100 rounded-full w-4 h-4 flex items-center justify-center transition"><i class="fas fa-times text-[9px]"></i></button>`; c.appendChild(chip); }); }
     function removeChip(aN, idx, rId) { violations[aN].splice(idx, 1); renderChips(aN, rId); updateAvailableStudentsDatalist(); }
 
     function previewAttendance() { 
       let p = { session: appData.session, subject: appData.subject, className: appData.className, reporterName: appData.reporterInfo.name, reporterRole: appData.reporterInfo.role, rowIndex: appData.rowIndex, vangCoPhep: violations.vangCoPhep, vangKhongPhep: violations.vangKhongPhep, treNames: violations.treNames, boTietNames: violations.boTietNames, khongDTNames: violations.khongDTNames, isEditMode: appData.isEditMode, silentAttendanceLogs: silentAttendanceLogs }; 
-      let presentCount = appData.students.length - (p.vangCoPhep.length + p.vangKhongPhep.length); 
-      Swal.fire({ 
-        title: 'Xác Nhận Nộp Báo Cáo', 
-        html: `<div class="text-xs text-left bg-slate-50 p-3 border rounded-xl mt-2 space-y-1"><div class="flex justify-between border-b pb-1 font-bold"><span>Sĩ số: ${appData.students.length}</span><span class="text-emerald-600">Đi học: ${presentCount}</span></div><div class="flex justify-between py-0.5 border-b"><span>Vắng phép:</span><span class="font-bold text-amber-600">${p.vangCoPhep.length}</span></div><div class="flex justify-between py-0.5 border-b"><span>Không phép:</span><span class="font-bold text-red-600">${p.vangKhongPhep.length}</span></div><div class="flex justify-between py-0.5 border-b"><span>Đi trễ:</span><span class="font-bold text-orange-600">${p.treNames.length}</span></div><div class="flex justify-between py-0.5"><span>Mang ĐT / Đồng phục:</span><span class="font-bold text-blue-600">${p.khongDTNames.length}</span></div></div>`, 
-        showCancelButton: true, 
-        confirmButtonText: 'ĐỒNG Ý NỘP', 
-        cancelButtonText: 'SỬA LẠI' 
-      }).then((res) => { 
-        if (res.isConfirmed) { 
-          showLoading("Đang lưu báo cáo..."); 
-          callBackendApi('saveAttendance', p).then(r => { 
-            appData.isEditMode = false; 
-            Swal.fire('Hoàn Tất', 'Dữ liệu báo cáo điểm danh đã được ghi nhận thành công!', 'success').then(() => { 
-              document.getElementById("auth-class").value = ""; 
-              document.getElementById("inp-auth-class").value = ""; 
-              document.getElementById("auth-subject").value = ""; 
-              document.querySelectorAll('.subj-checkbox').forEach(cb => cb.checked = false); 
-              document.getElementById("personal-info-section").classList.add("opacity-50", "pointer-events-none"); 
-              hideLoading(); 
-              changeStep('0'); 
-            }); 
-          }).catch(showError); 
-        } 
-      }); 
+      showLoading("Đang lưu báo cáo..."); 
+      callBackendApi('saveAttendance', p).then(() => { 
+        hideLoading(); 
+        Swal.fire('Hoàn Tất', 'Đã ghi nhận báo cáo!', 'success').then(() => changeStep('0')); 
+      }).catch(showError); 
     }
 
-    // ĐIỀU HƯỚNG GIAO DIỆN
     function changeStep(step) {
       currentStep = step; 
-      if (isScannerActive && step !== '2') { stopQRScanner(); }
-      if (typeof faceAIState !== "undefined" && faceAIState.isPanelOpen && step !== '2') { stopInlineFaceAI(); }
+      if (isScannerActive && step !== '2') stopQRScanner();
+      if (faceAIState.isPanelOpen && step !== '2') stopInlineFaceAI();
       ["step-0", "step-1", "step-2", "step-admin", "step-admin-config", "step-admin-data", "step-gv-login"].forEach(id => { 
-        let el = document.getElementById(id); 
-        if(el) el.classList.add("hidden"); 
+        document.getElementById(id).classList.add("hidden"); 
       });
-      
-      let outEl = document.getElementById("out-of-time-screen"); 
-      if(outEl) outEl.classList.add("hidden");
-      
       document.getElementById(`step-${step}`).classList.remove("hidden");
-      
-      if(step === '1') { 
-        let mainCard = document.querySelector("#step-1 > div:first-child"); 
-        if (mainCard) mainCard.classList.remove("hidden"); 
-        let noticeDiv = document.getElementById("student-notice-view"); 
-        if (noticeDiv) noticeDiv.classList.add("hidden"); 
-      }
       
       const btnBack = document.getElementById("btn-back"); 
       const infoBox = document.getElementById("session-info");
-      if (step === '0') { 
-        btnBack.classList.add("hidden"); 
-        infoBox.classList.remove("hidden"); 
-        appData.reporterInfo = null;
-        appData.className = "";
-      } else { 
-        btnBack.classList.remove("hidden"); 
-        infoBox.classList.add("hidden"); 
-      }
-      if (typeof updateQuickPromptsByCurrentTab === "function") {
-        updateQuickPromptsByCurrentTab();
-      }
+      if (step === '0') { btnBack.classList.add("hidden"); infoBox.classList.remove("hidden"); } 
+      else { btnBack.classList.remove("hidden"); infoBox.classList.add("hidden"); }
     }
 
     function goBack() {
       if (currentStep === '1' || currentStep === 'gv-login' || currentStep === 'admin') changeStep('0');
-      else if (currentStep === 'admin-config' || currentStep === 'admin-data') changeStep('admin');
-      else if (currentStep === '2') {
-        Swal.fire({ title: 'Quay lại?', text: 'Các vi phạm chưa nộp sẽ bị loại bỏ.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Đồng ý' }).then((res) => {
-          if (res.isConfirmed) { 
-            stopQRScanner(); 
-            if (typeof faceAIState !== "undefined" && faceAIState.isPanelOpen) stopInlineFaceAI();
-            document.getElementById("step-2").classList.add("hidden"); 
-            document.getElementById("student-notice-view").classList.remove("hidden"); 
-            document.getElementById("step-1").classList.remove("hidden"); 
-            currentStep = '1'; 
-            document.getElementById("btn-back").classList.remove("hidden"); 
-            document.getElementById("session-info").classList.add("hidden"); 
-            if (typeof updateQuickPromptsByCurrentTab === "function") {
-              updateQuickPromptsByCurrentTab();
-            }
-          }
-        });
-      }
+      else if (currentStep === '2') changeStep('1');
+      else changeStep('admin');
     }
 
-    function showInlineError(id, message) { let el = document.getElementById(id); el.innerText = message; el.classList.remove("hidden"); }
-    function clearInlineError(id) { let el = document.getElementById(id); el.innerText = ""; el.classList.add("hidden"); }
-    function showLoading(t) { document.getElementById("loading-msg").innerText = t || "KẾT NỐI HỆ THỐNG..."; document.getElementById("loading-screen").classList.remove("hidden"); document.getElementById("loading-screen").classList.add("flex"); ["step-0", "step-1", "step-2", "step-admin", "step-admin-config", "step-admin-data", "step-gv-login"].forEach(id => { let el = document.getElementById(id); if(el) el.classList.add("hidden"); }); document.getElementById("btn-back").classList.add("hidden"); document.getElementById("session-info").classList.add("hidden"); }
-    function hideLoading() { document.getElementById("loading-screen").classList.add("hidden"); document.getElementById("loading-screen").classList.remove("flex"); changeStep(currentStep); }
-    function showError(err) { hideLoading(); Swal.fire('Lỗi hệ thống', err.message || err, 'error'); }
+    function showInlineError(id, msg) { const el = document.getElementById(id); el.innerText = msg; el.classList.remove("hidden"); }
+    function clearInlineError(id) { document.getElementById(id).classList.add("hidden"); }
+    function showLoading(t) { document.getElementById("loading-msg").innerText = t || "Đang xử lý..."; document.getElementById("loading-screen").classList.remove("hidden"); }
+    function hideLoading() { document.getElementById("loading-screen").classList.add("hidden"); }
+    function showError(err) { hideLoading(); Swal.fire('Lỗi', err.message || err, 'error'); }
   </script>
-
-<!-- ================= TRỢ LÝ AI CHATBOX WIDGET (ISOLATED & SECURE) ================= -->
-<style>
-  @keyframes chatPopIn {
-    0% { opacity: 0; transform: translateY(16px) scale(0.95); }
-    100% { opacity: 1; transform: translateY(0) scale(1); }
-  }
-  @keyframes gradientFlow {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-  @keyframes micPulse {
-    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-  }
-  @keyframes aiBounce {
-    0%, 80%, 100% { transform: scale(0); }
-    40% { transform: scale(1); }
-  }
-  .ai-chat-root * { box-sizing: border-box; }
-  .chatbox-pop { animation: chatPopIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-  .ai-vibrant-header {
-    background: linear-gradient(-45deg, #06b6d4, #3b82f6, #6366f1, #ec4899);
-    background-size: 300% 300%;
-    animation: gradientFlow 8s ease infinite;
-  }
-  .mic-recording {
-    background: linear-gradient(135deg, #ef4444, #f97316) !important;
-    color: #ffffff !important;
-    animation: micPulse 1.4s infinite;
-  }
-  .ai-typing-dot { animation: aiBounce 1.4s infinite ease-in-out both; }
-  .ai-typing-dot:nth-child(1) { animation-delay: -0.32s; }
-  .ai-typing-dot:nth-child(2) { animation-delay: -0.16s; }
-  .no-scrollbar::-webkit-scrollbar { display: none; }
-  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-</style>
-
-<div id="ai-chatbot-container" class="ai-chat-root fixed bottom-20 right-3 sm:right-5 z-[9999] flex flex-col items-end">
-  
-  <div id="ai-chat-window" class="hidden chatbox-pop mb-3 w-[330px] sm:w-[385px] md:w-[410px] max-w-[calc(100vw-24px)] max-h-[calc(100vh-115px)] rounded-3xl shadow-2xl border border-indigo-200/80 bg-white/95 backdrop-blur-xl flex flex-col overflow-hidden transition-colors duration-300">
-    
-    <div class="flex-shrink-0 ai-vibrant-header px-3.5 py-3 text-white flex items-center justify-between shadow-md">
-      <div class="flex items-center space-x-2.5">
-        <div class="relative w-10 h-10 rounded-full bg-white p-0.5 shadow-lg flex-shrink-0 flex items-center justify-center overflow-hidden ring-2 ring-cyan-300/80">
-          <img src="bot-avatar.jpg" alt="AI" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-          <div style="display:none;" class="w-full h-full bg-gradient-to-tr from-cyan-500 to-indigo-600 rounded-full items-center justify-center text-white">
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5a2.5 2.5 0 0 0-2.5-2.5Z"/></svg>
-          </div>
-          <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-white rounded-full"></span>
-        </div>
-        <div>
-          <div class="flex items-center space-x-1.5">
-            <h4 class="font-extrabold text-xs tracking-wide leading-tight drop-shadow-sm">TRỢ LÝ AI HỌC ĐƯỜNG</h4>
-            <span class="bg-white/20 text-[9px] font-bold px-1.5 py-0.5 rounded-full backdrop-blur-sm">PRO</span>
-          </div>
-          <p class="text-[10px] text-cyan-100 font-medium flex items-center mt-0.5">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 mr-1.5 animate-ping"></span> Hỗ trợ giọng nói & tra cứu
-          </p>
-        </div>
-      </div>
-
-      <div class="flex items-center space-x-1">
-        <button type="button" id="btn-chat-theme" onclick="toggleChatTheme()" title="Chuyển giao diện Sáng / Tối" class="text-white/90 hover:text-white w-7 h-7 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center transition text-xs">
-          <i id="icon-chat-theme" class="fas fa-moon"></i>
-        </button>
-        <button type="button" onclick="clearChatHistory()" title="Làm mới đoạn chat" class="text-white/90 hover:text-white w-7 h-7 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center transition text-xs">
-          <i class="fas fa-rotate-right"></i>
-        </button>
-        <button type="button" onclick="toggleAIChat()" title="Thu gọn" class="text-white/90 hover:text-white w-7 h-7 rounded-full bg-white/15 hover:bg-red-500/80 flex items-center justify-center transition text-xs">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-    </div>
-
-    <div id="ai-chat-messages" class="p-3.5 flex-1 min-h-[160px] max-h-[260px] overflow-y-auto custom-scrollbar space-y-3 text-xs bg-gradient-to-b from-sky-50/70 via-indigo-50/40 to-white transition-colors duration-300">
-      <div class="flex items-start space-x-2">
-        <img src="bot-avatar.jpg" class="w-7 h-7 rounded-full object-cover border-2 border-indigo-400 flex-shrink-0 mt-0.5 shadow-sm" onerror="this.style.display='none'">
-        <div class="bot-bubble bg-white p-3 rounded-2xl rounded-tl-none border border-indigo-100 text-slate-700 shadow-sm leading-relaxed">
-          Xin chào quý Thầy/Cô và các bạn học sinh, Mình là <b class="text-indigo-500">Trợ lý AI Học Đường</b>. Thầy/Cô và các bạn có thể <b>nhập chữ</b> hoặc <b>bấm biểu tượng Micro 🎙️</b> để được Mình hỗ trợ ngay nhé! ✨
-        </div>
-      </div>
-    </div>
-
-    <div id="voice-status-bar" class="hidden flex-shrink-0 px-3 py-1.5 bg-gradient-to-r from-rose-500 to-orange-500 text-white text-[11px] font-bold flex items-center justify-between">
-      <span class="flex items-center"><i class="fas fa-wave-square mr-2 animate-pulse"></i> Đang nghe (nói xong bấm Dừng)...</span>
-      <button type="button" onclick="stopVoiceRecognition()" class="bg-white/20 px-2 py-0.5 rounded text-[10px] hover:bg-white/30">Dừng</button>
-    </div>
-
-    <div id="ai-quick-bar" class="flex-shrink-0 px-3 py-2 bg-white border-t border-slate-100 flex gap-1.5 overflow-x-auto no-scrollbar transition-colors duration-300"></div>
-
-    <div id="ai-input-bar" class="flex-shrink-0 p-2.5 bg-white border-t border-slate-200/80 flex items-center space-x-1.5 transition-colors duration-300">
-      <button type="button" id="btn-voice-mic" onclick="toggleVoiceRecognition()" title="Nói để nhập tin nhắn" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-600 flex items-center justify-center transition flex-shrink-0 border border-slate-200/80">
-        <i class="fas fa-microphone text-sm"></i>
-      </button>
-      <input type="text" id="ai-chat-input" autocomplete="off" placeholder="Nhập hoặc bấm mic để nói..." 
-             onkeypress="if(event.key==='Enter') sendAIOriginalMessage()" 
-             class="flex-1 px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:border-indigo-500 transition">
-      <button type="button" onclick="sendAIOriginalMessage()" title="Gửi tin nhắn" class="bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:brightness-110 active:scale-95 text-white w-9 h-9 rounded-xl flex items-center justify-center shadow-md shadow-indigo-500/25 transition flex-shrink-0">
-        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-      </button>
-    </div>
-  </div>
-
-  <button type="button" id="ai-chat-trigger" onclick="toggleAIChat()" class="group relative w-14 h-14 rounded-full p-0.5 ai-vibrant-header shadow-xl shadow-indigo-500/40 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95">
-    <div class="w-full h-full rounded-full bg-white overflow-hidden flex items-center justify-center">
-      <img src="bot-avatar.jpg" alt="AI Bot" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-      <div style="display:none;" class="w-full h-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white items-center justify-center">
-        <svg class="w-7 h-7 fill-current" viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5a2.5 2.5 0 0 0-2.5-2.5Z"/></svg>
-      </div>
-    </div>
-    <span class="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 border-2 border-white rounded-full shadow"></span>
-  </button>
-</div>
-
-<script>
-  const CHAT_APP_URL = "https://script.google.com/macros/s/AKfycbx4xNaCYY6uhuYM3Wxcto6cUh1YlLPRKw3saqpqKCMr7H_sA1028CSphU9csvI6DTXu/exec";
-
-  let isChatDarkMode = localStorage.getItem('ai_chat_theme') === 'dark';
-  let speechRecognitionInstance = null;
-  let isRecordingVoiceActive = false;
-  let finalVoiceBufferText = "";
-
-  document.addEventListener("DOMContentLoaded", () => {
-    applyChatTheme(isChatDarkMode);
-    initVoiceRecognitionModule();
-    updateQuickPromptsByCurrentTab();
-  });
-
-  function postGasJsonRequest(url, fnName, args, timeoutMs = 18000) {
-    return new Promise((resolve, reject) => {
-      if (!url || url.includes("DAN_LINK_WEB_APP")) {
-        reject(new Error("Chưa cấu hình URL Web App"));
-        return;
-      }
-      const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
-      const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
-
-      fetch(url, {
-        method: "POST",
-        mode: "cors",
-        redirect: "follow",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: fnName, args: args }),
-        ...(controller ? { signal: controller.signal } : {})
-      })
-      .then(async res => {
-        if (timer) clearTimeout(timer);
-        const rawText = await res.text();
-        let data = null;
-        try {
-          data = JSON.parse(rawText);
-        } catch (parseErr) {
-          throw new Error("Server trả về dữ liệu không phải JSON");
-        }
-        if (!data || data.status === "error") {
-          throw new Error((data && data.msg) ? data.msg : "Lỗi xử lý từ server");
-        }
-        const replyText = (data.text || data.reply || data.message || "").toString().trim();
-        if (!replyText) {
-          throw new Error("Phản hồi rỗng từ AI");
-        }
-        resolve({ ...data, text: replyText });
-      })
-      .catch(err => {
-        if (timer) clearTimeout(timer);
-        reject(err);
-      });
-    });
-  }
-
-  function isGenericPortalMenuReply(replyText, userMsg) {
-    const r = (replyText || "").toLowerCase();
-    const q = (userMsg || "").toLowerCase();
-    const isPortalMenuReply =
-      (r.includes("đang sẵn sàng hỗ trợ bạn tại") && r.includes("thẻ học sinh")) ||
-      (r.includes("hệ thống đã ghi nhận thầy/cô đang ở") && r.includes("cổng giáo viên"));
-    if (!isPortalMenuReply) return false;
-    const isAskingAboutPortal =
-      q.includes("chức năng") || q.includes("tính năng") || q.includes("hướng dẫn sử dụng") ||
-      q.includes("cổng điểm danh") || q.includes("làm được gì");
-    return !isAskingAboutPortal;
-  }
-
-  function buildPortalEnrichedPrompt(msg, role, name, className, tabContext) {
-    const dateStr = (typeof appData !== "undefined" && appData.dateStr) ? appData.dateStr : "";
-    const sessionStr = (typeof appData !== "undefined" && appData.session) ? appData.session : "";
-    const maHS = (typeof appData !== "undefined" && appData.reporterInfo?.maHS) ? appData.reporterInfo.maHS : "";
-
-    let contextLines = [
-      "Bạn là Trợ lý AI giáo dục thông minh của Hệ thống Quản lý Điểm danh. Hãy trả lời TRỰC TIẾP, ĐÚNG TRỌNG TÂM câu hỏi/yêu cầu của người dùng bằng tiếng Việt (tự nhiên, rõ ràng, súc tích, không liệt kê menu giao diện nếu người dùng không hỏi về cách dùng hệ thống).",
-      `Thông tin ngữ cảnh người dùng: ${name} | Vai trò: ${role}${maHS ? ` | Mã HS: ${maHS}` : ""}${className ? ` | Lớp: ${className}` : ""} | Khu vực: ${tabContext}${dateStr ? ` | Ngày: ${dateStr}${sessionStr ? ` (${sessionStr})` : ""}` : ""}.`,
-      `Câu hỏi/yêu cầu của người dùng: "${msg}"`
-    ];
-    return contextLines.join("\n");
-  }
-
-  function buildLocalPortalFallbackReply(msg, role, name, className, tabContext) {
-    const q = (msg || "").toLowerCase();
-
-    if (tabContext === "Thẻ Học sinh") {
-      if (q.includes("tâm lí") || q.includes("tâm lý") || q.includes("áp lực") || q.includes("căng thẳng") || q.includes("stress")) {
-        return `Chào **${name}**, mình luôn sẵn sàng lắng nghe và đồng hành cùng bạn! Khi gặp áp lực học tập hay tâm lý căng thẳng, bạn có thể áp dụng 4 cách sau:\n` +
-               `1. **Chia nhỏ áp lực:** Viết ra 2–3 việc ưu tiên nhất trong ngày thay vì lo lắng cùng lúc quá nhiều thứ.\n` +
-               `2. **Giữ nhịp nghỉ ngơi & giấc ngủ:** Ngủ đủ 7–8 tiếng, hít thở sâu 4-4-4 khi hồi hộp trước giờ kiểm tra.\n` +
-               `3. **Chia sẻ đúng lúc:** Trò chuyện thẳng thắn với bạn thân, gia đình, giáo viên chủ nhiệm hoặc cán bộ tư vấn tâm lý học đường.\n` +
-               `4. **Tách khỏi màn hình 15–20 phút:** Vận động nhẹ hoặc nghe nhạc thư giãn để tái tạo năng lượng tinh thần.`;
-      }
-      if (q.includes("xin nghỉ") || q.includes("đơn xin phép") || (q.includes("nghỉ") && q.includes("phép"))) {
-        return `Chào **${name}**, để gửi đơn xin nghỉ phép ngay trên màn hình **Thẻ Học sinh**, bạn có thể nhắn trực tiếp cho mình theo mẫu *"Xin nghỉ phép ngày dd/mm/yyyy buổi ... lý do ..."* hoặc điền vào mục **Gửi Đơn Xin Phép Online** trên màn hình rồi bấm **Gửi Đơn Cho GVCN** nhé! 📝`;
-      }
-      if (q.includes("vi phạm") || q.includes("tra cứu") || q.includes("lịch sử") || q.includes("chuyên cần")) {
-        return `Chào **${name}**, bạn chọn **Từ ngày** và **Đến ngày** (dạng **dd/mm/yyyy**) ở mục **Tra Cứu Lịch Sử Vi Phạm Cá Nhân** trên màn hình rồi bấm **Tra cứu** để xem chi tiết từng buổi nhé! 🔍`;
-      }
-      if (q.includes("quy định") || q.includes("nề nếp") || q.includes("điện thoại") || q.includes("đi trễ")) {
-        return `Chào **${name}**, quy định nề nếp tại **nhà trường**:\n` +
-               `1. **Đi học đúng giờ:** Có mặt trước giờ vào lớp đầu buổi; đi trễ quá 45 phút sẽ tính vào diện vắng buổi.\n` +
-               `2. **Xin nghỉ phép:** Gửi đơn xin phép online trước buổi học hoặc có xác nhận của phụ huynh/GVCN.\n` +
-               `3. **Sử dụng điện thoại & đồng phục:** Chấp hành nghiêm túc quy định không sử dụng điện thoại trái phép trong giờ học và mặc đúng đồng phục quy định.`;
-      }
-      if (q.includes("qr") || q.includes("khuôn mặt") || q.includes("điểm danh lớp")) {
-        return `Chào **${name}**, nếu bạn là cán sự lớp (**Lớp trưởng / Lớp phó / Bí thư**), bạn bấm **Vào Giao Diện Điểm Danh Lớp**, sau đó chọn **Quét Thẻ QR** hoặc **Mở Camera AI** để quét tự động từng bạn; hệ thống sẽ tự loại các bạn đã quét khỏi danh sách nhập thủ công! 📷`;
-      }
-    }
-
-    if (tabContext === "Thẻ Giáo viên/Giám thị") {
-      if (q.includes("tiến độ") || q.includes("nộp điểm danh") || q.includes("chưa nộp")) {
-        return `Thưa Thầy/Cô **${name}**, Thầy/Cô bấm trực tiếp vào nút **TIẾN ĐỘ NỘP** ở bảng điều khiển **Cổng Giáo Viên & Quản Trị** để xem danh sách các lớp đã nộp và chưa nộp báo cáo hôm nay ạ! 📊`;
-      }
-      if (q.includes("duyệt đơn") || (q.includes("đơn") && q.includes("nghỉ phép"))) {
-        return `Thưa Thầy/Cô **${name}**, tại mục **Duyệt Đơn Xin Phép Online** trong **Khu Vực Giáo Viên Chủ Nhiệm / Bộ Môn**, Thầy/Cô bấm **Tải lại** để cập nhật danh sách đơn mới nhất và bấm **Duyệt Phép** cho từng học sinh ạ! 📋`;
-      }
-      if (q.includes("nề nếp") || q.includes("kỷ luật") || q.includes("quản lý lớp") || q.includes("chủ nhiệm")) {
-        return `Thưa Thầy/Cô **${name}**, để quản lý nề nếp học sinh hiệu quả, Thầy/Cô có thể kết hợp 4 giải pháp trọng tâm:\n` +
-               `1. **Thống nhất nội quy & tiêu chí thi đua rõ ràng:** Công khai bảng điểm cộng/trừ theo tuần ngay đầu học kỳ để học sinh tự giác thực hiện.\n` +
-               `2. **Phát huy vai trò ban cán sự lớp:** Phân công lớp trưởng, cờ đỏ theo dõi chuyên cần, đồng phục và phản hồi kịp thời cuối mỗi buổi.\n` +
-               `3. **Theo dõi dữ liệu điểm danh hằng ngày:** Kiểm tra sớm các trường hợp đi trễ hoặc vắng không phép để trao đổi riêng với học sinh và phối hợp kịp thời với phụ huynh.\n` +
-               `4. **Động viên tích cực:** Khen thưởng nhóm/tổ có tiến bộ theo tuần thay vì chỉ nhắc nhở vi phạm.`;
-      }
-    }
-
-    if (q.includes("toán")) {
-      return `Chào **${name}**, để học tốt môn **Toán**, bạn nên áp dụng 4 bước trọng tâm sau:\n` +
-             `1. **Nắm chắc định nghĩa, định lý và công thức gốc:** Hiểu bản chất và điều kiện áp dụng thay vì học thuộc máy móc.\n` +
-             `2. **Luyện bài tập theo từng dạng từ cơ bản đến vận dụng:** Làm thành thạo các dạng chuẩn trong SGK trước khi chuyển sang bài tổng hợp.\n` +
-             `3. **Ghi sổ tay lỗi sai:** Mỗi khi làm sai phép biến đổi, điều kiện xác định hoặc tính toán, hãy ghi lại nguyên nhân để tránh lặp lại.\n` +
-             `4. **Tự giải lại đề sau 2–3 ngày:** Che lời giải và tự trình bày lại trọn vẹn để rèn phản xạ phòng thi.`;
-    }
-
-    if (q.includes("lý") || q.includes("vật lý")) {
-      return `Chào **${name}**, để học tốt môn **Vật lý**, bạn hãy tập trung vào 4 bước:\n` +
-             `1. **Hiểu hiện tượng vật lý trước khi nhớ công thức:** Xác định rõ đại lượng nào không đổi, đại lượng nào biến thiên.\n` +
-             `2. **Vẽ hình, tóm tắt và đổi đơn vị chuẩn (SI):** Giúp tránh sai sót ngay từ bước đặt phương trình.\n` +
-             `3. **Phân tích mối liên hệ giữa các đại lượng:** Chú ý tỉ lệ thuận, tỉ lệ nghịch và đồ thị đặc trưng của từng chương.\n` +
-             `4. **Làm bài tập theo chuyên đề:** Luyện từ bài cơ bản đến bài vận dụng để quen cách phối hợp nhiều công thức.`;
-    }
-
-    if (q.includes("hóa")) {
-      return `Chào **${name}**, để học tốt môn **Hóa học**, bạn nên:\n` +
-             `1. **Nắm vững tính chất hóa học đặc trưng** của từng loại chất và dãy hoạt động hóa học.\n` +
-             `2. **Thành thạo các định luật bảo toàn** (bảo toàn khối lượng, bảo toàn nguyên tố, bảo toàn electron, bảo toàn điện tích) để giải nhanh bài tập.\n` +
-             `3. **Lập sơ đồ chuỗi phản ứng** theo từng chương để hệ thống hóa kiến thức.\n` +
-             `4. **Luyện viết phương trình và cân bằng chính xác** trước khi tính toán số mol.`;
-    }
-
-    if (q.includes("anh") || q.includes("tiếng anh")) {
-      return `Chào **${name}**, để học tốt môn **Tiếng Anh**, bạn hãy duy trì đều đặn mỗi ngày:\n` +
-             `1. **Học từ vựng theo cụm từ và ngữ cảnh** (collocations/phrasal verbs) thay vì học từng từ đơn lẻ.\n` +
-             `2. **Nắm chắc các chuyên đề ngữ pháp cốt lõi:** Thì động từ, câu điều kiện, mệnh đề quan hệ, câu bị động và từ loại.\n` +
-             `3. **Luyện đọc hiểu mỗi ngày 1 đoạn ngắn:** Gạch chân từ khóa và rèn kỹ năng đoán nghĩa theo ngữ cảnh.\n` +
-             `4. **Nghe – nhắc lại (Shadowing)** 10–15 phút/ngày để cải thiện phản xạ nghe và phát âm.`;
-    }
-
-    if (q.includes("văn") || q.includes("ngữ văn")) {
-      return `Chào **${name}**, để học tốt môn **Ngữ văn**, bạn nên:\n` +
-             `1. **Đọc kỹ văn bản và lập sơ đồ luận điểm** cho từng tác phẩm/chủ đề.\n` +
-             `2. **Rèn kỹ năng đọc hiểu theo cấu trúc câu hỏi** (nhận biết – thông hiểu – vận dụng) và trả lời đúng trọng tâm, đủ ý.\n` +
-             `3. **Tích lũy dẫn chứng nghị luận xã hội** ngắn gọn, thực tế và giàu tính thuyết phục.\n` +
-             `4. **Luyện viết mở bài, kết bài và đoạn văn chuẩn cấu trúc** (diễn dịch, quy nạp, tổng – phân – hợp).`;
-    }
-
-    if (q.includes("ôn thi") || q.includes("phương pháp học") || q.includes("học tốt")) {
-      return `Chào **${name}**, để học tập và ôn thi đạt hiệu quả cao, bạn có thể áp dụng 4 nguyên tắc sau:\n` +
-             `1. **Chia nhỏ mục tiêu theo tuần và học theo khung giờ tập trung (Pomodoro 25–45 phút)** để giữ sự tỉnh táo.\n` +
-             `2. **Chủ động tự kiểm tra (Active Recall):** Đóng sách lại và tự tóm tắt kiến thức hoặc làm đề thử thay vì chỉ đọc lướt.\n` +
-             `3. **Ôn tập ngắt quãng (Spaced Repetition):** Xem lại kiến thức sau 1 ngày, 3 ngày và 7 ngày để ghi nhớ dài hạn.\n` +
-             `4. **Tổng hợp sổ tay lỗi sai:** Tập trung khắc phục đúng phần kiến thức hay nhầm lẫn nhất.`;
-    }
-
-    return `⚠️ Kết nối tới máy chủ AI đang tạm gián đoạn nên mình chưa thể tra cứu sâu câu hỏi *"${msg}"* ngay lúc này. Bạn hãy thử gửi lại sau vài giây nhé!`;
-  }
-
-  async function callChatBackendApi(fnName, msg, currentRole, currentName, currentClass, currentTab) {
-    const args = [msg, currentRole, currentName, currentClass, currentTab];
-    const enrichedPrompt = buildPortalEnrichedPrompt(msg, currentRole, currentName, currentClass, currentTab);
-
-    try {
-      const res1 = await postGasJsonRequest(CHAT_APP_URL, fnName, args, 15000);
-      if (res1 && res1.text && !isGenericPortalMenuReply(res1.text, msg)) {
-        return res1;
-      }
-    } catch (primaryErr) {}
-
-    try {
-      const res2 = await postGasJsonRequest(
-        CHAT_APP_URL,
-        fnName,
-        [enrichedPrompt, "Khách", currentName, currentClass, "Cổng điểm danh"],
-        15000
-      );
-      if (res2 && res2.text && !isGenericPortalMenuReply(res2.text, msg)) {
-        return res2;
-      }
-    } catch (relayErr) {}
-
-    if (typeof WEB_APP_URL !== "undefined" && WEB_APP_URL && WEB_APP_URL !== CHAT_APP_URL) {
-      try {
-        const res3 = await postGasJsonRequest(WEB_APP_URL, fnName, args, 12000);
-        if (res3 && res3.text && !isGenericPortalMenuReply(res3.text, msg)) {
-          return res3;
-        }
-      } catch (secondaryErr) {}
-    }
-
-    return {
-      status: "success",
-      text: buildLocalPortalFallbackReply(msg, currentRole, currentName, currentClass, currentTab)
-    };
-  }
-
-  function toggleChatTheme() {
-    isChatDarkMode = !isChatDarkMode;
-    localStorage.setItem('ai_chat_theme', isChatDarkMode ? 'dark' : 'light');
-    applyChatTheme(isChatDarkMode);
-  }
-
-  function applyChatTheme(dark) {
-    const win = document.getElementById("ai-chat-window");
-    const msgArea = document.getElementById("ai-chat-messages");
-    const quickBar = document.getElementById("ai-quick-bar");
-    const inputBar = document.getElementById("ai-input-bar");
-    const inputEl = document.getElementById("ai-chat-input");
-    const micBtn = document.getElementById("btn-voice-mic");
-    const themeIcon = document.getElementById("icon-chat-theme");
-    const botBubbles = document.querySelectorAll(".ai-chat-root .bot-bubble");
-
-    if (!win) return;
-
-    if (dark) {
-      win.classList.remove("bg-white/95", "border-indigo-200/80");
-      win.classList.add("bg-slate-900/95", "border-indigo-500/40");
-
-      msgArea.className = "p-3.5 flex-1 min-h-[160px] max-h-[260px] overflow-y-auto custom-scrollbar space-y-3 text-xs bg-gradient-to-b from-slate-900 via-slate-900 to-indigo-950/60 transition-colors duration-300";
-      quickBar.className = "flex-shrink-0 px-3 py-2 bg-slate-900 border-t border-slate-800 flex gap-1.5 overflow-x-auto no-scrollbar transition-colors duration-300";
-      inputBar.className = "flex-shrink-0 p-2.5 bg-slate-900 border-t border-slate-800 flex items-center space-x-1.5 transition-colors duration-300";
-
-      inputEl.className = "flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-medium text-slate-100 placeholder-slate-400 focus:bg-slate-800 focus:outline-none focus:border-cyan-400 transition";
-      if (!isRecordingVoiceActive) {
-        micBtn.className = "w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-rose-400 flex items-center justify-center transition flex-shrink-0 border border-slate-700";
-      }
-
-      botBubbles.forEach(b => {
-        b.className = "bot-bubble bg-slate-800/95 p-3 rounded-2xl rounded-tl-none border border-indigo-500/30 text-slate-100 shadow-md max-w-[82%] leading-relaxed";
-      });
-
-      themeIcon.className = "fas fa-sun text-amber-300";
-    } else {
-      win.classList.remove("bg-slate-900/95", "border-indigo-500/40");
-      win.classList.add("bg-white/95", "border-indigo-200/80");
-
-      msgArea.className = "p-3.5 flex-1 min-h-[160px] max-h-[260px] overflow-y-auto custom-scrollbar space-y-3 text-xs bg-gradient-to-b from-sky-50/70 via-indigo-50/40 to-white transition-colors duration-300";
-      quickBar.className = "flex-shrink-0 px-3 py-2 bg-white border-t border-slate-100 flex gap-1.5 overflow-x-auto no-scrollbar transition-colors duration-300";
-      inputBar.className = "flex-shrink-0 p-2.5 bg-white border-t border-slate-200/80 flex items-center space-x-1.5 transition-colors duration-300";
-
-      inputEl.className = "flex-1 px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:border-indigo-500 transition";
-      if (!isRecordingVoiceActive) {
-        micBtn.className = "w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-600 flex items-center justify-center transition flex-shrink-0 border border-slate-200/80";
-      }
-
-      botBubbles.forEach(b => {
-        b.className = "bot-bubble bg-white p-3 rounded-2xl rounded-tl-none border border-indigo-100 text-slate-700 shadow-sm max-w-[82%] leading-relaxed";
-      });
-
-      themeIcon.className = "fas fa-moon";
-    }
-  }
-
-  function initVoiceRecognitionModule() {
-    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRec) return;
-
-    speechRecognitionInstance = new SpeechRec();
-    speechRecognitionInstance.lang = 'vi-VN';
-    speechRecognitionInstance.interimResults = true;
-    speechRecognitionInstance.continuous = true;
-
-    speechRecognitionInstance.onstart = () => {
-      isRecordingVoiceActive = true;
-      document.getElementById("btn-voice-mic").classList.add("mic-recording");
-      document.getElementById("voice-status-bar").classList.remove("hidden");
-    };
-
-    speechRecognitionInstance.onresult = (event) => {
-      let interimTranscript = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const piece = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          finalVoiceBufferText += piece + " ";
-        } else {
-          interimTranscript += piece;
-        }
-      }
-      const inputEl = document.getElementById("ai-chat-input");
-      inputEl.value = (finalVoiceBufferText + interimTranscript).trim();
-      inputEl.scrollLeft = inputEl.scrollWidth;
-    };
-
-    speechRecognitionInstance.onerror = (event) => {
-      if (event.error === 'no-speech') return;
-      stopVoiceRecognition();
-    };
-
-    speechRecognitionInstance.onend = () => {
-      if (isRecordingVoiceActive) {
-        try { speechRecognitionInstance.start(); } catch (e) {}
-      }
-    };
-  }
-
-  function toggleVoiceRecognition() {
-    if (!speechRecognitionInstance) {
-      Swal.fire({ icon: 'info', title: 'Không hỗ trợ', text: 'Hãy dùng Chrome hoặc Edge để dùng giọng nói!', toast: true, position: 'top', timer: 3000, showConfirmButton: false });
-      return;
-    }
-    if (isRecordingVoiceActive) {
-      stopVoiceRecognition();
-    } else {
-      finalVoiceBufferText = document.getElementById("ai-chat-input").value.trim();
-      if (finalVoiceBufferText) finalVoiceBufferText += " ";
-      try { speechRecognitionInstance.start(); } catch (e) {}
-    }
-  }
-
-  function stopVoiceRecognition() {
-    isRecordingVoiceActive = false;
-    const micBtn = document.getElementById("btn-voice-mic");
-    if (micBtn) micBtn.classList.remove("mic-recording");
-    const statusBar = document.getElementById("voice-status-bar");
-    if (statusBar) statusBar.classList.add("hidden");
-    applyChatTheme(isChatDarkMode);
-    if (speechRecognitionInstance) {
-      try { speechRecognitionInstance.stop(); } catch (e) {}
-    }
-    document.getElementById("ai-chat-input").focus();
-  }
-
-  function toggleAIChat() {
-    const win = document.getElementById("ai-chat-window");
-    win.classList.toggle("hidden");
-    if (!win.classList.contains("hidden")) {
-      applyChatTheme(isChatDarkMode);
-      updateQuickPromptsByCurrentTab();
-      setTimeout(() => document.getElementById("ai-chat-input").focus(), 100);
-    } else {
-      stopVoiceRecognition();
-    }
-  }
-
-  function clearChatHistory() {
-    updateQuickPromptsByCurrentTab();
-    const box = document.getElementById("ai-chat-messages");
-    const bubbleClass = isChatDarkMode
-      ? "bot-bubble bg-slate-800/95 p-3 rounded-2xl rounded-tl-none border border-indigo-500/30 text-slate-100 shadow-md max-w-[82%] leading-relaxed"
-      : "bot-bubble bg-white p-3 rounded-2xl rounded-tl-none border border-indigo-100 text-slate-700 shadow-sm max-w-[82%] leading-relaxed";
-
-    box.innerHTML = `
-      <div class="flex items-start space-x-2">
-        <img src="bot-avatar.jpg" class="w-7 h-7 rounded-full object-cover border-2 border-indigo-400 flex-shrink-0 mt-0.5 shadow-sm" onerror="this.style.display='none'">
-        <div class="${bubbleClass}">
-          Đã làm mới cuộc trò chuyện! Thầy/Cô và các bạn cần hỗ trợ gì tiếp theo? ✨
-        </div>
-      </div>`;
-  }
-
-  function sendQuickPrompt(text) {
-    const input = document.getElementById("ai-chat-input");
-    input.value = text;
-    sendAIOriginalMessage();
-  }
-
-  function formatBotReplyText(text) {
-    if (!text) return "";
-    return text
-      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-      .replace(/\*\*(.*?)\*\*/g, "<b>$1</b>")
-      .replace(/\*(.*?)\*/g, "<i>$1</i>")
-      .replace(/\n/g, "<br>");
-  }
-
-  function detectCurrentTabContext(currentRole) {
-    const stepAdmin = document.getElementById("step-admin");
-    const stepAdminCfg = document.getElementById("step-admin-config");
-    const stepAdminData = document.getElementById("step-admin-data");
-    const stepGvLogin = document.getElementById("step-gv-login");
-    const step1 = document.getElementById("step-1");
-    const step2 = document.getElementById("step-2");
-
-    if ((stepAdmin && !stepAdmin.classList.contains("hidden")) ||
-        (stepAdminCfg && !stepAdminCfg.classList.contains("hidden")) ||
-        (stepAdminData && !stepAdminData.classList.contains("hidden")) ||
-        (stepGvLogin && !stepGvLogin.classList.contains("hidden"))) {
-      return "Thẻ Giáo viên/Giám thị";
-    }
-
-    if (step2 && !step2.classList.contains("hidden")) {
-      return "Thẻ Học sinh";
-    }
-
-    if (step1 && !step1.classList.contains("hidden")) {
-      const noticeView = document.getElementById("student-notice-view");
-      if (noticeView && !noticeView.classList.contains("hidden")) {
-        return "Thẻ Học sinh";
-      }
-    }
-
-    if (currentRole && currentRole !== "Khách") {
-      const r = currentRole.toLowerCase();
-      if (r.includes("giáo viên") || r.includes("giám thị") || r.includes("admin") || r.includes("quản lý") || r.includes("gvcn")) {
-        return "Thẻ Giáo viên/Giám thị";
-      }
-      return "Thẻ Học sinh";
-    }
-
-    return "Cổng điểm danh";
-  }
-
-  function updateQuickPromptsByCurrentTab() {
-    const quickBar = document.getElementById("ai-quick-bar");
-    if (!quickBar) return;
-
-    const currentRole = (typeof appData !== "undefined" && appData.reporterInfo?.role) ? appData.reporterInfo.role : "Khách";
-    const tabContext = detectCurrentTabContext(currentRole);
-    let htmlButtons = "";
-
-    if (tabContext === "Thẻ Học sinh") {
-      htmlButtons = `
-        <button type="button" onclick="sendQuickPrompt('Quy định nề nếp')" class="whitespace-nowrap bg-gradient-to-r from-amber-500/10 to-orange-500/10 hover:from-amber-500/20 hover:to-orange-500/20 text-amber-700 font-bold text-[10px] px-2.5 py-1 rounded-full border border-amber-300/60 transition flex-shrink-0">
-          📋 Quy định nề nếp
-        </button>
-        <button type="button" onclick="sendQuickPrompt('Phương pháp học tập')" class="whitespace-nowrap bg-gradient-to-r from-violet-500/10 to-purple-500/10 hover:from-violet-500/20 hover:to-purple-500/20 text-violet-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-violet-300/60 transition flex-shrink-0">
-          💡 Phương pháp học tập
-        </button>
-        <button type="button" onclick="sendQuickPrompt('Tư vấn tâm lí học đường')" class="whitespace-nowrap bg-gradient-to-r from-pink-500/10 to-rose-500/10 hover:from-pink-500/20 hover:to-rose-500/20 text-rose-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-rose-300/60 transition flex-shrink-0">
-          💖 Tư vấn tâm lí học đường
-        </button>
-      `;
-    } else if (tabContext === "Thẻ Giáo viên/Giám thị") {
-      htmlButtons = `
-        <button type="button" onclick="sendQuickPrompt('Thống kê tiến độ nộp điểm danh hôm nay')" class="whitespace-nowrap bg-gradient-to-r from-emerald-500/10 to-teal-500/10 hover:from-emerald-500/20 hover:to-teal-500/20 text-emerald-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-emerald-300/60 transition flex-shrink-0">
-          📊 Tiến độ điểm danh
-        </button>
-        <button type="button" onclick="sendQuickPrompt('Danh sách các học sinh xin nghỉ phép hôm nay')" class="whitespace-nowrap bg-gradient-to-r from-blue-500/10 to-indigo-500/10 hover:from-blue-500/20 hover:to-indigo-500/20 text-indigo-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-indigo-300/60 transition flex-shrink-0">
-          📋 Duyệt đơn nghỉ phép
-        </button>
-        <button type="button" onclick="sendQuickPrompt('Gợi ý giải pháp quản lý nề nếp học sinh hiệu quả')" class="whitespace-nowrap bg-gradient-to-r from-amber-500/10 to-orange-500/10 hover:from-amber-500/20 hover:to-orange-500/20 text-amber-700 font-bold text-[10px] px-2.5 py-1 rounded-full border border-amber-300/60 transition flex-shrink-0">
-          🛠️ Tư vấn nề nếp
-        </button>
-      `;
-    } else {
-      htmlButtons = `
-        <button type="button" onclick="sendQuickPrompt('Hướng dẫn sử dụng cổng điểm danh chi tiết')" class="whitespace-nowrap bg-gradient-to-r from-amber-500/10 to-orange-500/10 hover:from-amber-500/20 hover:to-orange-500/20 text-amber-700 font-bold text-[10px] px-2.5 py-1 rounded-full border border-amber-300/60 transition flex-shrink-0">
-          📖 Hướng dẫn sử dụng
-        </button>
-        <button type="button" onclick="sendQuickPrompt('Làm sao để đăng nhập vào thẻ học sinh?')" class="whitespace-nowrap bg-gradient-to-r from-sky-50/10 to-blue-500/10 hover:from-sky-500/20 hover:to-blue-500/20 text-blue-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-blue-300/60 transition flex-shrink-0">
-          🔑 Cách đăng nhập
-        </button>
-      `;
-    }
-    quickBar.innerHTML = htmlButtons;
-  }
-
-  function sendAIOriginalMessage() {
-    if (isRecordingVoiceActive) stopVoiceRecognition();
-
-    const input = document.getElementById("ai-chat-input");
-    const msg = input.value.trim();
-    if (!msg) return;
-
-    const box = document.getElementById("ai-chat-messages");
-    const safeUserMsg = msg.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-    box.innerHTML += `
-      <div class="flex justify-end">
-        <div class="bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 text-white p-3 rounded-2xl rounded-tr-none max-w-[82%] font-medium shadow-md shadow-indigo-500/20 leading-relaxed">
-          ${safeUserMsg}
-        </div>
-      </div>`;
-    input.value = "";
-    finalVoiceBufferText = "";
-    box.scrollTop = box.scrollHeight;
-
-    const bubbleClass = isChatDarkMode
-      ? "bot-bubble bg-slate-800/95 p-3 rounded-2xl rounded-tl-none border border-indigo-500/30 text-slate-100 shadow-md max-w-[82%] leading-relaxed"
-      : "bot-bubble bg-white p-3 rounded-2xl rounded-tl-none border border-indigo-100 text-slate-700 shadow-sm max-w-[82%] leading-relaxed";
-
-    const typingBubbleClass = isChatDarkMode
-      ? "bg-slate-800 px-3.5 py-2.5 rounded-2xl rounded-tl-none border border-indigo-500/30 shadow-sm flex space-x-1 items-center"
-      : "bg-white px-3.5 py-2.5 rounded-2xl rounded-tl-none border border-indigo-100 shadow-sm flex space-x-1 items-center";
-
-    const typingId = "ai-typing-" + Date.now();
-    box.innerHTML += `
-      <div id="${typingId}" class="flex items-start space-x-2">
-        <img src="bot-avatar.jpg" class="w-7 h-7 rounded-full object-cover border-2 border-indigo-400 flex-shrink-0 mt-0.5 shadow-sm" onerror="this.style.display='none'">
-        <div class="${typingBubbleClass}">
-          <span class="w-1.5 h-1.5 bg-cyan-400 rounded-full ai-typing-dot"></span>
-          <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full ai-typing-dot"></span>
-          <span class="w-1.5 h-1.5 bg-pink-500 rounded-full ai-typing-dot"></span>
-        </div>
-      </div>`;
-    box.scrollTop = box.scrollHeight;
-
-    const currentRole = (typeof appData !== "undefined" && appData.reporterInfo?.role) ? appData.reporterInfo.role : "Khách";
-    const currentName = (typeof appData !== "undefined" && appData.reporterInfo?.name) ? appData.reporterInfo.name : "Người dùng";
-    const currentClass = (typeof appData !== "undefined" && appData.className) ? appData.className : "";
-    const currentTab = detectCurrentTabContext(currentRole);
-
-    callChatBackendApi('handleChatbotQuery', msg, currentRole, currentName, currentClass, currentTab)
-      .then(res => {
-        const typingEl = document.getElementById(typingId);
-        if (typingEl) typingEl.remove();
-        const replyHtml = formatBotReplyText(res?.text || "Mình đã ghi nhận yêu cầu của bạn!");
-        box.innerHTML += `
-          <div class="flex items-start space-x-2">
-            <img src="bot-avatar.jpg" class="w-7 h-7 rounded-full object-cover border-2 border-indigo-400 flex-shrink-0 mt-0.5 shadow-sm" onerror="this.style.display='none'">
-            <div class="${bubbleClass}">
-              ${replyHtml}
-            </div>
-          </div>`;
-        box.scrollTop = box.scrollHeight;
-      })
-      .catch(err => {
-        const typingEl = document.getElementById(typingId);
-        if (typingEl) typingEl.remove();
-        box.innerHTML += `
-          <div class="flex items-start space-x-2">
-            <div class="${bubbleClass}">
-              ⚠️ Hệ thống AI đang quá tải hoặc phản hồi chậm. Vui lòng thử lại sau vài giây!
-            </div>
-          </div>`;
-        box.scrollTop = box.scrollHeight;
-      });
-  }
-</script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Hệ Thống Điểm Danh Thông Minh THPT</title>
+  <title>Hệ Thống Điểm Danh Thông Minh</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -74,7 +74,7 @@
       </svg>
     </div>
     <p id="loading-text" class="text-xl font-bold tracking-wide text-blue-100">Đang khởi động dữ liệu hệ thống...</p>
-    <p class="text-sm text-indigo-300 mt-1">Trường Trung Học Phổ Thông</p>
+    <p class="text-sm text-indigo-300 mt-1">Trường THPT</p>
   </div>
 
   <!-- MÀN HÌNH ĐÓNG CỔNG -->
@@ -87,8 +87,8 @@
       <p id="closed-gate-msg" class="text-slate-600 text-base mb-6 whitespace-pre-line leading-relaxed"></p>
       
       <div class="border-t border-slate-100 pt-5">
-        <button onclick="openAdminFromClosedGate()" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/30 text-base">
-          <i class="fa-solid fa-user-shield"></i> Dành cho Giám Thị / Quản Lý
+        <button onclick="openAdminFromClosedGate()" class="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold py-3.5 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-amber-500/30 text-base">
+          <i class="fa-solid fa-user-shield"></i> Dành cho Quản Trị Hệ Thống
         </button>
       </div>
     </div>
@@ -122,8 +122,9 @@
           <i class="fa-solid fa-right-from-bracket"></i> <span class="hidden sm:inline">Thoát</span>
         </button>
 
-        <button id="btn-header-login-shortcut" onclick="switchTab('tab-giaovien')" class="bg-white/15 hover:bg-white/25 backdrop-blur px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-1.5 border border-white/20 shadow-sm text-white">
-          <i class="fa-solid fa-user-shield"></i> <span>Giám Thị</span>
+        <!-- NÚT QUẢN TRỊ ĐỘC LẬP-->
+        <button id="btn-header-admin-portal" onclick="switchTab('tab-quantri')" class="bg-amber-400/20 hover:bg-amber-400/30 backdrop-blur px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-1.5 border border-amber-300/40 shadow-sm text-amber-200">
+          <i class="fa-solid fa-user-shield"></i> <span>Quản trị</span>
         </button>
       </div>
     </div>
@@ -159,7 +160,7 @@
             <label class="block text-sm font-bold text-slate-700 mb-1.5">Lớp học <span class="text-rose-500">*</span></label>
             <div class="relative">
               <select id="hs-select-class" onchange="onSelectClassChange()" class="w-full p-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl font-bold text-slate-800 text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none transition">
-                <option value="">-- Chọn lớp của bạn --</option>
+                <option value="">-- Chọn lớp --</option>
               </select>
               <i class="fa-solid fa-chevron-down absolute right-4 top-4.5 text-slate-400 pointer-events-none"></i>
             </div>
@@ -213,7 +214,7 @@
 
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-bold text-slate-700 mb-1.5">Người thực hiện (Cán sự lớp)</label>
+            <label class="block text-sm font-bold text-slate-700 mb-1.5">Người thực hiện</label>
             <div class="relative">
               <select id="hs-select-reporter" class="w-full p-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl font-bold text-slate-800 text-base outline-none focus:border-blue-500 appearance-none">
                 <option value="">-- Chọn tên của bạn --</option>
@@ -292,23 +293,23 @@
 
     </div>
 
-    <!-- ========================================== -->
-    <!-- KHU VỰC 2: GIÁO VIÊN / GIÁM THỊ / ADMIN    -->
-    <!-- ========================================== -->
+    <!-- ========================================================== -->
+    <!-- KHU VỰC 2: GIÁO VIÊN / GIÁM THỊ                            -->
+    <!-- ========================================================== -->
     <div id="tab-giaovien" class="hidden space-y-4">
       
       <div id="gv-login-box" class="glass-card rounded-[1.75rem] p-6 max-w-md mx-auto">
         <div class="text-center mb-6">
           <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3 text-3xl shadow-inner border border-indigo-100">
-            <i class="fa-solid fa-user-shield"></i>
+            <i class="fa-solid fa-chalkboard-user"></i>
           </div>
           <h2 class="text-xl font-extrabold text-slate-800">Đăng Nhập Giáo Viên / Giám Thị</h2>
-          <p class="text-sm text-slate-500 mt-1">Quản lý nề nếp, duyệt đơn phép & cấu hình hệ thống</p>
+          <p class="text-sm text-slate-500 mt-1">Theo dõi tiến độ điểm danh, duyệt đơn phép & tra cứu vi phạm</p>
         </div>
 
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-bold text-slate-700 mb-1.5">Tài khoản Cán bộ / Giáo viên</label>
+            <label class="block text-sm font-bold text-slate-700 mb-1.5">Tài khoản Giáo viên / Giám thị</label>
             <div class="relative">
               <select id="gv-select-name" class="w-full p-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl font-bold text-slate-800 text-base outline-none focus:border-indigo-500 appearance-none">
                 <option value="">-- Chọn tên của bạn --</option>
@@ -323,7 +324,7 @@
           </div>
 
           <button onclick="loginGiaoVien()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-500/30 transition active:scale-95 text-base tracking-wide">
-            Đăng Nhập Hệ Thống <i class="fa-solid fa-right-to-bracket ml-1.5"></i>
+            Đăng Nhập Giáo Viên / Giám Thị <i class="fa-solid fa-right-to-bracket ml-1.5"></i>
           </button>
         </div>
       </div>
@@ -332,7 +333,7 @@
         
         <div class="bg-gradient-to-r from-indigo-900 via-purple-900 to-indigo-950 text-white rounded-[1.5rem] p-5 shadow-xl flex flex-wrap justify-between items-center gap-3 border border-purple-400/30">
           <div>
-            <span id="gv-role-badge" class="bg-amber-400 text-slate-900 text-xs uppercase font-extrabold px-2.5 py-1 rounded-md shadow-sm">GIÁM THỊ</span>
+            <span id="gv-role-badge" class="bg-sky-400 text-slate-900 text-xs uppercase font-extrabold px-2.5 py-1 rounded-md shadow-sm">GIÁO VIÊN / GIÁM THỊ</span>
             <h3 id="gv-welcome-name" class="font-bold text-xl mt-1.5 text-white">Xin chào, Thầy/Cô</h3>
           </div>
           <div class="flex flex-wrap gap-2">
@@ -348,7 +349,7 @@
         <div class="glass-card rounded-[1.5rem] p-5">
           <div class="flex justify-between items-center mb-4">
             <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2"><i class="fa-solid fa-chart-pie text-indigo-600"></i> Tiến Độ Điểm Danh Hôm Nay</h3>
-            <button onclick="loadAdminStats()" class="text-sm text-indigo-600 hover:text-indigo-800 font-bold bg-indigo-50 px-3 py-1.5 rounded-xl"><i class="fa-solid fa-rotate mr-1"></i> Làm mới</button>
+            <button onclick="loadAdminStats('gv')" class="text-sm text-indigo-600 hover:text-indigo-800 font-bold bg-indigo-50 px-3 py-1.5 rounded-xl"><i class="fa-solid fa-rotate mr-1"></i> Làm mới</button>
           </div>
 
           <div class="grid grid-cols-3 gap-3 mb-4 text-center">
@@ -376,13 +377,13 @@
           <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
             <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2"><i class="fa-solid fa-envelope-open-text text-amber-500"></i> Duyệt Đơn Xin Phép Online</h3>
             <div class="flex gap-2">
-              <button onclick="loadPendingLeaves()" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded-xl transition">
+              <button onclick="loadPendingLeaves('gv')" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded-xl transition">
                 <i class="fa-solid fa-rotate mr-1"></i> Tải đơn
               </button>
               <button onclick="document.getElementById('file-upload-leave').click()" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-3 py-1.5 rounded-xl border border-indigo-200 transition">
                 <i class="fa-solid fa-file-csv mr-1"></i> Nạp File CSV
               </button>
-              <input type="file" id="file-upload-leave" accept=".csv" class="hidden" onchange="handleImportLeaveFile(this)">
+              <input type="file" id="file-upload-leave" accept=".csv" class="hidden" onchange="handleImportLeaveFile(this, 'gv')">
             </div>
           </div>
           <div id="leave-requests-container" class="space-y-3 text-sm text-slate-500">
@@ -405,15 +406,75 @@
           <div id="gv-class-absence-result" class="mt-4 hidden overflow-x-auto"></div>
         </div>
 
-        <div class="glass-card rounded-[1.5rem] p-5 border-2 border-indigo-200">
-          <h3 class="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2"><i class="fa-solid fa-gears text-indigo-600"></i> Quản Trị & Cài Đặt Hệ Thống</h3>
+      </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- KHU VỰC 3: QUẢN TRỊ HỆ THỐNG (CHỈ TÀI KHOẢN QUẢN TRỊ)      -->
+    <!-- ========================================================== -->
+    <div id="tab-quantri" class="hidden space-y-4">
+      
+      <div id="qt-login-box" class="glass-card rounded-[1.75rem] p-6 max-w-md mx-auto border-2 border-amber-200/80">
+        <div class="text-center mb-6">
+          <div class="w-16 h-16 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-3 text-3xl shadow-inner border border-amber-200">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+          <h2 class="text-xl font-extrabold text-slate-800">Cổng Đăng Nhập Quản Trị</h2>
+          <p class="text-sm text-slate-500 mt-1">Khu vực dành riêng cho tài khoản Quản trị hệ thống</p>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-1.5">Tài khoản Quản trị</label>
+            <div class="relative">
+              <select id="qt-select-name" class="w-full p-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl font-bold text-slate-800 text-base outline-none focus:border-amber-500 appearance-none">
+                <option value="">-- Chọn tài khoản Quản trị --</option>
+              </select>
+              <i class="fa-solid fa-chevron-down absolute right-4 top-4.5 text-slate-400 pointer-events-none"></i>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-1.5">Mã PIN Quản Trị</label>
+            <input type="password" id="qt-input-pin" maxlength="6" inputmode="numeric" placeholder="••••••" class="w-full p-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-center tracking-[0.5em] font-extrabold text-xl outline-none focus:border-amber-500 focus:bg-white transition">
+          </div>
+
+          <button onclick="loginQuanTri()" class="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-amber-500/30 transition active:scale-95 text-base tracking-wide">
+            Vào Trang Quản Trị <i class="fa-solid fa-shield-halved ml-1.5"></i>
+          </button>
+
+          <button onclick="switchTab('tab-hocsinh')" class="w-full py-2.5 text-xs font-bold text-slate-500 hover:text-slate-700 transition">
+            <i class="fa-solid fa-arrow-left mr-1"></i> Quay lại Cổng điểm danh
+          </button>
+        </div>
+      </div>
+
+      <div id="qt-dashboard" class="hidden space-y-5">
+        <div class="bg-gradient-to-r from-slate-900 via-amber-950 to-slate-900 text-white rounded-[1.5rem] p-5 shadow-xl flex flex-wrap justify-between items-center gap-3 border border-amber-400/40">
+          <div>
+            <span id="qt-role-badge" class="bg-amber-400 text-slate-900 text-xs uppercase font-extrabold px-2.5 py-1 rounded-md shadow-sm">QUẢN TRỊ HỆ THỐNG</span>
+            <h3 id="qt-welcome-name" class="font-bold text-xl mt-1.5 text-white">Xin chào, Quản trị viên</h3>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <a id="qt-btn-open-sheet" href="#" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-1.5 shadow-md transition">
+              <i class="fa-solid fa-table"></i> Mở Google Sheet
+            </a>
+            <button onclick="logoutQuanTri()" class="bg-white/15 hover:bg-white/25 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition border border-white/20">
+              Đăng xuất
+            </button>
+          </div>
+        </div>
+
+        <!-- BẢNG ĐIỀU KHIỂN QUẢN TRỊ ĐỘC QUYỀN -->
+        <div class="glass-card rounded-[1.5rem] p-5 border-2 border-amber-300">
+          <h3 class="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2"><i class="fa-solid fa-gears text-amber-600"></i> Quản Trị Tài Khoản & Cài Đặt Hệ Thống</h3>
           
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button onclick="openAdminAddUserModal('HS')" class="p-3.5 bg-blue-50 hover:bg-blue-100 text-blue-800 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border border-blue-200 transition">
               <i class="fa-solid fa-user-plus"></i> Thêm Học Sinh Mới
             </button>
             <button onclick="openAdminAddUserModal('GT')" class="p-3.5 bg-purple-50 hover:bg-purple-100 text-purple-800 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border border-purple-200 transition">
-              <i class="fa-solid fa-user-tie"></i> Thêm Giám Thị / GV
+              <i class="fa-solid fa-user-tie"></i> Thêm Giáo Viên / Giám Thị
             </button>
             <button onclick="openAdminResetPinModal()" class="p-3.5 bg-rose-50 hover:bg-rose-100 text-rose-800 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border border-rose-200 transition">
               <i class="fa-solid fa-key"></i> Cấp Lại Mã PIN (123456)
@@ -424,13 +485,58 @@
           </div>
         </div>
 
+        <!-- GIÁM SÁT TOÀN TRƯỜNG CỦA QUẢN TRỊ -->
+        <div class="glass-card rounded-[1.5rem] p-5">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2"><i class="fa-solid fa-chart-pie text-indigo-600"></i> Giám Sát Điểm Danh Toàn Trường</h3>
+            <button onclick="loadAdminStats('qt')" class="text-sm text-indigo-600 hover:text-indigo-800 font-bold bg-indigo-50 px-3 py-1.5 rounded-xl"><i class="fa-solid fa-rotate mr-1"></i> Làm mới</button>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3 mb-4 text-center">
+            <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+              <span class="block text-xs text-slate-500 font-bold">Tổng số lớp</span>
+              <span id="qt-stat-total" class="text-2xl font-extrabold text-slate-800">0</span>
+            </div>
+            <div class="bg-emerald-50 p-3.5 rounded-2xl border border-emerald-200">
+              <span class="block text-xs text-emerald-600 font-bold">Đã nộp</span>
+              <span id="qt-stat-sub" class="text-2xl font-extrabold text-emerald-600">0</span>
+            </div>
+            <div class="bg-rose-50 p-3.5 rounded-2xl border border-rose-200">
+              <span class="block text-xs text-rose-600 font-bold">Chưa nộp</span>
+              <span id="qt-stat-miss" class="text-2xl font-extrabold text-rose-600">0</span>
+            </div>
+          </div>
+
+          <div id="qt-missing-classes-box" class="hidden bg-rose-50/80 border border-rose-200 rounded-xl p-4">
+            <span class="text-sm font-bold text-rose-800 block mb-2">Các lớp chưa gửi báo cáo:</span>
+            <div id="qt-missing-classes-list" class="flex flex-wrap gap-2"></div>
+          </div>
+        </div>
+
+        <div class="glass-card rounded-[1.5rem] p-5">
+          <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+            <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2"><i class="fa-solid fa-envelope-open-text text-amber-500"></i> Quản Lý Đơn Xin Phép Toàn Trường</h3>
+            <div class="flex gap-2">
+              <button onclick="loadPendingLeaves('qt')" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded-xl transition">
+                <i class="fa-solid fa-rotate mr-1"></i> Tải đơn
+              </button>
+              <button onclick="document.getElementById('qt-file-upload-leave').click()" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-3 py-1.5 rounded-xl border border-indigo-200 transition">
+                <i class="fa-solid fa-file-csv mr-1"></i> Nạp File CSV
+              </button>
+              <input type="file" id="qt-file-upload-leave" accept=".csv" class="hidden" onchange="handleImportLeaveFile(this, 'qt')">
+            </div>
+          </div>
+          <div id="qt-leave-requests-container" class="space-y-3 text-sm text-slate-500">
+            <p class="text-center py-4 italic">Bấm "Tải đơn" để xem danh sách đơn xin nghỉ phép...</p>
+          </div>
+        </div>
       </div>
     </div>
 
   </main>
 
   <!-- ========================================== -->
-  <!-- CÁC MODAL HỆ THỐNG                         -->
+  <!-- CÁC MODAL HỆ THỐNG (POPUP)                 -->
   <!-- ========================================== -->
 
   <div id="modal-change-pin" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
@@ -571,7 +677,7 @@
     <i class="fa-solid fa-robot"></i>
   </button>
 
-  <div id="ai-chat-window" class="hidden fixed bottom-22 right-4 sm:right-6 z-40 w-[92vw] max-w-[380px] bg-white rounded-[1.75rem] shadow-2xl border border-indigo-100 overflow-hidden flex flex-col" style="height: 490px; max-height: 75vh;">
+  <div id="ai-chat-window" class="hidden fixed bottom-22 right-4 sm:right-6 z-40 w-[92vw] max-w-[390px] bg-white rounded-[1.75rem] shadow-2xl border border-indigo-100 overflow-hidden flex flex-col" style="height: 520px; max-height: 78vh;">
     <div class="bg-gradient-to-r from-blue-700 to-indigo-700 text-white p-4 flex justify-between items-center">
       <div class="flex items-center gap-2.5">
         <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-lg">
@@ -579,7 +685,7 @@
         </div>
         <div>
           <h4 class="font-bold text-sm leading-tight">Trợ Lý AI - THPT Ngô Quyền</h4>
-          <span id="chat-context-badge" class="text-[11px] text-blue-200 block">Chế độ: Cổng điểm danh</span>
+          <span id="chat-context-badge" class="text-[11px] text-blue-200 block">Cổng: Cổng điểm danh</span>
         </div>
       </div>
       <button onclick="toggleChatWidget()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-sm">
@@ -589,9 +695,12 @@
 
     <div id="chat-messages-box" class="flex-1 p-3.5 overflow-y-auto space-y-3 bg-slate-50/70 text-sm">
       <div class="chat-message-ai p-3 shadow-sm">
-        Xin chào Quý Thầy/Cô và các em Học Sinh! Mình là Trợ lý AI của hệ thống điểm danh trường THPT. Mình có thể hỗ trợ hướng dẫn sử dụng cổng điểm danh, gửi đơn xin phép hoặc tư vấn học tập!
+        Xin chào! Mình là Trợ lý AI của hệ thống điểm danh THPT Ngô Quyền. Mình có thể hỗ trợ hướng dẫn sử dụng cổng điểm danh, gửi đơn xin phép hoặc tư vấn học tập!
       </div>
     </div>
+
+    <!-- THANH GỢI Ý CÂU HỎI NHANH THEO CỔNG DỮ LIỆU -->
+    <div id="chat-suggestions-bar" class="px-3 py-2 bg-slate-50 border-t border-slate-100 flex gap-1.5 overflow-x-auto no-scrollbar"></div>
 
     <div class="p-3 bg-white border-t border-slate-100 flex gap-2 items-center">
       <input type="text" id="chat-input-field" onkeydown="if(event.key==='Enter') sendChatMessage()" placeholder="Nhập câu hỏi hoặc yêu cầu..." class="flex-1 px-3.5 py-2.5 bg-slate-100 rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-blue-500">
@@ -625,7 +734,8 @@
       isEditMode: false,
       rowIndex: null,
       reporter: null,
-      adminUser: null,
+      adminUser: null,      // Giáo viên / Giám thị
+      superAdminUser: null, // Tài khoản Quản trị độc lập
       silentLogs: []
     };
 
@@ -633,6 +743,32 @@
     let html5QrCode = null;
     let aiVideoStream = null;
     let faceApiModelsLoaded = false;
+
+    const LOCAL_PORTAL_SUGGESTIONS = {
+      "Cổng điểm danh": [
+        "Hướng dẫn cách chọn lớp và nhập mã PIN điểm danh",
+        "Cách học sinh gửi đơn xin nghỉ phép trực tuyến",
+        "Giáo viên/Giám thị đăng nhập xem thống kê ở đâu?",
+        "Quên mã PIN lớp thì xử lý thế nào?"
+      ],
+      "Thẻ Học sinh": [
+        "Xin nghỉ phép buổi sáng hôm nay vì bị ốm",
+        "Xem lại quy định nề nếp và đi học đúng giờ",
+        "Mình đang căng thẳng trước kỳ thi, cho mình lời khuyên",
+        "Cách ôn tập hiệu quả các môn tự nhiên THPT"
+      ],
+      "Thẻ Giáo viên/Giám thị": [
+        "Thống kê tiến độ nộp điểm danh toàn trường hôm nay",
+        "Kiểm tra lớp 11A1 hôm nay đã nộp điểm danh chưa?",
+        "Gợi ý biện pháp nhắc nhở học sinh đi học muộn khéo léo",
+        "Cách xử lý khi lớp báo cáo nhầm sĩ số"
+      ]
+    };
+
+    function isAdminAccountRole(roleStr) {
+      const r = String(roleStr || "").trim().toLowerCase();
+      return r.includes("quản trị") || r.includes("quan tri") || r.includes("admin") || r.includes("bgh") || r.includes("hiệu trưởng") || r.includes("hiệu phó");
+    }
 
     function showToast(msg, type = "info") {
       const box = document.getElementById("app-toast");
@@ -761,6 +897,21 @@
       return parsed;
     }
 
+    function populateStaffSelectors() {
+      const gvSel = document.getElementById("gv-select-name");
+      const qtSel = document.getElementById("qt-select-name");
+      gvSel.innerHTML = '<option value="">-- Chọn tên Giáo viên / Giám thị --</option>';
+      qtSel.innerHTML = '<option value="">-- Chọn tài khoản Quản trị --</option>';
+
+      (appData.giaoVienList || []).forEach(staff => {
+        if (isAdminAccountRole(staff.role)) {
+          qtSel.innerHTML += `<option value="${staff.name}">${staff.name} (${staff.role})</option>`;
+        } else {
+          gvSel.innerHTML += `<option value="${staff.name}">${staff.name} (${staff.role})</option>`;
+        }
+      });
+    }
+
     window.addEventListener("DOMContentLoaded", async () => {
       try {
         const init = await callBackendApi("getAppInitData");
@@ -784,11 +935,7 @@
           });
         });
 
-        const gvSel = document.getElementById("gv-select-name");
-        gvSel.innerHTML = '<option value="">-- Chọn tên của bạn --</option>';
-        appData.giaoVienList.forEach(gv => {
-          gvSel.innerHTML += `<option value="${gv.name}">${gv.name} (${gv.role})</option>`;
-        });
+        populateStaffSelectors();
 
         if (appData.requireSubject || (appData.config.CheDoDiemDanh === "Theo môn")) {
           document.getElementById("hs-subject-box").classList.remove("hidden");
@@ -805,6 +952,8 @@
         document.getElementById("gv-report-start").value = appData.dateStr;
         document.getElementById("gv-report-end").value = appData.dateStr;
 
+        renderChatSuggestions(LOCAL_PORTAL_SUGGESTIONS["Cổng điểm danh"]);
+
         if (init.isAllowed === false) {
           document.getElementById("closed-gate-msg").innerText = init.message || "Cổng điểm danh đang đóng.";
           document.getElementById("closed-gate-screen").classList.remove("hidden");
@@ -820,29 +969,50 @@
 
     function openAdminFromClosedGate() {
       document.getElementById("closed-gate-screen").classList.add("hidden");
-      switchTab("tab-giaovien");
+      switchTab("tab-quantri");
     }
 
     function openAiPhotoStation() {
       window.location.href = "ai.html";
     }
 
+    function updateHeaderActionButtons() {
+      const hasSession = Boolean(appData.reporter || appData.adminUser || appData.superAdminUser);
+      const btnPin = document.getElementById("btn-header-change-pin");
+      const btnOut = document.getElementById("btn-header-logout");
+      if (hasSession) {
+        btnPin.classList.remove("hidden");
+        btnOut.classList.remove("hidden");
+      } else {
+        btnPin.classList.add("hidden");
+        btnOut.classList.add("hidden");
+      }
+    }
+
     function switchTab(tabId) {
       document.getElementById("tab-hocsinh").classList.add("hidden");
       document.getElementById("tab-giaovien").classList.add("hidden");
+      document.getElementById("tab-quantri").classList.add("hidden");
       document.getElementById(tabId).classList.remove("hidden");
 
       const btnHs = document.getElementById("btn-tab-hocsinh");
       const btnGv = document.getElementById("btn-tab-giaovien");
+      const btnQt = document.getElementById("btn-header-admin-portal");
 
       if (tabId === "tab-hocsinh") {
         btnHs.className = "py-3 px-3 rounded-xl font-bold text-sm sm:text-base transition flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md";
         btnGv.className = "py-3 px-3 rounded-xl font-bold text-sm sm:text-base transition flex items-center justify-center gap-2 text-slate-600 hover:text-indigo-700 hover:bg-white/60";
-      } else {
+        btnQt.className = "bg-amber-400/20 hover:bg-amber-400/30 backdrop-blur px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-1.5 border border-amber-300/40 shadow-sm text-amber-200";
+      } else if (tabId === "tab-giaovien") {
         btnGv.className = "py-3 px-3 rounded-xl font-bold text-sm sm:text-base transition flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md";
         btnHs.className = "py-3 px-3 rounded-xl font-bold text-sm sm:text-base transition flex items-center justify-center gap-2 text-slate-600 hover:text-indigo-700 hover:bg-white/60";
+        btnQt.className = "bg-amber-400/20 hover:bg-amber-400/30 backdrop-blur px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-1.5 border border-amber-300/40 shadow-sm text-amber-200";
+      } else if (tabId === "tab-quantri") {
+        btnHs.className = "py-3 px-3 rounded-xl font-bold text-sm sm:text-base transition flex items-center justify-center gap-2 text-slate-600 hover:text-indigo-700 hover:bg-white/60";
+        btnGv.className = "py-3 px-3 rounded-xl font-bold text-sm sm:text-base transition flex items-center justify-center gap-2 text-slate-600 hover:text-indigo-700 hover:bg-white/60";
+        btnQt.className = "bg-amber-500 text-slate-900 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition flex items-center gap-1.5 border border-amber-200 shadow-lg";
       }
-      updateChatContextBadge();
+      refreshChatPortalContext(false);
     }
 
     async function onSelectClassChange() {
@@ -921,13 +1091,12 @@
       };
 
       document.getElementById("reporter-badge").innerHTML = `<i class="fa-solid fa-user-check text-emerald-400 mr-1.5"></i>${student.name} (${appData.selectedClass})`;
-      document.getElementById("btn-header-change-pin").classList.remove("hidden");
-      document.getElementById("btn-header-logout").classList.remove("hidden");
+      updateHeaderActionButtons();
 
       initAttendanceSheet();
       document.getElementById("hs-step-2").classList.add("hidden");
       document.getElementById("hs-step-3").classList.remove("hidden");
-      updateChatContextBadge();
+      refreshChatPortalContext(true);
 
       if (student.isFirstLogin || pin === "123456") {
         openChangePinModal(true);
@@ -1267,7 +1436,6 @@
           return;
         }
 
-        // 1. Đối chiếu nhanh trên bộ nhớ đệm Vector 128D đã tải sẵn của lớp
         let localBest = null;
         let localMinDist = 999;
         appData.students.forEach(s => {
@@ -1286,7 +1454,6 @@
           return;
         }
 
-        // 2. Gửi lên máy chủ đối chiếu toàn diện (bao gồm cả 3 góc lưu trên Sheet & Drive fallback)
         statusBadge.innerText = "🔍 Đang đối chiếu dữ liệu mẫu AI của lớp...";
         const apiRes = await callBackendApi("recognizeStudentFaceAI", {
           className: appData.selectedClass,
@@ -1333,20 +1500,29 @@
       }
     }
 
-    // ==========================================
-    // GIÁO VIÊN / GIÁM THỊ & QUẢN TRỊ
-    // ==========================================
+    // ==========================================================
+    // ĐĂNG NHẬP GIÁO VIÊN / GIÁM THỊ (CHẶN TÀI KHOẢN QUẢN TRỊ)
+    // ==========================================================
     async function loginGiaoVien() {
       const name = document.getElementById("gv-select-name").value;
       const pin = document.getElementById("gv-input-pin").value.trim();
       if (!name) return showToast("Vui lòng chọn tên Giáo viên / Giám thị!", "error");
       if (!pin) return showToast("Vui lòng nhập mã PIN!", "error");
 
+      const selectedObj = appData.giaoVienList.find(g => g.name === name);
+      if (selectedObj && isAdminAccountRole(selectedObj.role)) {
+        return showToast("Tài khoản Quản trị vui lòng đăng nhập tại nút 'Quản trị' trên góc phải!", "error");
+      }
+
       try {
         const res = await callBackendApi("verifyGiaoVien", name, pin);
         if (!res || !res.success) {
           return showToast(res?.msg || "Đăng nhập thất bại!", "error");
         }
+        if (isAdminAccountRole(res.role)) {
+          return showToast("Tài khoản Quản trị chỉ được phép đăng nhập tại cổng Quản trị!", "error");
+        }
+
         appData.adminUser = {
           type: "GV",
           name: res.adminName,
@@ -1360,12 +1536,11 @@
 
         document.getElementById("gv-login-box").classList.add("hidden");
         document.getElementById("gv-dashboard").classList.remove("hidden");
-        document.getElementById("btn-header-change-pin").classList.remove("hidden");
-        document.getElementById("btn-header-logout").classList.remove("hidden");
+        updateHeaderActionButtons();
 
-        updateChatContextBadge();
-        loadAdminStats();
-        loadPendingLeaves();
+        refreshChatPortalContext(true);
+        loadAdminStats("gv");
+        loadPendingLeaves("gv");
 
         if (res.isFirstLogin || pin === "123456") {
           openChangePinModal(true);
@@ -1380,51 +1555,125 @@
       document.getElementById("gv-dashboard").classList.add("hidden");
       document.getElementById("gv-login-box").classList.remove("hidden");
       document.getElementById("gv-input-pin").value = "";
-      if (!appData.reporter) {
-        document.getElementById("btn-header-change-pin").classList.add("hidden");
-        document.getElementById("btn-header-logout").classList.add("hidden");
+      updateHeaderActionButtons();
+      refreshChatPortalContext(true);
+    }
+
+    // ==========================================================
+    // ĐĂNG NHẬP QUẢN TRỊ ĐỘC LẬP (CHỈ TÀI KHOẢN QUẢN TRỊ MỚI VÀO)
+    // ==========================================================
+    async function loginQuanTri() {
+      const name = document.getElementById("qt-select-name").value;
+      const pin = document.getElementById("qt-input-pin").value.trim();
+      if (!name) return showToast("Vui lòng chọn tài khoản Quản trị!", "error");
+      if (!pin) return showToast("Vui lòng nhập mã PIN Quản trị!", "error");
+
+      const selectedObj = appData.giaoVienList.find(g => g.name === name);
+      if (!selectedObj || !isAdminAccountRole(selectedObj.role)) {
+        return showToast("Từ chối truy cập: Chỉ tài khoản Quản trị mới được vào khu vực này!", "error");
       }
-      updateChatContextBadge();
+
+      try {
+        const res = await callBackendApi("verifyGiaoVien", name, pin);
+        if (!res || !res.success) {
+          return showToast(res?.msg || "Đăng nhập Quản trị thất bại!", "error");
+        }
+        if (!isAdminAccountRole(res.role)) {
+          return showToast("Tài khoản này không có quyền Quản trị hệ thống!", "error");
+        }
+
+        appData.superAdminUser = {
+          type: "GV",
+          name: res.adminName,
+          role: res.role || "Quản trị",
+          url: res.url || "#"
+        };
+
+        document.getElementById("qt-role-badge").innerText = appData.superAdminUser.role.toUpperCase();
+        document.getElementById("qt-welcome-name").innerText = `Xin chào, ${appData.superAdminUser.name}`;
+        document.getElementById("qt-btn-open-sheet").href = appData.superAdminUser.url;
+
+        document.getElementById("qt-login-box").classList.add("hidden");
+        document.getElementById("qt-dashboard").classList.remove("hidden");
+        updateHeaderActionButtons();
+
+        refreshChatPortalContext(true);
+        loadAdminStats("qt");
+        loadPendingLeaves("qt");
+
+        if (res.isFirstLogin || pin === "123456") {
+          openChangePinModal(true);
+        }
+      } catch (err) {
+        showToast("Lỗi đăng nhập Quản trị: " + err.message, "error");
+      }
+    }
+
+    function logoutQuanTri() {
+      appData.superAdminUser = null;
+      document.getElementById("qt-dashboard").classList.add("hidden");
+      document.getElementById("qt-login-box").classList.remove("hidden");
+      document.getElementById("qt-input-pin").value = "";
+      updateHeaderActionButtons();
+      refreshChatPortalContext(true);
     }
 
     function logoutCurrentRole() {
+      if (appData.superAdminUser) logoutQuanTri();
       if (appData.adminUser) logoutGiaoVien();
       if (appData.reporter) {
         appData.reporter = null;
         resetToStep1();
-        document.getElementById("btn-header-change-pin").classList.add("hidden");
-        document.getElementById("btn-header-logout").classList.add("hidden");
-        updateChatContextBadge();
+        updateHeaderActionButtons();
+        refreshChatPortalContext(true);
       }
     }
 
-    async function loadAdminStats() {
+    async function loadAdminStats(target = "gv") {
       try {
         const stats = await callBackendApi("getAdminStatsWeb", appData.session, appData.dateStr);
-        document.getElementById("admin-stat-total").innerText = stats.total || 0;
-        document.getElementById("admin-stat-sub").innerText = stats.submitted || 0;
+        const total = stats.total || 0;
+        const submitted = stats.submitted || 0;
         const missing = stats.missing || [];
-        document.getElementById("admin-stat-miss").innerText = missing.length;
 
-        const missBox = document.getElementById("missing-classes-box");
-        const missList = document.getElementById("missing-classes-list");
-        if (missing.length > 0) {
-          missBox.classList.remove("hidden");
-          missList.innerHTML = missing.map(c => `<span class="px-3 py-1 bg-rose-600 text-white rounded-lg text-xs font-bold shadow-sm">${c}</span>`).join("");
+        if (target === "qt") {
+          document.getElementById("qt-stat-total").innerText = total;
+          document.getElementById("qt-stat-sub").innerText = submitted;
+          document.getElementById("qt-stat-miss").innerText = missing.length;
+          const missBox = document.getElementById("qt-missing-classes-box");
+          const missList = document.getElementById("qt-missing-classes-list");
+          if (missing.length > 0) {
+            missBox.classList.remove("hidden");
+            missList.innerHTML = missing.map(c => `<span class="px-3 py-1 bg-rose-600 text-white rounded-lg text-xs font-bold shadow-sm">${c}</span>`).join("");
+          } else {
+            missBox.classList.add("hidden");
+          }
         } else {
-          missBox.classList.add("hidden");
+          document.getElementById("admin-stat-total").innerText = total;
+          document.getElementById("admin-stat-sub").innerText = submitted;
+          document.getElementById("admin-stat-miss").innerText = missing.length;
+          const missBox = document.getElementById("missing-classes-box");
+          const missList = document.getElementById("missing-classes-list");
+          if (missing.length > 0) {
+            missBox.classList.remove("hidden");
+            missList.innerHTML = missing.map(c => `<span class="px-3 py-1 bg-rose-600 text-white rounded-lg text-xs font-bold shadow-sm">${c}</span>`).join("");
+          } else {
+            missBox.classList.add("hidden");
+          }
         }
       } catch (err) {
         showToast("Lỗi tải tiến độ điểm danh: " + err.message, "error");
       }
     }
 
-    async function loadPendingLeaves() {
-      const container = document.getElementById("leave-requests-container");
+    async function loadPendingLeaves(target = "gv") {
+      const containerId = target === "qt" ? "qt-leave-requests-container" : "leave-requests-container";
+      const container = document.getElementById(containerId);
       container.innerHTML = '<p class="text-center py-4 text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang tải đơn xin phép...</p>';
       try {
-        const gvName = appData.adminUser ? appData.adminUser.name : "";
-        const gvRole = appData.adminUser ? appData.adminUser.role : "";
+        const staffObj = target === "qt" ? appData.superAdminUser : appData.adminUser;
+        const gvName = staffObj ? staffObj.name : "";
+        const gvRole = staffObj ? staffObj.role : "";
         const list = await callBackendApi("getPendingLeaveRequests", gvName, gvRole);
         if (!Array.isArray(list) || list.length === 0) {
           container.innerHTML = '<p class="text-center py-4 text-emerald-600 font-bold">✅ Hiện không có đơn xin phép nào đang chờ duyệt.</p>';
@@ -1433,12 +1682,12 @@
         container.innerHTML = list.map(item => `
           <div class="p-3.5 bg-amber-50/70 border border-amber-200 rounded-xl flex flex-wrap justify-between items-center gap-3">
             <div>
-              <p class="font-extrabold text-slate-800">${item.name} <span class="text-indigo-700">(${item.className})</span></p>
-              <p class="text-xs text-slate-600 mt-0.5">Nghỉ ngày: <b>${item.date}</b> (${item.session}) • Lý do: ${item.reason}</p>
+              <p class="font-extrabold text-slate-800">${item.name || item.studentName} <span class="text-indigo-700">(${item.className})</span></p>
+              <p class="text-xs text-slate-600 mt-0.5">Nghỉ ngày: <b>${item.date || item.leaveDate}</b> (${item.session}) • Lý do: ${item.reason}</p>
             </div>
             <div class="flex gap-2">
-              <button onclick="handleApproveLeave(${item.rowIndex}, 'APPROVE')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow">Duyệt</button>
-              <button onclick="handleApproveLeave(${item.rowIndex}, 'REJECT')" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold shadow">Từ chối</button>
+              <button onclick="handleApproveLeave(${item.rowIndex}, 'APPROVE', '${target}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow">Duyệt</button>
+              <button onclick="handleApproveLeave(${item.rowIndex}, 'REJECT', '${target}')" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold shadow">Từ chối</button>
             </div>
           </div>
         `).join("");
@@ -1447,18 +1696,19 @@
       }
     }
 
-    async function handleApproveLeave(rowIndex, decision) {
+    async function handleApproveLeave(rowIndex, decision, target = "gv") {
       try {
-        const approver = appData.adminUser ? appData.adminUser.name : "Giáo viên";
+        const staffObj = target === "qt" ? appData.superAdminUser : appData.adminUser;
+        const approver = staffObj ? staffObj.name : "Giáo viên";
         const msg = await callBackendApi("approveLeaveRequest", rowIndex, decision, approver);
         showToast(typeof msg === "string" ? msg : "Đã cập nhật trạng thái đơn!", "success");
-        loadPendingLeaves();
+        loadPendingLeaves(target);
       } catch (err) {
         showToast("Lỗi duyệt đơn: " + err.message, "error");
       }
     }
 
-    async function handleImportLeaveFile(inputEl) {
+    async function handleImportLeaveFile(inputEl, target = "gv") {
       if (!inputEl.files || inputEl.files.length === 0) return;
       const file = inputEl.files[0];
       const reader = new FileReader();
@@ -1467,7 +1717,7 @@
           const base64 = e.target.result.split(",")[1];
           const msg = await callBackendApi("importLeaveFile", base64, file.name);
           showToast(msg, "success");
-          loadPendingLeaves();
+          loadPendingLeaves(target);
         } catch (err) {
           showToast("Lỗi nạp file CSV: " + err.message, "error");
         } finally {
@@ -1533,7 +1783,7 @@
     }
 
     // ==========================================
-    // ĐỔI MÃ PIN & CÁC MODAL PHỤ TRỢ
+    // ĐỔI MÃ PIN & CÁC MODAL QUẢN TRỊ ĐỘC QUYỀN
     // ==========================================
     function openChangePinModal(isForced = false) {
       document.getElementById("input-old-pin").value = "";
@@ -1553,7 +1803,7 @@
       if (!newPin || newPin.length < 4) return showToast("Mã PIN mới phải từ 4-6 chữ số!", "error");
       if (newPin !== confirmPin) return showToast("Xác nhận mã PIN mới không khớp!", "error");
 
-      const activeUser = appData.adminUser || appData.reporter;
+      const activeUser = appData.superAdminUser || appData.adminUser || appData.reporter;
       if (!activeUser) return;
 
       try {
@@ -1674,6 +1924,7 @@
     }
 
     function openAdminAddUserModal(type) {
+      if (!appData.superAdminUser) return showToast("Chỉ tài khoản Quản trị mới có quyền thao tác này!", "error");
       const title = document.getElementById("admin-add-title");
       const body = document.getElementById("admin-add-form-body");
       if (type === "HS") {
@@ -1687,11 +1938,11 @@
           <button onclick="submitAdminAddHS()" class="w-full py-3 bg-blue-600 text-white font-bold rounded-xl text-sm">Lưu Học Sinh</button>
         `;
       } else {
-        title.innerText = "Thêm Giám Thị / Giáo Viên";
+        title.innerText = "Thêm Giáo Viên / Giám Thị";
         body.innerHTML = `
-          <input type="text" id="new-gt-name" placeholder="Họ và tên Giám thị / Giáo viên" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold">
+          <input type="text" id="new-gt-name" placeholder="Họ và tên Giáo viên / Giám thị" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold">
           <input type="text" id="new-gt-role" placeholder="Chức vụ (VD: Giám thị, GVCN 12A01)" value="Giám thị" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm">
-          <button onclick="submitAdminAddGT()" class="w-full py-3 bg-purple-600 text-white font-bold rounded-xl text-sm">Lưu Giám Thị</button>
+          <button onclick="submitAdminAddGT()" class="w-full py-3 bg-purple-600 text-white font-bold rounded-xl text-sm">Lưu Giáo Viên / Giám Thị</button>
         `;
       }
       openModal("modal-admin-add-user");
@@ -1719,13 +1970,14 @@
     }
 
     function openAdminResetPinModal() {
+      if (!appData.superAdminUser) return showToast("Chỉ tài khoản Quản trị mới có quyền thao tác này!", "error");
       const title = document.getElementById("admin-add-title");
       const body = document.getElementById("admin-add-form-body");
       title.innerText = "Cấp Lại Mã PIN (123456)";
       body.innerHTML = `
         <select id="reset-pin-type" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold">
           <option value="HS">Học sinh</option>
-          <option value="GT">Giám thị / Giáo viên</option>
+          <option value="GT">Giáo viên / Giám thị / Quản trị</option>
         </select>
         <input type="text" id="reset-pin-cls" placeholder="Tên lớp (nếu là Học sinh, VD: 12A01)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm">
         <input type="text" id="reset-pin-name" placeholder="Họ tên chính xác (hoặc gõ ALL cho cả lớp)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold">
@@ -1748,6 +2000,7 @@
     }
 
     async function openAdminTimeConfigModal() {
+      if (!appData.superAdminUser) return showToast("Chỉ tài khoản Quản trị mới có quyền thao tác này!", "error");
       openModal("modal-admin-time-config");
       const body = document.getElementById("admin-config-body");
       body.innerHTML = '<p class="text-center py-4">Đang tải cấu hình...</p>';
@@ -1784,15 +2037,25 @@
     }
 
     // ==========================================
-    // CHATBOT AI TÍCH HỢP
+    // CHATBOT AI TÍCH HỢP ĐỒNG BỘ VỚI CODE .GS
     // ==========================================
     function toggleChatWidget() {
       const win = document.getElementById("ai-chat-window");
       win.classList.toggle("hidden");
-      updateChatContextBadge();
+      if (!win.classList.contains("hidden")) {
+        refreshChatPortalContext(true);
+      }
     }
 
     function getActiveChatContext() {
+      if (appData.superAdminUser) {
+        return {
+          role: appData.superAdminUser.role || "ADMIN",
+          name: appData.superAdminUser.name,
+          className: "",
+          currentTab: "Thẻ Giáo viên/Giám thị"
+        };
+      }
       if (appData.adminUser) {
         return {
           role: appData.adminUser.role || "GV",
@@ -1817,45 +2080,71 @@
       };
     }
 
-    function updateChatContextBadge() {
-      const ctx = getActiveChatContext();
-      const badge = document.getElementById("chat-context-badge");
-      if (badge) badge.innerText = `Chế độ: ${ctx.currentTab}`;
+    function renderChatSuggestions(suggestions) {
+      const bar = document.getElementById("chat-suggestions-bar");
+      if (!bar) return;
+      const list = Array.isArray(suggestions) && suggestions.length > 0
+        ? suggestions
+        : LOCAL_PORTAL_SUGGESTIONS["Cổng điểm danh"];
+      bar.innerHTML = "";
+      list.forEach(q => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "shrink-0 px-2.5 py-1.5 bg-white hover:bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition shadow-sm";
+        btn.innerText = q;
+        btn.onclick = () => {
+          document.getElementById("chat-input-field").value = q;
+          sendChatMessage();
+        };
+        bar.appendChild(btn);
+      });
     }
 
-    function isGenericPortalMenuReply(text) {
-      const t = String(text || "").toLowerCase();
-      return t.includes("vui lòng chọn thẻ học sinh hoặc giáo viên");
+    async function refreshChatPortalContext(fetchRemoteSuggestions = false) {
+      const ctx = getActiveChatContext();
+      const badge = document.getElementById("chat-context-badge");
+      if (badge) badge.innerText = `Cổng: ${ctx.currentTab}`;
+      renderChatSuggestions(LOCAL_PORTAL_SUGGESTIONS[ctx.currentTab]);
+
+      if (!fetchRemoteSuggestions) return;
+      try {
+        const res = await fetch(CHATBOT_WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "getChatSuggestions",
+            args: [ctx.currentTab, ctx.role, {}]
+          })
+        });
+        const data = await res.json();
+        if (data && Array.isArray(data.suggestions) && data.suggestions.length > 0) {
+          renderChatSuggestions(data.suggestions);
+        }
+        if (data && data.portalLabel && badge) {
+          badge.innerText = `Cổng: ${data.portalLabel}`;
+        }
+      } catch (e) {}
     }
 
     async function callChatBackendApi(userMsg) {
       const ctx = getActiveChatContext();
-      const bodyPayload = JSON.stringify({
-        action: "handleChatbotQuery",
-        args: [userMsg, ctx.role, ctx.name, ctx.className, ctx.currentTab]
-      });
-
-      const res1 = await fetch(CHATBOT_WEB_APP_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: bodyPayload
-      });
-      const data1 = await res1.json();
-      if (data1 && data1.text && !isGenericPortalMenuReply(data1.text)) {
-        return data1.text;
-      }
-
-      // Dự phòng gọi lại giữ nguyên ngữ cảnh tab hiện tại (không ép về Cổng điểm danh)
-      const res2 = await fetch(CHATBOT_WEB_APP_URL, {
+      const res = await fetch(CHATBOT_WEB_APP_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({
           action: "handleChatbotQuery",
-          args: [userMsg, ctx.role, ctx.name, ctx.className, ctx.currentTab]
+          args: [userMsg, ctx.role, ctx.name, ctx.className, ctx.currentTab, {}]
         })
       });
-      const data2 = await res2.json();
-      return data2?.text || "Xin lỗi, trợ lý AI chưa phản hồi kịp. Bạn vui lòng thử lại nhé!";
+      const data = await res.json();
+      if (data && Array.isArray(data.suggestions) && data.suggestions.length > 0) {
+        renderChatSuggestions(data.suggestions);
+      }
+      if (data && data.portalLabel) {
+        const badge = document.getElementById("chat-context-badge");
+        if (badge) badge.innerText = `Cổng: ${data.portalLabel}`;
+      }
+      return data?.text || "Xin lỗi, trợ lý AI chưa phản hồi kịp. Bạn vui lòng thử lại nhé!";
     }
 
     async function sendChatMessage() {
@@ -1880,6 +2169,11 @@
         const reply = await callChatBackendApi(msg);
         typingDiv.className = "chat-message-ai p-3 mr-8 shadow-sm";
         typingDiv.innerText = reply;
+
+        if (reply.includes("tự động gửi đơn xin phép")) {
+          if (appData.adminUser) loadPendingLeaves("gv");
+          if (appData.superAdminUser) loadPendingLeaves("qt");
+        }
       } catch (err) {
         typingDiv.className = "chat-message-ai p-3 mr-8 text-rose-600";
         typingDiv.innerText = "⚠️ Không kết nối được với máy chủ AI. Vui lòng thử lại sau.";

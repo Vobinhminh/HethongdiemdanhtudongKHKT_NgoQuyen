@@ -35,6 +35,10 @@
 
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .custom-dropdown::-webkit-scrollbar { width: 6px; }
+    .custom-dropdown::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.9); border-radius: 8px; }
+    .custom-dropdown::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.45); border-radius: 8px; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-3 sm:p-5 select-none">
@@ -44,11 +48,11 @@
       <i class="fa-solid fa-arrow-left"></i> Quay Lại Cổng Điểm Danh
     </a>
     <span class="px-3 py-1 bg-sky-950/90 border border-sky-500/40 rounded-full text-[11px] font-bold text-sky-300 flex items-center gap-1.5 shadow">
-      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> AI Studio 4.0
+      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> AI Studio 4.1
     </span>
   </div>
 
-  <div id="ai-main-panel" class="w-full max-w-md glass-card rounded-[2rem] p-5 sm:p-6 relative overflow-hidden">
+  <div id="ai-main-panel" class="w-full max-w-md glass-card rounded-[2rem] p-5 sm:p-6 relative overflow-visible">
     
     <div class="text-center mb-5">
       <div class="w-16 h-16 bg-gradient-to-tr from-sky-500 to-blue-600 rounded-2xl mx-auto mb-3 flex items-center justify-center shadow-lg shadow-sky-500/30 border border-sky-300/30">
@@ -66,18 +70,94 @@
         <span><strong>Bảo mật Danh tính:</strong> Hệ thống sẽ chụp liên tiếp 3 góc khuôn mặt (Chính diện - Trái - Phải) với <b>phông nền xanh thẻ học sinh</b> và trích xuất Vector 128 chiều để điểm danh tự động.</span>
       </div>
 
-      <div>
-        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">1. Chọn Lớp Học</label>
+      <!-- 1. CHỌN LỚP HỌC (GỢI Ý THÔNG MINH KHI GÕ SỐ / CHỮ) -->
+      <div class="relative" id="class-combobox-wrapper">
+        <div class="flex items-center justify-between mb-1.5">
+          <label for="ai-class-input" class="block text-xs font-bold text-slate-300 uppercase tracking-wider">1. Chọn Lớp Học</label>
+          <span id="ai-class-status" class="text-[11px] font-semibold text-sky-400">⏳ Đang tải danh sách...</span>
+        </div>
         <div class="relative">
-          <select id="ai-class-select" onchange="aiLoadStudents()" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl p-3.5 text-sm font-bold outline-none focus:border-sky-500 appearance-none shadow-inner">
-            <option value="">-- Đang tải danh sách lớp... --</option>
-          </select>
-          <i class="fa-solid fa-chevron-down absolute right-4 top-4 text-slate-400 text-xs pointer-events-none"></i>
+          <input
+            type="text"
+            id="ai-class-input"
+            autocomplete="off"
+            placeholder="Gõ số khối hoặc tên lớp (VD: 1 → 10,11,12; 10 → 10A...)"
+            onfocus="openClassSuggestions()"
+            oninput="onClassInputChange()"
+            onkeydown="handleComboboxKeydown(event, 'class')"
+            class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl p-3.5 pr-16 text-sm font-bold outline-none focus:border-sky-500 shadow-inner placeholder:text-slate-500 placeholder:font-normal"
+          >
+          <button
+            type="button"
+            id="btn-clear-class"
+            onclick="clearClassSelection()"
+            title="Xóa lớp đã chọn"
+            class="hidden absolute right-9 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-slate-800 hover:bg-rose-900/70 text-slate-400 hover:text-rose-300 text-xs items-center justify-center transition"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+          <button
+            type="button"
+            onclick="toggleClassSuggestions()"
+            title="Mở danh sách gợi ý lớp"
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg text-slate-400 hover:text-sky-400 flex items-center justify-center transition"
+          >
+            <i class="fa-solid fa-chevron-down text-xs"></i>
+          </button>
+        </div>
+
+        <!-- Dropdown gợi ý lớp -->
+        <div id="ai-class-dropdown" class="hidden absolute left-0 right-0 mt-1.5 bg-slate-900/98 backdrop-blur-xl border border-sky-500/50 rounded-2xl shadow-2xl z-40 overflow-hidden">
+          <div id="ai-class-grade-chips" class="hidden px-3 py-2 bg-sky-950/70 border-b border-slate-800 flex flex-wrap items-center gap-1.5"></div>
+          <div id="ai-class-options-list" class="max-h-48 overflow-y-auto custom-dropdown divide-y divide-slate-800/70"></div>
         </div>
       </div>
 
+      <!-- 2. CHỌN MÔN HỌC (GỢI Ý THÔNG MINH KHI GÕ SỐ / TÊN MÔN) -->
+      <div class="relative" id="subject-combobox-wrapper">
+        <div class="flex items-center justify-between mb-1.5">
+          <label for="ai-subject-input" class="block text-xs font-bold text-slate-300 uppercase tracking-wider">2. Chọn Môn Học</label>
+          <span class="text-[11px] text-slate-400">Gõ số 1-12 hoặc tên môn</span>
+        </div>
+        <div class="relative">
+          <input
+            type="text"
+            id="ai-subject-input"
+            autocomplete="off"
+            placeholder="Gõ số hoặc tên môn (VD: 1 → Vật lí, 2 → Toán...)"
+            onfocus="openSubjectSuggestions()"
+            oninput="onSubjectInputChange()"
+            onkeydown="handleComboboxKeydown(event, 'subject')"
+            class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl p-3.5 pr-16 text-sm font-bold outline-none focus:border-sky-500 shadow-inner placeholder:text-slate-500 placeholder:font-normal"
+          >
+          <button
+            type="button"
+            id="btn-clear-subject"
+            onclick="clearSubjectSelection()"
+            title="Xóa môn đã chọn"
+            class="hidden absolute right-9 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-slate-800 hover:bg-rose-900/70 text-slate-400 hover:text-rose-300 text-xs items-center justify-center transition"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+          <button
+            type="button"
+            onclick="toggleSubjectSuggestions()"
+            title="Mở danh sách gợi ý môn học"
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg text-slate-400 hover:text-sky-400 flex items-center justify-center transition"
+          >
+            <i class="fa-solid fa-book-open text-xs"></i>
+          </button>
+        </div>
+
+        <!-- Dropdown gợi ý môn học -->
+        <div id="ai-subject-dropdown" class="hidden absolute left-0 right-0 mt-1.5 bg-slate-900/98 backdrop-blur-xl border border-sky-500/50 rounded-2xl shadow-2xl z-40 overflow-hidden">
+          <div id="ai-subject-options-list" class="max-h-48 overflow-y-auto custom-dropdown divide-y divide-slate-800/70"></div>
+        </div>
+      </div>
+
+      <!-- 3. CHỌN HỌ VÀ TÊN HỌC SINH -->
       <div>
-        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">2. Chọn Họ Và Tên Học Sinh</label>
+        <label for="ai-student-select" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">3. Chọn Họ Và Tên Học Sinh</label>
         <div class="relative">
           <select id="ai-student-select" disabled class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl p-3.5 text-sm font-bold outline-none focus:border-sky-500 appearance-none disabled:opacity-50 shadow-inner">
             <option value="">-- Vui lòng chọn lớp trước --</option>
@@ -86,10 +166,11 @@
         </div>
       </div>
 
+      <!-- 4. XÁC NHẬN MÃ PIN BẢO MẬT -->
       <div>
-        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">3. Xác Nhận Mã PIN Bảo Mật</label>
+        <label for="ai-pin-input" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">4. Xác Nhận Mã PIN Bảo Mật</label>
         <div class="relative">
-          <input type="password" id="ai-pin-input" maxlength="6" inputmode="numeric" placeholder="Nhập mã PIN cá nhân..." class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl p-3.5 text-center tracking-[0.4em] font-extrabold text-lg outline-none focus:border-sky-500 shadow-inner">
+          <input type="password" id="ai-pin-input" maxlength="6" inputmode="numeric" placeholder="Nhập mã PIN cá nhân..." onkeydown="if(event.key==='Enter') aiVerifyStudent()" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl p-3.5 text-center tracking-[0.4em] font-extrabold text-lg outline-none focus:border-sky-500 shadow-inner">
         </div>
       </div>
 
@@ -103,6 +184,7 @@
         <div>
           <p class="text-[11px] text-slate-400 font-semibold">Học sinh đang thực hiện:</p>
           <p id="ai-active-student-name" class="text-sm font-extrabold text-sky-400">Nguyễn Văn A (12A01)</p>
+          <p id="ai-active-subject-badge" class="hidden text-[11px] font-bold text-emerald-400 mt-0.5"></p>
         </div>
         <button onclick="aiResetToLogin()" class="px-3 py-1.5 bg-slate-800 hover:bg-rose-900/50 text-slate-300 hover:text-rose-300 rounded-lg text-xs font-bold border border-slate-700 transition">
           <i class="fa-solid fa-right-from-bracket"></i> Đổi HS
@@ -126,7 +208,7 @@
 
       <div class="relative w-full aspect-[3/4] max-h-[380px] mx-auto rounded-3xl overflow-hidden border-2 border-sky-500 ai-scanner-active bg-slate-950 shadow-2xl flex items-center justify-center">
         <video id="ai-video-raw" class="hidden" playsinline autoplay muted></video>
-        <canvas id="ai-canvas-ar" width="480" height="640" class="w-full h-full object-cover"></canvas>
+        <canvas id="ai-canvas-ar" width="360" height="480" class="w-full h-full object-cover"></canvas>
         
         <svg viewBox="0 0 300 400" class="absolute inset-0 w-full h-full pointer-events-none z-10">
           <defs>
@@ -201,10 +283,36 @@
     const SCRIPT_ID = "AKfycby20RlZnY6m3h594868CCCeTQyRdO8y-B-dCyR6c_1rUx8h-ZSKfIDbUYtqAnpSI6TnEA";
     const WEB_APP_URL = `https://script.google.com/macros/s/${SCRIPT_ID}/exec`;
 
+    // Danh sách lớp & môn học (đồng bộ từ server + gợi ý chuẩn THPT)
+    let aiClassesList = [];
+    const DEFAULT_SUBJECTS = [
+      { code: "1", name: "Vật lí" },
+      { code: "2", name: "Toán học" },
+      { code: "3", name: "Hóa học" },
+      { code: "4", name: "Sinh học" },
+      { code: "5", name: "Tin học" },
+      { code: "6", name: "Ngữ văn" },
+      { code: "7", name: "Tiếng Anh" },
+      { code: "8", name: "Lịch sử" },
+      { code: "9", name: "Địa lí" },
+      { code: "10", name: "GDKT & PL" },
+      { code: "11", name: "Công nghệ" },
+      { code: "12", name: "GDQP & AN" }
+    ];
+    let aiSubjectsList = [...DEFAULT_SUBJECTS];
+
     let aiStudentsList = [];
     let currentStudent = null;
     let currentClassName = "";
-    
+    let currentSubjectName = "";
+    let studentFetchSeq = 0;
+
+    // Trạng thái điều hướng bàn phím cho 2 ô gợi ý
+    let classHighlightIndex = -1;
+    let subjectHighlightIndex = -1;
+    let currentFilteredClasses = [];
+    let currentFilteredSubjects = [];
+
     let captureStep = 0; 
     let capturedPhotos = [null, null, null];
     let stableFramesCount = 0;
@@ -215,9 +323,55 @@
     let selfieSegmentation = null;
     let faceMesh = null;
     let isAiRunning = false;
+    let isProcessingFrame = false;
+    let frameTick = 0;
     let latestSegmentationMask = null;
     let latestFaceLandmarks = null;
     let lastSegTimestamp = 0;
+
+    // Cache nền xanh gradient 1 lần để giảm tải GPU/CPU trên điện thoại yếu
+    const cachedBgCanvas = document.createElement('canvas');
+    cachedBgCanvas.width = 360;
+    cachedBgCanvas.height = 480;
+    (function initCachedBg() {
+      const bCtx = cachedBgCanvas.getContext('2d');
+      const grad = bCtx.createLinearGradient(0, 0, 0, 480);
+      grad.addColorStop(0, '#0284c7');
+      grad.addColorStop(1, '#1d4ed8');
+      bCtx.fillStyle = grad;
+      bCtx.fillRect(0, 0, 360, 480);
+    })();
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function normalizeViText(str) {
+      return String(str || "")
+        .normalize("NFD")
+        .replace(/[̀-ͯ]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/Đ/g, "D")
+        .toLowerCase()
+        .trim();
+    }
+
+    function highlightMatchText(text, query) {
+      const safeText = escapeHtml(text);
+      const q = String(query || "").trim();
+      if (!q) return safeText;
+      const idx = text.toLowerCase().indexOf(q.toLowerCase());
+      if (idx === -1) return safeText;
+      const before = escapeHtml(text.slice(0, idx));
+      const match = escapeHtml(text.slice(idx, idx + q.length));
+      const after = escapeHtml(text.slice(idx + q.length));
+      return `${before}<span class="text-sky-400 underline decoration-sky-400/60">${match}</span>${after}`;
+    }
 
     function aiSha256Fallback_(ascii) {
       function rightRotate(value, amount) { return (value >>> amount) | (value << (32 - amount)); }
@@ -320,23 +474,380 @@
       return JSON.parse(text);
     }
 
+    // Đóng dropdown khi click ra ngoài
+    document.addEventListener('pointerdown', (e) => {
+      const classWrap = document.getElementById('class-combobox-wrapper');
+      const subjWrap = document.getElementById('subject-combobox-wrapper');
+      if (classWrap && !classWrap.contains(e.target)) {
+        document.getElementById('ai-class-dropdown').classList.add('hidden');
+      }
+      if (subjWrap && !subjWrap.contains(e.target)) {
+        document.getElementById('ai-subject-dropdown').classList.add('hidden');
+      }
+    });
+
     window.addEventListener('DOMContentLoaded', async () => {
+      const statusEl = document.getElementById('ai-class-status');
       try {
         const data = await callGasApi('getAppInitData');
-        const classSel = document.getElementById('ai-class-select');
-        classSel.innerHTML = '<option value="">-- Chọn lớp học của bạn --</option>';
-        if (data && data.classes) {
-          data.classes.forEach(c => {
-            classSel.innerHTML += `<option value="${c}">Lớp ${c}</option>`;
+        if (data && Array.isArray(data.classes) && data.classes.length > 0) {
+          aiClassesList = data.classes.map(c => String(c).trim()).filter(Boolean);
+          statusEl.innerText = `✓ ${aiClassesList.length} lớp sẵn sàng`;
+          statusEl.className = "text-[11px] font-semibold text-emerald-400";
+        } else {
+          aiClassesList = ["10A1", "10A2", "10B1", "11A1", "11A2", "12A01", "12A02"];
+          statusEl.innerText = "Gợi ý mặc định";
+          statusEl.className = "text-[11px] font-semibold text-amber-400";
+        }
+
+        // Nếu server có trả về danh sách môn học thì đồng bộ thêm vào danh sách gợi ý
+        if (data && Array.isArray(data.subjects) && data.subjects.length > 0) {
+          const existingNorm = new Set(aiSubjectsList.map(s => normalizeViText(s.name)));
+          data.subjects.forEach((subj, i) => {
+            const sName = String(subj).trim();
+            if (sName && !existingNorm.has(normalizeViText(sName))) {
+              aiSubjectsList.push({ code: String(aiSubjectsList.length + 1), name: sName });
+              existingNorm.add(normalizeViText(sName));
+            }
           });
         }
       } catch (err) {
+        aiClassesList = ["10A1", "10A2", "10B1", "11A1", "11A2", "12A01", "12A02"];
+        statusEl.innerText = "Chế độ gợi ý offline";
+        statusEl.className = "text-[11px] font-semibold text-amber-400";
         showAiToast("Lỗi kết nối máy chủ: " + err.message, "error");
       }
     });
 
-    async function aiLoadStudents() {
-      const cls = document.getElementById('ai-class-select').value;
+    // =========================================================================
+    // LOGIC GỢI Ý CHỌN LỚP HỌC (GÕ SỐ 1 -> 10, 11, 12; GÕ 10 -> 10A, 10B...)
+    // =========================================================================
+    function extractGradePrefixes(classes) {
+      const prefixes = new Set();
+      classes.forEach(c => {
+        const m = String(c).match(/^(\d{2})/);
+        if (m) prefixes.add(m[1]);
+      });
+      if (prefixes.size === 0) return ["10", "11", "12"];
+      return Array.from(prefixes).sort((a, b) => Number(a) - Number(b));
+    }
+
+    function openClassSuggestions() {
+      document.getElementById('ai-subject-dropdown').classList.add('hidden');
+      renderClassSuggestions();
+      document.getElementById('ai-class-dropdown').classList.remove('hidden');
+    }
+
+    function toggleClassSuggestions() {
+      const dd = document.getElementById('ai-class-dropdown');
+      if (dd.classList.contains('hidden')) {
+        openClassSuggestions();
+        document.getElementById('ai-class-input').focus();
+      } else {
+        dd.classList.add('hidden');
+      }
+    }
+
+    function onClassInputChange() {
+      const inputEl = document.getElementById('ai-class-input');
+      const rawVal = inputEl.value.trim();
+      const clearBtn = document.getElementById('btn-clear-class');
+
+      if (rawVal.length > 0) {
+        clearBtn.classList.remove('hidden');
+        clearBtn.classList.add('flex');
+      } else {
+        clearBtn.classList.add('hidden');
+        clearBtn.classList.remove('flex');
+      }
+
+      // Kiểm tra khớp chính xác lớp trong danh sách
+      const exactMatch = aiClassesList.find(c => c.toLowerCase() === rawVal.toLowerCase());
+      if (exactMatch) {
+        if (currentClassName !== exactMatch) {
+          currentClassName = exactMatch;
+          aiLoadStudents(exactMatch);
+        }
+      } else {
+        // Nếu người dùng đang gõ dở (VD: "1" hoặc "10"), reset danh sách HS để tránh xung đột dữ liệu
+        if (currentClassName !== "") {
+          currentClassName = "";
+          aiStudentsList = [];
+          const stSel = document.getElementById('ai-student-select');
+          stSel.innerHTML = '<option value="">-- Vui lòng chọn đúng tên lớp từ gợi ý --</option>';
+          stSel.disabled = true;
+        }
+      }
+
+      classHighlightIndex = -1;
+      openClassSuggestions();
+    }
+
+    function applyGradePrefix(prefix) {
+      const inputEl = document.getElementById('ai-class-input');
+      inputEl.value = prefix;
+      inputEl.focus();
+      onClassInputChange();
+    }
+
+    function selectClassOption(clsName) {
+      const inputEl = document.getElementById('ai-class-input');
+      const clearBtn = document.getElementById('btn-clear-class');
+      inputEl.value = clsName;
+      clearBtn.classList.remove('hidden');
+      clearBtn.classList.add('flex');
+      document.getElementById('ai-class-dropdown').classList.add('hidden');
+
+      if (currentClassName !== clsName) {
+        currentClassName = clsName;
+        aiLoadStudents(clsName);
+      }
+    }
+
+    function clearClassSelection() {
+      const inputEl = document.getElementById('ai-class-input');
+      const clearBtn = document.getElementById('btn-clear-class');
+      inputEl.value = "";
+      currentClassName = "";
+      aiStudentsList = [];
+      clearBtn.classList.add('hidden');
+      clearBtn.classList.remove('flex');
+
+      const stSel = document.getElementById('ai-student-select');
+      stSel.innerHTML = '<option value="">-- Vui lòng chọn lớp trước --</option>';
+      stSel.disabled = true;
+
+      openClassSuggestions();
+      inputEl.focus();
+    }
+
+    function renderClassSuggestions() {
+      const rawVal = document.getElementById('ai-class-input').value.trim();
+      const q = rawVal.toLowerCase();
+      const chipsContainer = document.getElementById('ai-class-grade-chips');
+      const listContainer = document.getElementById('ai-class-options-list');
+
+      const allGrades = extractGradePrefixes(aiClassesList);
+
+      // Gợi ý nhanh theo khối khi ô trống hoặc gõ số đầu (VD: gõ "1" -> gợi ý 10, 11, 12)
+      const matchingGrades = q === ""
+        ? allGrades
+        : (/^\d+$/.test(q) ? allGrades.filter(g => g.startsWith(q) && g !== q) : []);
+
+      if (matchingGrades.length > 0) {
+        chipsContainer.classList.remove('hidden');
+        chipsContainer.innerHTML = `<span class="text-[11px] font-bold text-slate-400 mr-1">Gợi ý khối:</span>` +
+          matchingGrades.map(g => {
+            const count = aiClassesList.filter(c => c.startsWith(g)).length;
+            return `<button type="button" onmousedown="event.preventDefault(); applyGradePrefix('${escapeHtml(g)}')" class="px-2.5 py-1 rounded-lg bg-sky-500/20 hover:bg-sky-500/40 border border-sky-400/50 text-sky-300 text-xs font-extrabold transition">
+              Khối ${escapeHtml(g)} <span class="text-[10px] opacity-75">(${count})</span>
+            </button>`;
+          }).join('');
+      } else {
+        chipsContainer.classList.add('hidden');
+        chipsContainer.innerHTML = '';
+      }
+
+      // Lọc các lớp khớp (ưu tiên khớp đầu chuỗi trước, sau đó đến chứa chuỗi)
+      const startsWithMatches = aiClassesList.filter(c => c.toLowerCase().startsWith(q));
+      const containsMatches = aiClassesList.filter(c => !c.toLowerCase().startsWith(q) && c.toLowerCase().includes(q));
+      currentFilteredClasses = q === "" ? [...aiClassesList] : [...startsWithMatches, ...containsMatches];
+
+      if (currentFilteredClasses.length === 0) {
+        listContainer.innerHTML = `
+          <div class="p-3 text-xs text-slate-400 text-center">
+            Không tìm thấy lớp khớp "<span class="text-amber-400 font-bold">${escapeHtml(rawVal)}</span>"
+          </div>`;
+        return;
+      }
+
+      listContainer.innerHTML = currentFilteredClasses.map((cls, idx) => {
+        const isSelected = cls === currentClassName;
+        const isHighlighted = idx === classHighlightIndex;
+        const rowBg = isHighlighted
+          ? "bg-sky-600/35 text-white"
+          : (isSelected ? "bg-sky-950/80 text-sky-300" : "hover:bg-slate-800/90 text-slate-200");
+
+        return `
+          <button type="button"
+            onmousedown="event.preventDefault(); selectClassOption('${escapeHtml(cls)}')"
+            class="w-full px-3.5 py-2.5 text-left text-sm font-bold flex items-center justify-between transition ${rowBg}">
+            <span><i class="fa-solid fa-chalkboard-user text-sky-400 mr-2 text-xs"></i>Lớp ${highlightMatchText(cls, rawVal)}</span>
+            ${isSelected ? '<span class="text-[11px] font-extrabold text-emerald-400"><i class="fa-solid fa-check"></i> Đang chọn</span>' : '<span class="text-[11px] text-slate-500">Chọn</span>'}
+          </button>`;
+      }).join('');
+    }
+
+    // =========================================================================
+    // LOGIC GỢI Ý CHỌN MÔN HỌC (GÕ SỐ 1 -> VẬT LÍ, 2 -> TOÁN... HOẶC TÊN MÔN)
+    // =========================================================================
+    function openSubjectSuggestions() {
+      document.getElementById('ai-class-dropdown').classList.add('hidden');
+      renderSubjectSuggestions();
+      document.getElementById('ai-subject-dropdown').classList.remove('hidden');
+    }
+
+    function toggleSubjectSuggestions() {
+      const dd = document.getElementById('ai-subject-dropdown');
+      if (dd.classList.contains('hidden')) {
+        openSubjectSuggestions();
+        document.getElementById('ai-subject-input').focus();
+      } else {
+        dd.classList.add('hidden');
+      }
+    }
+
+    function onSubjectInputChange() {
+      const inputEl = document.getElementById('ai-subject-input');
+      const rawVal = inputEl.value.trim();
+      const clearBtn = document.getElementById('btn-clear-subject');
+
+      if (rawVal.length > 0) {
+        clearBtn.classList.remove('hidden');
+        clearBtn.classList.add('flex');
+      } else {
+        clearBtn.classList.add('hidden');
+        clearBtn.classList.remove('flex');
+      }
+
+      const matched = aiSubjectsList.find(s => normalizeViText(s.name) === normalizeViText(rawVal));
+      currentSubjectName = matched ? matched.name : rawVal;
+
+      subjectHighlightIndex = -1;
+      openSubjectSuggestions();
+    }
+
+    function selectSubjectOption(subjName) {
+      const inputEl = document.getElementById('ai-subject-input');
+      const clearBtn = document.getElementById('btn-clear-subject');
+      inputEl.value = subjName;
+      currentSubjectName = subjName;
+      clearBtn.classList.remove('hidden');
+      clearBtn.classList.add('flex');
+      document.getElementById('ai-subject-dropdown').classList.add('hidden');
+    }
+
+    function clearSubjectSelection() {
+      const inputEl = document.getElementById('ai-subject-input');
+      const clearBtn = document.getElementById('btn-clear-subject');
+      inputEl.value = "";
+      currentSubjectName = "";
+      clearBtn.classList.add('hidden');
+      clearBtn.classList.remove('flex');
+      openSubjectSuggestions();
+      inputEl.focus();
+    }
+
+    function renderSubjectSuggestions() {
+      const rawVal = document.getElementById('ai-subject-input').value.trim();
+      const normQ = normalizeViText(rawVal);
+      const listContainer = document.getElementById('ai-subject-options-list');
+
+      if (!normQ) {
+        currentFilteredSubjects = [...aiSubjectsList];
+      } else if (/^\d+$/.test(normQ)) {
+        // Nếu người dùng gõ số (VD: 1 -> 1. Vật lí, 10. GDKT & PL, 11. Công nghệ, 12. GDQP & AN)
+        const exactCode = aiSubjectsList.filter(s => s.code === normQ);
+        const prefixCode = aiSubjectsList.filter(s => s.code !== normQ && s.code.startsWith(normQ));
+        currentFilteredSubjects = [...exactCode, ...prefixCode];
+      } else {
+        const starts = aiSubjectsList.filter(s => normalizeViText(s.name).startsWith(normQ));
+        const contains = aiSubjectsList.filter(s => !normalizeViText(s.name).startsWith(normQ) && normalizeViText(s.name).includes(normQ));
+        currentFilteredSubjects = [...starts, ...contains];
+      }
+
+      if (currentFilteredSubjects.length === 0) {
+        listContainer.innerHTML = `
+          <button type="button"
+            onmousedown="event.preventDefault(); selectSubjectOption('${escapeHtml(rawVal)}')"
+            class="w-full px-3.5 py-2.5 text-left text-xs text-sky-300 hover:bg-slate-800 flex items-center justify-between">
+            <span>Dùng môn tự nhập: <strong class="text-white">${escapeHtml(rawVal)}</strong></span>
+            <span class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-bold">Chọn</span>
+          </button>`;
+        return;
+      }
+
+      listContainer.innerHTML = currentFilteredSubjects.map((subj, idx) => {
+        const isSelected = subj.name === currentSubjectName;
+        const isHighlighted = idx === subjectHighlightIndex;
+        const rowBg = isHighlighted
+          ? "bg-sky-600/35 text-white"
+          : (isSelected ? "bg-sky-950/80 text-sky-300" : "hover:bg-slate-800/90 text-slate-200");
+
+        return `
+          <button type="button"
+            onmousedown="event.preventDefault(); selectSubjectOption('${escapeHtml(subj.name)}')"
+            class="w-full px-3.5 py-2.5 text-left text-sm font-bold flex items-center justify-between transition ${rowBg}">
+            <span class="flex items-center gap-2">
+              <span class="inline-flex items-center justify-center min-w-[24px] h-5 px-1.5 rounded bg-slate-800 border border-slate-700 text-[11px] font-extrabold text-sky-400">${escapeHtml(subj.code)}</span>
+              <span>${highlightMatchText(subj.name, rawVal)}</span>
+            </span>
+            ${isSelected ? '<span class="text-[11px] font-extrabold text-emerald-400"><i class="fa-solid fa-check"></i> Đang chọn</span>' : ''}
+          </button>`;
+      }).join('');
+    }
+
+    // Điều hướng phím mũi tên lên/xuống/Enter/Esc cho 2 ô gợi ý
+    function handleComboboxKeydown(event, type) {
+      const isClass = type === 'class';
+      const dropdown = document.getElementById(isClass ? 'ai-class-dropdown' : 'ai-subject-dropdown');
+      const items = isClass ? currentFilteredClasses : currentFilteredSubjects;
+
+      if (event.key === 'Escape') {
+        dropdown.classList.add('hidden');
+        return;
+      }
+
+      if (dropdown.classList.contains('hidden')) {
+        if (event.key === 'ArrowDown') {
+          isClass ? openClassSuggestions() : openSubjectSuggestions();
+        }
+        return;
+      }
+
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        if (items.length === 0) return;
+        if (isClass) {
+          classHighlightIndex = (classHighlightIndex + 1) % items.length;
+          renderClassSuggestions();
+        } else {
+          subjectHighlightIndex = (subjectHighlightIndex + 1) % items.length;
+          renderSubjectSuggestions();
+        }
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        if (items.length === 0) return;
+        if (isClass) {
+          classHighlightIndex = (classHighlightIndex - 1 + items.length) % items.length;
+          renderClassSuggestions();
+        } else {
+          subjectHighlightIndex = (subjectHighlightIndex - 1 + items.length) % items.length;
+          renderSubjectSuggestions();
+        }
+      } else if (event.key === 'Enter') {
+        event.preventDefault();
+        if (items.length === 0) {
+          dropdown.classList.add('hidden');
+          return;
+        }
+        const targetIdx = isClass
+          ? (classHighlightIndex >= 0 ? classHighlightIndex : 0)
+          : (subjectHighlightIndex >= 0 ? subjectHighlightIndex : 0);
+
+        if (isClass) {
+          selectClassOption(items[targetIdx]);
+        } else {
+          selectSubjectOption(items[targetIdx].name);
+        }
+      }
+    }
+
+    // =========================================================================
+    // TẢI DANH SÁCH HỌC SINH (CÓ CHỐNG XUNG ĐỘT RACE CONDITION)
+    // =========================================================================
+    async function aiLoadStudents(clsOverride) {
+      const cls = (clsOverride || currentClassName || document.getElementById('ai-class-input').value).trim();
       const stSel = document.getElementById('ai-student-select');
       
       if (!cls) {
@@ -345,61 +856,95 @@
         return;
       }
 
+      const reqId = ++studentFetchSeq;
       stSel.innerHTML = '<option value="">⏳ Đang tải danh sách học sinh...</option>';
       stSel.disabled = true;
 
       try {
         const res = await callGasApi('getClassDataRawStudents', [cls]);
-        aiStudentsList = (res && res.students) ? res.students : [];
+        // Bỏ qua kết quả cũ nếu người dùng đã chuyển sang lớp khác
+        if (reqId !== studentFetchSeq) return;
+
+        aiStudentsList = (res && Array.isArray(res.students)) ? res.students : [];
         stSel.innerHTML = '<option value="">-- Chọn tên của bạn --</option>';
         
         aiStudentsList.forEach((st, idx) => {
           const badge = st.hasFaceSample ? " (Đã có ảnh AI)" : "";
-          stSel.innerHTML += `<option value="${idx}">${st.name} (${st.maHS || 'Chưa có mã'})${badge}</option>`;
+          const safeName = escapeHtml(st.name);
+          const safeCode = escapeHtml(st.maHS || 'Chưa có mã');
+          stSel.innerHTML += `<option value="${idx}">${safeName} (${safeCode})${badge}</option>`;
         });
         stSel.disabled = false;
       } catch (err) {
+        if (reqId !== studentFetchSeq) return;
         showAiToast("Không tải được danh sách học sinh: " + err.message, "error");
         stSel.innerHTML = '<option value="">❌ Lỗi tải dữ liệu</option>';
       }
     }
 
     async function aiVerifyStudent() {
-      const cls = document.getElementById('ai-class-select').value;
+      const typedClass = document.getElementById('ai-class-input').value.trim();
+      const cls = currentClassName || aiClassesList.find(c => c.toLowerCase() === typedClass.toLowerCase()) || "";
+      const subj = currentSubjectName || document.getElementById('ai-subject-input').value.trim();
       const idx = document.getElementById('ai-student-select').value;
       const pin = document.getElementById('ai-pin-input').value.trim();
 
-      if (!cls) return showAiToast("Vui lòng chọn lớp học!", "error");
-      if (idx === "") return showAiToast("Vui lòng chọn tên học sinh!", "error");
+      if (!cls) return showAiToast("Vui lòng chọn lớp học hợp lệ từ danh sách gợi ý!", "error");
+      if (idx === "" || !aiStudentsList[parseInt(idx, 10)]) {
+        return showAiToast("Vui lòng chọn tên học sinh!", "error");
+      }
       if (!pin) return showAiToast("Vui lòng nhập mã PIN cá nhân!", "error");
 
-      const student = aiStudentsList[parseInt(idx, 10)];
-      let isPinValid = false;
-      if (student.pinHash) {
-        const enteredHash = await aiSha256Hex(`${student.salt || student.maHS || student.name}:${pin}`);
-        isPinValid = (enteredHash === student.pinHash);
-      } else if (student.pin) {
-        isPinValid = (String(student.pin).trim() === pin);
-      } else {
-        const verifyRes = await callGasApi('verifyStudentPin', [cls, student.maHS || student.name, pin]);
-        isPinValid = Boolean(verifyRes && verifyRes.success);
-      }
+      const btn = document.getElementById('btn-verify-student');
+      const oldBtnHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xác thực mã PIN...';
 
-      if (!isPinValid) {
-        return showAiToast("Mã PIN không chính xác! Vui lòng thử lại.", "error");
-      }
+      try {
+        const student = aiStudentsList[parseInt(idx, 10)];
+        let isPinValid = false;
+        if (student.pinHash) {
+          const enteredHash = await aiSha256Hex(`${student.salt || student.maHS || student.name}:${pin}`);
+          isPinValid = (enteredHash === student.pinHash);
+        } else if (student.pin) {
+          isPinValid = (String(student.pin).trim() === pin);
+        } else {
+          const verifyRes = await callGasApi('verifyStudentPin', [cls, student.maHS || student.name, pin]);
+          isPinValid = Boolean(verifyRes && verifyRes.success);
+        }
 
-      currentStudent = student;
-      currentClassName = cls;
-      
-      document.getElementById('ai-active-student-name').innerText = `${student.name} (${cls})`;
-      document.getElementById('ai-step-1-login').classList.add('hidden');
-      document.getElementById('ai-step-2-camera').classList.remove('hidden');
-      
-      captureStep = 0;
-      capturedPhotos = [null, null, null];
-      updateStepBadges();
-      startAiCameraSystem();
+        if (!isPinValid) {
+          return showAiToast("Mã PIN không chính xác! Vui lòng thử lại.", "error");
+        }
+
+        currentStudent = student;
+        currentClassName = cls;
+        currentSubjectName = subj;
+        
+        document.getElementById('ai-active-student-name').innerText = `${student.name} (${cls})`;
+        const subjBadge = document.getElementById('ai-active-subject-badge');
+        if (subj) {
+          subjBadge.innerHTML = `<i class="fa-solid fa-book mr-1"></i>Môn học: ${escapeHtml(subj)}`;
+          subjBadge.classList.remove('hidden');
+        } else {
+          subjBadge.classList.add('hidden');
+        }
+
+        document.getElementById('ai-step-1-login').classList.add('hidden');
+        document.getElementById('ai-step-2-camera').classList.remove('hidden');
+        
+        captureStep = 0;
+        capturedPhotos = [null, null, null];
+        stableFramesCount = 0;
+        isCapturingCooldown = false;
+        updateStepBadges();
+        startAiCameraSystem();
+      } catch (err) {
+        showAiToast("Lỗi xác thực: " + err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = oldBtnHtml;
+      }
     }
 
     function aiResetToLogin() {
@@ -433,8 +978,14 @@
     }
 
     async function startAiCameraSystem() {
+      if (isAiRunning) return;
       const videoEl = document.getElementById('ai-video-raw');
       const loader = document.getElementById('ai-camera-loader');
+      loader.innerHTML = `
+        <i class="fa-solid fa-circle-notch fa-spin text-4xl text-sky-400 mb-3"></i>
+        <p class="text-sm font-bold text-white">Đang khởi động AI Phông Xanh & AR...</p>
+        <p class="text-xs text-slate-400 mt-1">Vui lòng cấp quyền truy cập Camera cho trình duyệt</p>
+      `;
       loader.classList.remove('hidden');
 
       try {
@@ -466,33 +1017,55 @@
         }
 
         isAiRunning = true;
+        isProcessingFrame = false;
+        frameTick = 0;
+
         cameraObj = new Camera(videoEl, {
           onFrame: async () => {
-            if (!isAiRunning) return;
-            const now = performance.now();
-            if (now - lastSegTimestamp >= 65) {
-              lastSegTimestamp = now;
-              await selfieSegmentation.send({ image: videoEl });
+            if (!isAiRunning || isProcessingFrame) return;
+            isProcessingFrame = true;
+            try {
+              frameTick++;
+              const now = performance.now();
+              if (now - lastSegTimestamp >= 95) {
+                lastSegTimestamp = now;
+                await selfieSegmentation.send({ image: videoEl });
+              } else if (frameTick % 2 === 0) {
+                await faceMesh.send({ image: videoEl });
+              }
+              renderAiCanvasAndAnalyze();
+            } catch (frameErr) {
+              console.warn("Frame AI skip:", frameErr);
+            } finally {
+              isProcessingFrame = false;
             }
-            await faceMesh.send({ image: videoEl });
-            renderAiCanvasAndAnalyze();
           },
-          width: 480,
-          height: 640,
+          width: 360,
+          height: 480,
           facingMode: "user"
         });
 
         await cameraObj.start();
         loader.classList.add('hidden');
       } catch (err) {
-        loader.innerHTML = `<i class="fa-solid fa-video-slash text-4xl text-rose-500 mb-2"></i><p class="text-sm font-bold text-rose-400">Không thể mở Camera</p><p class="text-xs text-slate-300 mt-1">${err.message}</p>`;
+        isAiRunning = false;
+        loader.innerHTML = `<i class="fa-solid fa-video-slash text-4xl text-rose-500 mb-2"></i><p class="text-sm font-bold text-rose-400">Không thể mở Camera</p><p class="text-xs text-slate-300 mt-1">${escapeHtml(err.message)}</p>`;
       }
     }
 
     function stopAiCameraSystem() {
       isAiRunning = false;
+      isProcessingFrame = false;
       if (cameraObj) {
         try { cameraObj.stop(); } catch(e) {}
+        cameraObj = null;
+      }
+      const videoEl = document.getElementById('ai-video-raw');
+      if (videoEl && videoEl.srcObject) {
+        try {
+          videoEl.srcObject.getTracks().forEach(track => track.stop());
+        } catch (e) {}
+        videoEl.srcObject = null;
       }
     }
 
@@ -512,14 +1085,12 @@
       if (latestSegmentationMask) {
         ctx.drawImage(videoEl, 0, 0, w, h);
         ctx.globalCompositeOperation = 'destination-in';
+        ctx.imageSmoothingEnabled = false;
         ctx.drawImage(latestSegmentationMask, 0, 0, w, h);
+        ctx.imageSmoothingEnabled = true;
 
         ctx.globalCompositeOperation = 'destination-over';
-        const grad = ctx.createLinearGradient(0, 0, 0, h);
-        grad.addColorStop(0, '#0284c7');
-        grad.addColorStop(1, '#1d4ed8');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(cachedBgCanvas, 0, 0, w, h);
       } else {
         ctx.drawImage(videoEl, 0, 0, w, h);
       }
@@ -739,6 +1310,7 @@
 
         const payload = {
           className: currentClassName,
+          subject: currentSubjectName || "",
           ma_hs: currentStudent.maHS || "",
           ten_hs: currentStudent.name,
           samples: capturedPhotos,
@@ -761,7 +1333,7 @@
           showAiToast("🎉 Đã lưu thành công bộ 3 ảnh AI" + vecNote + "!", "success");
           setTimeout(() => {
             aiResetToLogin();
-            aiLoadStudents();
+            aiLoadStudents(currentClassName);
           }, 2000);
         } else {
           throw new Error(result.msg || "Lỗi lưu trữ không xác định");

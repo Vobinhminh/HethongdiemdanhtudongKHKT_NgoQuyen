@@ -57,7 +57,7 @@
       <i class="fa-solid fa-arrow-left"></i> Quay Lại Cổng Điểm Danh
     </a>
     <span class="px-3 py-1 bg-sky-950/90 border border-sky-500/40 rounded-full text-[11px] font-bold text-sky-300 flex items-center gap-1.5 shadow">
-      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> AI Studio 4.2
+      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> AI Studio 4.3
     </span>
   </div>
 
@@ -79,7 +79,7 @@
         <span><strong>Bảo mật Danh tính:</strong> Hệ thống sẽ chụp liên tiếp 3 góc khuôn mặt (Chính diện - Trái - Phải) với <b>phông nền xanh thẻ học sinh</b> và trích xuất Vector 128 chiều để điểm danh tự động.</span>
       </div>
 
-      <!-- 1. CHỌN LỚP HỌC (GỢI Ý THÔNG MINH KHI GÕ SỐ / CHỮ) -->
+      <!-- 1. CHỌN LỚP HỌC -->
       <div class="relative" id="class-combobox-wrapper">
         <div class="flex items-center justify-between mb-1.5">
           <label for="ai-class-input" class="block text-xs font-bold text-slate-300 uppercase tracking-wider">1. Chọn Lớp Học</label>
@@ -90,10 +90,10 @@
             type="text"
             id="ai-class-input"
             autocomplete="off"
-            placeholder="Gõ số khối hoặc tên lớp (VD: 1 → 10,11,12; 10 → 10A...)"
+            placeholder="Gõ số khối hoặc tên lớp"
             onfocus="openClassSuggestions()"
             oninput="onClassInputChange()"
-            onkeydown="handleComboboxKeydown(event, 'class')"
+            onkeydown="handleClassKeydown(event)"
             class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl p-3.5 pr-16 text-sm font-bold outline-none focus:border-sky-500 shadow-inner placeholder:text-slate-500 placeholder:font-normal"
           >
           <button
@@ -122,59 +122,36 @@
         </div>
       </div>
 
-      <!-- 2. CHỌN CHỨC VỤ (GỢI Ý THÔNG MINH + ĐỒNG BỘ VỚI HỌC SINH) -->
-      <div class="relative" id="role-combobox-wrapper">
+      <!-- 2. CHỌN HỌ VÀ TÊN HỌC SINH -->
+      <div>
         <div class="flex items-center justify-between mb-1.5">
-          <label for="ai-role-input" class="block text-xs font-bold text-slate-300 uppercase tracking-wider">2. Chọn Chức Vụ</label>
-          <span id="ai-role-hint" class="text-[11px] text-slate-400">Gõ số 1-7 hoặc tên chức vụ</span>
+          <label for="ai-student-select" class="block text-xs font-bold text-slate-300 uppercase tracking-wider">2. Chọn Họ Và Tên Học Sinh</label>
+          <span id="ai-student-count-tag" class="hidden text-[11px] font-semibold text-emerald-400"></span>
+        </div>
+        <div class="relative">
+          <select id="ai-student-select" onchange="onAiStudentSelectChange()" disabled class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl p-3.5 pr-10 text-sm font-bold outline-none focus:border-sky-500 appearance-none disabled:opacity-50 shadow-inner">
+            <option value="">-- Vui lòng chọn lớp trước --</option>
+          </select>
+          <i class="fa-solid fa-user-graduate absolute right-4 top-4 text-slate-400 text-xs pointer-events-none"></i>
+        </div>
+      </div>
+
+      <!-- 3. CHỨC VỤ-->
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label for="ai-role-display" class="block text-xs font-bold text-slate-300 uppercase tracking-wider">3. Chức Vụ</label>
+          <span id="ai-role-status-badge" class="text-[11px] text-slate-400">Tự động hiển thị theo tên</span>
         </div>
         <div class="relative">
           <input
             type="text"
-            id="ai-role-input"
-            autocomplete="off"
-            placeholder="Gõ số hoặc chức vụ (VD: 1 → Thành viên, 2 → Lớp trưởng...)"
-            onfocus="openRoleSuggestions()"
-            oninput="onRoleInputChange()"
-            onkeydown="handleComboboxKeydown(event, 'role')"
-            class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl p-3.5 pr-16 text-sm font-bold outline-none focus:border-sky-500 shadow-inner placeholder:text-slate-500 placeholder:font-normal"
+            id="ai-role-display"
+            readonly
+            value=""
+            placeholder="-- Tự động hiện sau khi chọn tên học sinh --"
+            class="w-full bg-slate-900/90 border border-slate-700/90 text-sky-300 rounded-xl p-3.5 pr-11 text-sm font-extrabold outline-none shadow-inner placeholder:text-slate-500 placeholder:font-normal cursor-default"
           >
-          <button
-            type="button"
-            id="btn-clear-role"
-            onclick="clearRoleSelection()"
-            title="Xóa chức vụ đã chọn"
-            class="hidden absolute right-9 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-slate-800 hover:bg-rose-900/70 text-slate-400 hover:text-rose-300 text-xs items-center justify-center transition"
-          >
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-          <button
-            type="button"
-            onclick="toggleRoleSuggestions()"
-            title="Mở danh sách gợi ý chức vụ"
-            class="absolute right-2.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg text-slate-400 hover:text-sky-400 flex items-center justify-center transition"
-          >
-            <i class="fa-solid fa-id-badge text-xs"></i>
-          </button>
-        </div>
-
-        <!-- Dropdown gợi ý chức vụ -->
-        <div id="ai-role-dropdown" class="hidden absolute left-0 right-0 mt-1.5 bg-slate-900/98 backdrop-blur-xl border border-sky-500/50 rounded-2xl shadow-2xl z-40 overflow-hidden">
-          <div id="ai-role-options-list" class="max-h-48 overflow-y-auto custom-dropdown divide-y divide-slate-800/70"></div>
-        </div>
-      </div>
-
-      <!-- 3. CHỌN HỌ VÀ TÊN HỌC SINH -->
-      <div>
-        <div class="flex items-center justify-between mb-1.5">
-          <label for="ai-student-select" class="block text-xs font-bold text-slate-300 uppercase tracking-wider">3. Chọn Họ Và Tên Học Sinh</label>
-          <span id="ai-student-filter-tag" class="hidden text-[11px] font-bold text-sky-400"></span>
-        </div>
-        <div class="relative">
-          <select id="ai-student-select" onchange="onAiStudentSelectChange()" disabled class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl p-3.5 text-sm font-bold outline-none focus:border-sky-500 appearance-none disabled:opacity-50 shadow-inner">
-            <option value="">-- Vui lòng chọn lớp trước --</option>
-          </select>
-          <i class="fa-solid fa-user-graduate absolute right-4 top-4 text-slate-400 text-xs pointer-events-none"></i>
+          <i id="ai-role-icon" class="fa-solid fa-id-badge absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none"></i>
         </div>
       </div>
 
@@ -295,31 +272,16 @@
     const SCRIPT_ID = "AKfycby20RlZnY6m3h594868CCCeTQyRdO8y-B-dCyR6c_1rUx8h-ZSKfIDbUYtqAnpSI6TnEA";
     const WEB_APP_URL = `https://script.google.com/macros/s/${SCRIPT_ID}/exec`;
 
-    // Danh sách lớp & chức vụ chuẩn đồng bộ với hệ thống điểm danh
     let aiClassesList = [];
-    const DEFAULT_ROLES = [
-      { code: "1", name: "Thành viên" },
-      { code: "2", name: "Lớp trưởng" },
-      { code: "3", name: "Lớp phó" },
-      { code: "4", name: "Bí thư" },
-      { code: "5", name: "Phó bí thư" },
-      { code: "6", name: "Tổ trưởng" },
-      { code: "7", name: "Thành viên (GVCN chỉ định)" }
-    ];
-    let aiRolesList = [...DEFAULT_ROLES];
-
     let aiStudentsList = [];
     let currentStudent = null;
     let currentClassName = "";
     let currentRoleName = "";
-    let isRoleFilterActive = false;
     let studentFetchSeq = 0;
 
-    // Trạng thái điều hướng bàn phím cho 2 ô gợi ý
+    // Trạng thái điều hướng bàn phím cho ô chọn lớp
     let classHighlightIndex = -1;
-    let roleHighlightIndex = -1;
     let currentFilteredClasses = [];
-    let currentFilteredRoles = [];
 
     let captureStep = 0; 
     let capturedPhotos = [null, null, null];
@@ -482,15 +444,11 @@
       return JSON.parse(text);
     }
 
-    // Đóng dropdown khi click ra ngoài
+    // Đóng dropdown lớp khi click ra ngoài
     document.addEventListener('pointerdown', (e) => {
       const classWrap = document.getElementById('class-combobox-wrapper');
-      const roleWrap = document.getElementById('role-combobox-wrapper');
       if (classWrap && !classWrap.contains(e.target)) {
         document.getElementById('ai-class-dropdown').classList.add('hidden');
-      }
-      if (roleWrap && !roleWrap.contains(e.target)) {
-        document.getElementById('ai-role-dropdown').classList.add('hidden');
       }
     });
 
@@ -516,7 +474,7 @@
     });
 
     // =========================================================================
-    // 1. LOGIC GỢI Ý CHỌN LỚP HỌC (GÕ SỐ 1 -> 10, 11, 12; GÕ 10 -> 10A, 10B...)
+    // 1. LOGIC GỢI Ý CHỌN LỚP HỌC
     // =========================================================================
     function extractGradePrefixes(classes) {
       const prefixes = new Set();
@@ -529,7 +487,6 @@
     }
 
     function openClassSuggestions() {
-      document.getElementById('ai-role-dropdown').classList.add('hidden');
       renderClassSuggestions();
       document.getElementById('ai-class-dropdown').classList.remove('hidden');
     }
@@ -541,6 +498,24 @@
         document.getElementById('ai-class-input').focus();
       } else {
         dd.classList.add('hidden');
+      }
+    }
+
+    function resetRoleDisplay() {
+      currentRoleName = "";
+      const roleInput = document.getElementById('ai-role-display');
+      const roleStatus = document.getElementById('ai-role-status-badge');
+      const roleIcon = document.getElementById('ai-role-icon');
+      if (roleInput) {
+        roleInput.value = "";
+        roleInput.className = "w-full bg-slate-900/90 border border-slate-700/90 text-sky-300 rounded-xl p-3.5 pr-11 text-sm font-extrabold outline-none shadow-inner placeholder:text-slate-500 placeholder:font-normal cursor-default";
+      }
+      if (roleStatus) {
+        roleStatus.innerText = "Tự động hiển thị theo tên";
+        roleStatus.className = "text-[11px] text-slate-400";
+      }
+      if (roleIcon) {
+        roleIcon.className = "fa-solid fa-id-badge absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none";
       }
     }
 
@@ -561,6 +536,7 @@
       if (exactMatch) {
         if (currentClassName !== exactMatch) {
           currentClassName = exactMatch;
+          resetRoleDisplay();
           aiLoadStudents(exactMatch);
         }
       } else {
@@ -570,7 +546,8 @@
           const stSel = document.getElementById('ai-student-select');
           stSel.innerHTML = '<option value="">-- Vui lòng chọn đúng tên lớp từ gợi ý --</option>';
           stSel.disabled = true;
-          document.getElementById('ai-student-filter-tag').classList.add('hidden');
+          document.getElementById('ai-student-count-tag').classList.add('hidden');
+          resetRoleDisplay();
         }
       }
 
@@ -595,6 +572,7 @@
 
       if (currentClassName !== clsName) {
         currentClassName = clsName;
+        resetRoleDisplay();
         aiLoadStudents(clsName);
       }
     }
@@ -611,7 +589,8 @@
       const stSel = document.getElementById('ai-student-select');
       stSel.innerHTML = '<option value="">-- Vui lòng chọn lớp trước --</option>';
       stSel.disabled = true;
-      document.getElementById('ai-student-filter-tag').classList.add('hidden');
+      document.getElementById('ai-student-count-tag').classList.add('hidden');
+      resetRoleDisplay();
 
       openClassSuggestions();
       inputEl.focus();
@@ -672,149 +651,9 @@
       }).join('');
     }
 
-    // =========================================================================
-    // 2. LOGIC GỢI Ý CHỌN CHỨC VỤ (ĐỒNG BỘ 2 CHIỀU VỚI DANH SÁCH HỌC SINH)
-    // =========================================================================
-    function syncDynamicRolesFromStudents(students) {
-      const merged = [...DEFAULT_ROLES];
-      const existingNorm = new Set(merged.map(r => normalizeViText(r.name)));
-      (students || []).forEach(st => {
-        const rName = String(st.role || "").trim();
-        if (rName && !existingNorm.has(normalizeViText(rName))) {
-          merged.push({ code: String(merged.length + 1), name: rName });
-          existingNorm.add(normalizeViText(rName));
-        }
-      });
-      aiRolesList = merged;
-      const hintEl = document.getElementById('ai-role-hint');
-      if (hintEl) hintEl.innerText = `Gõ số 1-${aiRolesList.length} hoặc tên chức vụ`;
-    }
-
-    function openRoleSuggestions() {
-      document.getElementById('ai-class-dropdown').classList.add('hidden');
-      renderRoleSuggestions();
-      document.getElementById('ai-role-dropdown').classList.remove('hidden');
-    }
-
-    function toggleRoleSuggestions() {
-      const dd = document.getElementById('ai-role-dropdown');
-      if (dd.classList.contains('hidden')) {
-        openRoleSuggestions();
-        document.getElementById('ai-role-input').focus();
-      } else {
-        dd.classList.add('hidden');
-      }
-    }
-
-    function onRoleInputChange() {
-      const inputEl = document.getElementById('ai-role-input');
-      const rawVal = inputEl.value.trim();
-      const clearBtn = document.getElementById('btn-clear-role');
-
-      if (rawVal.length > 0) {
-        clearBtn.classList.remove('hidden');
-        clearBtn.classList.add('flex');
-        isRoleFilterActive = true;
-      } else {
-        clearBtn.classList.add('hidden');
-        clearBtn.classList.remove('flex');
-        isRoleFilterActive = false;
-      }
-
-      const matched = aiRolesList.find(r => normalizeViText(r.name) === normalizeViText(rawVal));
-      currentRoleName = matched ? matched.name : rawVal;
-
-      roleHighlightIndex = -1;
-      openRoleSuggestions();
-      rebuildStudentSelectOptions();
-    }
-
-    function selectRoleOption(roleName) {
-      const inputEl = document.getElementById('ai-role-input');
-      const clearBtn = document.getElementById('btn-clear-role');
-      inputEl.value = roleName;
-      currentRoleName = roleName;
-      isRoleFilterActive = true;
-      clearBtn.classList.remove('hidden');
-      clearBtn.classList.add('flex');
-      document.getElementById('ai-role-dropdown').classList.add('hidden');
-      rebuildStudentSelectOptions();
-    }
-
-    function clearRoleSelection() {
-      const inputEl = document.getElementById('ai-role-input');
-      const clearBtn = document.getElementById('btn-clear-role');
-      inputEl.value = "";
-      currentRoleName = "";
-      isRoleFilterActive = false;
-      clearBtn.classList.add('hidden');
-      clearBtn.classList.remove('flex');
-      openRoleSuggestions();
-      rebuildStudentSelectOptions();
-      inputEl.focus();
-    }
-
-    function renderRoleSuggestions() {
-      const rawVal = document.getElementById('ai-role-input').value.trim();
-      const normQ = normalizeViText(rawVal);
-      const listContainer = document.getElementById('ai-role-options-list');
-
-      if (!normQ) {
-        currentFilteredRoles = [...aiRolesList];
-      } else if (/^\d+$/.test(normQ)) {
-        const exactCode = aiRolesList.filter(r => r.code === normQ);
-        const prefixCode = aiRolesList.filter(r => r.code !== normQ && r.code.startsWith(normQ));
-        currentFilteredRoles = [...exactCode, ...prefixCode];
-      } else {
-        const starts = aiRolesList.filter(r => normalizeViText(r.name).startsWith(normQ));
-        const contains = aiRolesList.filter(r => !normalizeViText(r.name).startsWith(normQ) && normalizeViText(r.name).includes(normQ));
-        currentFilteredRoles = [...starts, ...contains];
-      }
-
-      if (currentFilteredRoles.length === 0) {
-        listContainer.innerHTML = `
-          <button type="button"
-            onmousedown="event.preventDefault(); selectRoleOption('${escapeHtml(rawVal)}')"
-            class="w-full px-3.5 py-2.5 text-left text-xs text-sky-300 hover:bg-slate-800 flex items-center justify-between">
-            <span>Dùng chức vụ tự nhập: <strong class="text-white">${escapeHtml(rawVal)}</strong></span>
-            <span class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-bold">Chọn</span>
-          </button>`;
-        return;
-      }
-
-      listContainer.innerHTML = currentFilteredRoles.map((roleItem, idx) => {
-        const isSelected = normalizeViText(roleItem.name) === normalizeViText(currentRoleName);
-        const isHighlighted = idx === roleHighlightIndex;
-        const rowBg = isHighlighted
-          ? "bg-sky-600/35 text-white"
-          : (isSelected ? "bg-sky-950/80 text-sky-300" : "hover:bg-slate-800/90 text-slate-200");
-
-        const matchedCount = aiStudentsList.filter(st => {
-          const stRoleNorm = normalizeViText(st.role || "Thành viên");
-          return stRoleNorm === normalizeViText(roleItem.name);
-        }).length;
-
-        return `
-          <button type="button"
-            onmousedown="event.preventDefault(); selectRoleOption('${escapeHtml(roleItem.name)}')"
-            class="w-full px-3.5 py-2.5 text-left text-sm font-bold flex items-center justify-between transition ${rowBg}">
-            <span class="flex items-center gap-2">
-              <span class="inline-flex items-center justify-center min-w-[24px] h-5 px-1.5 rounded bg-slate-800 border border-slate-700 text-[11px] font-extrabold text-sky-400">${escapeHtml(roleItem.code)}</span>
-              <span>${highlightMatchText(roleItem.name, rawVal)}</span>
-            </span>
-            <span class="flex items-center gap-2">
-              ${aiStudentsList.length > 0 ? `<span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">${matchedCount} HS</span>` : ''}
-              ${isSelected ? '<span class="text-[11px] font-extrabold text-emerald-400"><i class="fa-solid fa-check"></i></span>' : ''}
-            </span>
-          </button>`;
-      }).join('');
-    }
-
-    // Điều hướng phím mũi tên lên/xuống/Enter/Esc cho 2 ô gợi ý
-    function handleComboboxKeydown(event, type) {
-      const isClass = type === 'class';
-      const dropdown = document.getElementById(isClass ? 'ai-class-dropdown' : 'ai-role-dropdown');
-      const items = isClass ? currentFilteredClasses : currentFilteredRoles;
+    function handleClassKeydown(event) {
+      const dropdown = document.getElementById('ai-class-dropdown');
+      const items = currentFilteredClasses;
 
       if (event.key === 'Escape') {
         dropdown.classList.add('hidden');
@@ -822,141 +661,106 @@
       }
 
       if (dropdown.classList.contains('hidden')) {
-        if (event.key === 'ArrowDown') {
-          isClass ? openClassSuggestions() : openRoleSuggestions();
-        }
+        if (event.key === 'ArrowDown') openClassSuggestions();
         return;
       }
 
       if (event.key === 'ArrowDown') {
         event.preventDefault();
         if (items.length === 0) return;
-        if (isClass) {
-          classHighlightIndex = (classHighlightIndex + 1) % items.length;
-          renderClassSuggestions();
-        } else {
-          roleHighlightIndex = (roleHighlightIndex + 1) % items.length;
-          renderRoleSuggestions();
-        }
+        classHighlightIndex = (classHighlightIndex + 1) % items.length;
+        renderClassSuggestions();
       } else if (event.key === 'ArrowUp') {
         event.preventDefault();
         if (items.length === 0) return;
-        if (isClass) {
-          classHighlightIndex = (classHighlightIndex - 1 + items.length) % items.length;
-          renderClassSuggestions();
-        } else {
-          roleHighlightIndex = (roleHighlightIndex - 1 + items.length) % items.length;
-          renderRoleSuggestions();
-        }
+        classHighlightIndex = (classHighlightIndex - 1 + items.length) % items.length;
+        renderClassSuggestions();
       } else if (event.key === 'Enter') {
         event.preventDefault();
         if (items.length === 0) {
           dropdown.classList.add('hidden');
           return;
         }
-        const targetIdx = isClass
-          ? (classHighlightIndex >= 0 ? classHighlightIndex : 0)
-          : (roleHighlightIndex >= 0 ? roleHighlightIndex : 0);
-
-        if (isClass) {
-          selectClassOption(items[targetIdx]);
-        } else {
-          selectRoleOption(items[targetIdx].name);
-        }
+        const targetIdx = classHighlightIndex >= 0 ? classHighlightIndex : 0;
+        selectClassOption(items[targetIdx]);
       }
     }
 
     // =========================================================================
-    // 3. TẢI & ĐỒNG BỘ DANH SÁCH HỌC SINH THEO LỚP VÀ CHỨC VỤ
+    // 2 & 3. TẢI DANH SÁCH HỌC SINH & TỰ ĐỘNG HIỂN THỊ CHỨC VỤ KHI CHỌN TÊN
     // =========================================================================
-    function rebuildStudentSelectOptions() {
-      const stSel = document.getElementById('ai-student-select');
-      const filterTag = document.getElementById('ai-student-filter-tag');
-      if (!stSel || aiStudentsList.length === 0) return;
-
-      const prevSelectedIdx = stSel.value;
-      const roleQueryNorm = isRoleFilterActive ? normalizeViText(currentRoleName) : "";
-
-      let matchedEntries = aiStudentsList.map((st, idx) => ({ st, idx }));
-      let fallbackToAll = false;
-
-      if (roleQueryNorm) {
-        const filtered = matchedEntries.filter(({ st }) => {
-          const stRoleNorm = normalizeViText(st.role || "Thành viên");
-          return stRoleNorm.includes(roleQueryNorm);
-        });
-        if (filtered.length > 0) {
-          matchedEntries = filtered;
-          filterTag.innerText = `Lọc theo chức vụ: ${matchedEntries.length} HS`;
-          filterTag.classList.remove('hidden');
-        } else {
-          fallbackToAll = true;
-          filterTag.innerText = `Hiển thị cả lớp (${aiStudentsList.length} HS)`;
-          filterTag.classList.remove('hidden');
-        }
-      } else {
-        filterTag.classList.add('hidden');
-      }
-
-      stSel.innerHTML = '<option value="">-- Chọn tên của bạn --</option>';
-      matchedEntries.forEach(({ st, idx }) => {
-        const roleLabel = String(st.role || "").trim();
-        const roleText = (roleLabel && normalizeViText(roleLabel) !== "thanh vien") ? ` • ${roleLabel}` : "";
-        const badge = st.hasFaceSample ? " (Đã có ảnh AI)" : "";
-        const safeName = escapeHtml(st.name);
-        const safeCode = escapeHtml(st.maHS || 'Chưa có mã');
-        stSel.innerHTML += `<option value="${idx}">${safeName} (${safeCode}${escapeHtml(roleText)})${badge}</option>`;
-      });
-
-      if (prevSelectedIdx !== "" && matchedEntries.some(e => String(e.idx) === String(prevSelectedIdx))) {
-        stSel.value = prevSelectedIdx;
-      } else if (!fallbackToAll && roleQueryNorm && matchedEntries.length === 1) {
-        stSel.value = String(matchedEntries[0].idx);
-      }
-      stSel.disabled = false;
-    }
-
     function onAiStudentSelectChange() {
       const idxStr = document.getElementById('ai-student-select').value;
-      if (idxStr === "") return;
-      const st = aiStudentsList[parseInt(idxStr, 10)];
-      if (!st) return;
-
-      const studentRole = String(st.role || "").trim() || "Thành viên";
-      const roleInput = document.getElementById('ai-role-input');
-      const clearBtn = document.getElementById('btn-clear-role');
-
-      // Tự động điền chức vụ của học sinh nếu ô Chức vụ đang trống
-      if (!roleInput.value.trim()) {
-        roleInput.value = studentRole;
-        currentRoleName = studentRole;
-        isRoleFilterActive = false;
-        clearBtn.classList.remove('hidden');
-        clearBtn.classList.add('flex');
+      if (idxStr === "") {
+        resetRoleDisplay();
+        return;
       }
+      const st = aiStudentsList[parseInt(idxStr, 10)];
+      if (!st) {
+        resetRoleDisplay();
+        return;
+      }
+
+      const detectedRole = String(st.role || "").trim() || "Thành viên";
+      currentRoleName = detectedRole;
+
+      const roleInput = document.getElementById('ai-role-display');
+      const roleStatus = document.getElementById('ai-role-status-badge');
+      const roleIcon = document.getElementById('ai-role-icon');
+      const isOfficer = normalizeViText(detectedRole) !== "thanh vien";
+
+      roleInput.value = detectedRole;
+      if (isOfficer) {
+        roleInput.className = "w-full bg-emerald-950/40 border border-emerald-500/60 text-emerald-300 rounded-xl p-3.5 pr-11 text-sm font-extrabold outline-none shadow-inner cursor-default transition-colors";
+        roleStatus.innerHTML = '<i class="fa-solid fa-star text-amber-400 mr-1"></i>Ban cán sự lớp';
+        roleStatus.className = "text-[11px] font-bold text-emerald-400";
+        roleIcon.className = "fa-solid fa-user-shield absolute right-4 top-1/2 -translate-y-1/2 text-emerald-400 text-sm pointer-events-none";
+      } else {
+        roleInput.className = "w-full bg-sky-950/35 border border-sky-500/50 text-sky-300 rounded-xl p-3.5 pr-11 text-sm font-extrabold outline-none shadow-inner cursor-default transition-colors";
+        roleStatus.innerHTML = '<i class="fa-solid fa-check text-sky-400 mr-1"></i>Đã tự động nhận diện';
+        roleStatus.className = "text-[11px] font-semibold text-sky-400";
+        roleIcon.className = "fa-solid fa-id-badge absolute right-4 top-1/2 -translate-y-1/2 text-sky-400 text-sm pointer-events-none";
+      }
+
+      // Tự động chuyển con trỏ xuống ô nhập PIN cho mượt thao tác
+      const pinInput = document.getElementById('ai-pin-input');
+      if (pinInput) pinInput.focus();
     }
 
     async function aiLoadStudents(clsOverride) {
       const cls = (clsOverride || currentClassName || document.getElementById('ai-class-input').value).trim();
       const stSel = document.getElementById('ai-student-select');
+      const countTag = document.getElementById('ai-student-count-tag');
       
       if (!cls) {
         stSel.innerHTML = '<option value="">-- Vui lòng chọn lớp trước --</option>';
         stSel.disabled = true;
+        countTag.classList.add('hidden');
         return;
       }
 
       const reqId = ++studentFetchSeq;
       stSel.innerHTML = '<option value="">⏳ Đang tải danh sách học sinh...</option>';
       stSel.disabled = true;
+      countTag.classList.add('hidden');
 
       try {
         const res = await callGasApi('getClassDataRawStudents', [cls]);
         if (reqId !== studentFetchSeq) return;
 
         aiStudentsList = (res && Array.isArray(res.students)) ? res.students : [];
-        syncDynamicRolesFromStudents(aiStudentsList);
-        rebuildStudentSelectOptions();
+        stSel.innerHTML = '<option value="">-- Chọn họ và tên của bạn --</option>';
+
+        aiStudentsList.forEach((st, idx) => {
+          const badge = st.hasFaceSample ? " (Đã có ảnh AI)" : "";
+          const safeName = escapeHtml(st.name);
+          const safeCode = escapeHtml(st.maHS || 'Chưa có mã');
+          stSel.innerHTML += `<option value="${idx}">${safeName} (${safeCode})${badge}</option>`;
+        });
+
+        stSel.disabled = false;
+        countTag.innerText = `${aiStudentsList.length} học sinh`;
+        countTag.classList.remove('hidden');
       } catch (err) {
         if (reqId !== studentFetchSeq) return;
         showAiToast("Không tải được danh sách học sinh: " + err.message, "error");
@@ -998,7 +802,7 @@
           return showAiToast("Mã PIN không chính xác! Vui lòng thử lại.", "error");
         }
 
-        const resolvedRole = currentRoleName || document.getElementById('ai-role-input').value.trim() || student.role || "Thành viên";
+        const resolvedRole = currentRoleName || String(student.role || "").trim() || "Thành viên";
 
         currentStudent = student;
         currentClassName = cls;
@@ -1006,12 +810,8 @@
         
         document.getElementById('ai-active-student-name').innerText = `${student.name} (${cls})`;
         const roleBadge = document.getElementById('ai-active-role-badge');
-        if (resolvedRole) {
-          roleBadge.innerHTML = `<i class="fa-solid fa-id-badge mr-1"></i>Chức vụ: ${escapeHtml(resolvedRole)}`;
-          roleBadge.classList.remove('hidden');
-        } else {
-          roleBadge.classList.add('hidden');
-        }
+        roleBadge.innerHTML = `<i class="fa-solid fa-id-badge mr-1"></i>Chức vụ: ${escapeHtml(resolvedRole)}`;
+        roleBadge.classList.remove('hidden');
 
         document.getElementById('ai-step-1-login').classList.add('hidden');
         document.getElementById('ai-step-2-camera').classList.remove('hidden');
@@ -1416,6 +1216,7 @@
           showAiToast("🎉 Đã lưu thành công bộ 3 ảnh AI" + vecNote + "!", "success");
           setTimeout(() => {
             aiResetToLogin();
+            resetRoleDisplay();
             aiLoadStudents(currentClassName);
           }, 2000);
         } else {

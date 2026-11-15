@@ -229,10 +229,10 @@
 
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-bold text-slate-700 mb-1.5">Người thực hiện</label>
+            <label class="block text-sm font-bold text-slate-700 mb-1.5">Người thực hiện <span class="text-xs font-normal text-indigo-600">(Chỉ Cán sự lớp & Thành viên được GVCN chỉ định)</span></label>
             <div class="relative">
-              <select id="hs-select-reporter" data-smart-type="person" data-smart-placeholder="Nhập số thứ tự hoặc tên cán sự/học sinh..." class="w-full p-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl font-bold text-slate-800 text-base outline-none focus:border-blue-500 appearance-none">
-                <option value="">-- Chọn tên của bạn --</option>
+              <select id="hs-select-reporter" data-smart-type="person" data-smart-placeholder="Nhập số thứ tự hoặc tên Cán sự / Thành viên chỉ định..." class="w-full p-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl font-bold text-slate-800 text-base outline-none focus:border-blue-500 appearance-none">
+                <option value="">-- Chọn Cán sự lớp / Thành viên được GVCN chỉ định --</option>
               </select>
             </div>
           </div>
@@ -419,6 +419,36 @@
           <div id="gv-class-absence-result" class="mt-4 hidden overflow-x-auto"></div>
         </div>
 
+        <!-- PHÂN CÔNG CÁN SỰ & CHỈ ĐỊNH THÀNH VIÊN ĐIỂM DANH (GVCN / GIÁM THỊ) -->
+        <div class="glass-card rounded-[1.5rem] p-5 border-l-4 border-emerald-500">
+          <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+            <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+              <i class="fa-solid fa-user-check text-emerald-600"></i> Chỉ Định Thành Viên Điểm Danh Lớp
+            </h3>
+            <span id="gv-homeroom-tag" class="text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg">Toàn trường</span>
+          </div>
+          <p class="text-xs text-slate-500 mb-3">GVCN chỉ định cán sự lớp hoặc thành viên hỗ trợ điểm danh cho lớp được phân công ở cột <b>Lớp</b> trên sheet <b>GiamThi</b>.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-3">
+            <select id="gv-assign-class" onchange="loadStudentsForRoleAssignment()" data-smart-type="class" data-smart-placeholder="Chọn lớp chủ nhiệm..." class="p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-emerald-500">
+              <option value="">-- Chọn lớp chủ nhiệm --</option>
+            </select>
+            <select id="gv-assign-student" data-smart-type="person" data-smart-placeholder="Chọn học sinh..." class="p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-emerald-500">
+              <option value="">-- Chọn học sinh --</option>
+            </select>
+            <select id="gv-assign-role" class="p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-emerald-500">
+              <option value="Thành viên (GVCN chỉ định)">Thành viên (GVCN chỉ định)</option>
+              <option value="Lớp trưởng">Lớp trưởng</option>
+              <option value="Lớp phó">Lớp phó</option>
+              <option value="Bí thư">Bí thư</option>
+              <option value="Phó bí thư">Phó bí thư</option>
+              <option value="Thành viên">Gỡ quyền (Thành viên)</option>
+            </select>
+          </div>
+          <button onclick="submitAssignStudentAttendanceRole()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm shadow transition">
+            <i class="fa-solid fa-floppy-disk mr-1.5"></i> Lưu Phân Công Quyền Điểm Danh
+          </button>
+        </div>
+
       </div>
     </div>
 
@@ -493,6 +523,9 @@
             </button>
             <button onclick="openAdminTimeConfigModal()" class="p-3.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border border-emerald-200 transition">
               <i class="fa-solid fa-clock"></i> Cấu Hình Giờ Mở Cổng & Môn
+            </button>
+            <button onclick="openAdminAssignGvClassModal()" class="sm:col-span-2 p-3.5 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border border-amber-300 transition">
+              <i class="fa-solid fa-chalkboard-user"></i> Gán Lớp Chủ Nhiệm (Cột Lớp - Sheet GiamThi)
             </button>
           </div>
         </div>
@@ -727,8 +760,8 @@
       </div>
     </div>
 
-    <!-- THANH GỢI Ý CÂU HỎI NHANH: 1 HÀNG DUY NHẤT, NHỎ GỌN, NHIỀU MÀU SẮC CHO TẤT CẢ CÁC CỔNG -->
-    <div id="chat-suggestions-bar" class="px-2.5 py-1.5 bg-white border-t border-slate-100 flex flex-nowrap items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0"></div>
+    <!-- THANH GỢI Ý CÂU HỎI NHANH: TỰ XUỐNG DÒNG GỌN GÀNG, KHÔNG TRÀN KHUNG -->
+    <div id="chat-suggestions-bar" class="w-full max-w-full min-w-0 box-border px-2.5 py-1.5 bg-white border-t border-slate-100 flex flex-wrap items-center gap-1.5 max-h-[68px] overflow-y-auto no-scrollbar shrink-0"></div>
 
     <!-- THANH NHẬP TIN NHẮN + NHẬN DIỆN GIỌNG NÓI -->
     <div class="p-2.5 bg-white border-t border-slate-100 flex gap-1.5 items-center shrink-0">
@@ -1283,10 +1316,11 @@
       qtSel.innerHTML = '<option value="">-- Chọn tài khoản Quản trị --</option>';
 
       (appData.giaoVienList || []).forEach(staff => {
+        const clsTag = staff.assignedClass ? ` - Lớp ${staff.assignedClass}` : "";
         if (isAdminAccountRole(staff.role)) {
           qtSel.innerHTML += `<option value="${staff.name}">${staff.name} (${staff.role})</option>`;
         } else {
-          gvSel.innerHTML += `<option value="${staff.name}">${staff.name} (${staff.role})</option>`;
+          gvSel.innerHTML += `<option value="${staff.name}">${staff.name} (${staff.role}${clsTag})</option>`;
         }
       });
     }
@@ -1416,6 +1450,30 @@
       await loadClassStudentsForStep2(cls, sbj);
     }
 
+    function classifyAttendanceReporterRole(roleStr) {
+      const r = String(roleStr || "").trim().toLowerCase();
+      if (!r || r === "thành viên" || r === "thanh vien" || r === "học sinh" || r === "hoc sinh") {
+        return { allowed: false, group: "member" };
+      }
+      const designatedKeywords = ["chỉ định", "chi dinh", "ủy quyền", "uy quyen", "gvcn giao", "phụ trách điểm danh"];
+      if (designatedKeywords.some(kw => r.includes(kw))) {
+        return { allowed: true, group: "designated" };
+      }
+      const canSuKeywords = [
+        "lớp trưởng", "lop truong",
+        "lớp phó", "lop pho",
+        "bí thư", "bi thu",
+        "phó bí thư", "pho bi thu",
+        "cán sự", "can su",
+        "tổ trưởng", "to truong",
+        "tổ phó", "to pho"
+      ];
+      if (canSuKeywords.some(kw => r.includes(kw))) {
+        return { allowed: true, group: "cansu" };
+      }
+      return { allowed: false, group: "member" };
+    }
+
     async function loadClassStudentsForStep2(cls, sbj) {
       try {
         showToast(`Đang tải danh sách lớp ${cls}...`);
@@ -1429,12 +1487,22 @@
         else lockedAlert.classList.add("hidden");
 
         const repSel = document.getElementById("hs-select-reporter");
-        repSel.innerHTML = '<option value="">-- Chọn tên của bạn --</option>';
+        repSel.innerHTML = '<option value="">-- Chọn Cán sự lớp / Thành viên được GVCN chỉ định --</option>';
+
+        let authorizedCount = 0;
         appData.students.forEach((st, idx) => {
-          const isCanSu = st.role && st.role !== "Thành viên";
-          const tag = isCanSu ? ` ★ [${st.role}]` : "";
-          repSel.innerHTML += `<option value="${idx}">${st.name}${tag}</option>`;
+          const info = classifyAttendanceReporterRole(st.role);
+          if (!info.allowed && !st.canTakeAttendance) return;
+          authorizedCount++;
+          const badge = info.group === "designated"
+            ? `✔ [GVCN chỉ định: ${st.role}]`
+            : `★ [Cán sự: ${st.role}]`;
+          repSel.innerHTML += `<option value="${idx}">${st.name} ${badge}</option>`;
         });
+
+        if (authorizedCount === 0) {
+          showToast(`Lớp ${cls} chưa có Cán sự lớp hoặc Thành viên được GVCN chỉ định!`, "warning");
+        }
 
         document.getElementById("hs-step-1").classList.add("hidden");
         document.getElementById("hs-step-2").classList.remove("hidden");
@@ -1458,6 +1526,10 @@
       if (!pin) return showToast("Vui lòng nhập mã PIN!", "error");
 
       const student = appData.students[parseInt(idx, 10)];
+      const roleCheck = classifyAttendanceReporterRole(student?.role);
+      if (!roleCheck.allowed && !student?.canTakeAttendance) {
+        return showToast("Chỉ Cán sự lớp hoặc Thành viên được GVCN chỉ định mới có quyền điểm danh!", "error");
+      }
       const valid = await verifyStudentCredential(appData.selectedClass, student, pin);
       if (!valid) {
         return showToast("Mã PIN không chính xác!", "error");
@@ -2192,12 +2264,37 @@
           type: "GV",
           name: res.adminName,
           role: res.role || "Giám thị",
+          assignedClass: res.assignedClass || "",
           url: res.url || "#"
         };
 
-        document.getElementById("gv-role-badge").innerText = appData.adminUser.role.toUpperCase();
+        const clsSuffix = appData.adminUser.assignedClass ? ` • LỚP ${appData.adminUser.assignedClass}` : "";
+        document.getElementById("gv-role-badge").innerText = (appData.adminUser.role + clsSuffix).toUpperCase();
         document.getElementById("gv-welcome-name").innerText = `Xin chào, ${appData.adminUser.name}`;
         document.getElementById("btn-open-sheet").href = appData.adminUser.url;
+
+        const hmTag = document.getElementById("gv-homeroom-tag");
+        if (hmTag) {
+          hmTag.innerText = appData.adminUser.assignedClass
+            ? `Lớp gán: ${appData.adminUser.assignedClass}`
+            : "Quyền Giám thị";
+        }
+
+        const assignClsSel = document.getElementById("gv-assign-class");
+        if (assignClsSel) {
+          assignClsSel.innerHTML = '<option value="">-- Chọn lớp --</option>';
+          const targetClasses = appData.adminUser.assignedClass
+            ? appData.adminUser.assignedClass.split(/[,;|\s]+/).filter(Boolean)
+            : appData.classes;
+          targetClasses.forEach(c => {
+            assignClsSel.innerHTML += `<option value="${c}">Lớp ${c}</option>`;
+          });
+          if (targetClasses.length === 1) {
+            assignClsSel.value = targetClasses[0];
+            if (assignClsSel._syncSmartUI) assignClsSel._syncSmartUI();
+            loadStudentsForRoleAssignment();
+          }
+        }
 
         document.getElementById("gv-login-box").classList.add("hidden");
         document.getElementById("gv-dashboard").classList.remove("hidden");
@@ -2606,11 +2703,94 @@
         title.innerText = "Thêm Giáo Viên / Giám Thị";
         body.innerHTML = `
           <input type="text" id="new-gt-name" placeholder="Họ và tên Giáo viên / Giám thị" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold">
-          <input type="text" id="new-gt-role" placeholder="Chức vụ (VD: Giám thị, GVCN 12A01)" value="Giám thị" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+          <input type="text" id="new-gt-role" placeholder="Chức vụ (VD: Giáo viên chủ nhiệm, Giám thị)" value="Giáo viên chủ nhiệm" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+          <input type="text" id="new-gt-class" placeholder="Lớp gán ở cột Lớp (VD: 12A01, để trống nếu Giám thị)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold uppercase">
           <button onclick="submitAdminAddGT()" class="w-full py-3 bg-purple-600 text-white font-bold rounded-xl text-sm">Lưu Giáo Viên / Giám Thị</button>
         `;
       }
       openModal("modal-admin-add-user");
+    }
+
+    function openAdminAssignGvClassModal() {
+      if (!appData.superAdminUser) return showToast("Chỉ tài khoản Quản trị mới có quyền thao tác này!", "error");
+      const title = document.getElementById("admin-add-title");
+      const body = document.getElementById("admin-add-form-body");
+      title.innerText = "Gán Lớp Cho Giáo Viên Chủ Nhiệm";
+      const staffOptions = (appData.giaoVienList || [])
+        .filter(s => !isAdminAccountRole(s.role))
+        .map(s => `<option value="${s.name}">${s.name} (${s.role}${s.assignedClass ? " - Hiện tại: " + s.assignedClass : ""})</option>`)
+        .join("");
+      body.innerHTML = `
+        <select id="assign-gt-name" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold">
+          <option value="">-- Chọn Giáo viên / Giám thị --</option>
+          ${staffOptions}
+        </select>
+        <input type="text" id="assign-gt-class" placeholder="Nhập lớp chủ nhiệm (VD: 12A01 hoặc để trống để gỡ)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold uppercase">
+        <button onclick="submitAdminAssignGvClass()" class="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-sm">Lưu Cột Lớp Vào Sheet GiamThi</button>
+      `;
+      openModal("modal-admin-add-user");
+    }
+
+    async function submitAdminAssignGvClass() {
+      const name = document.getElementById("assign-gt-name").value;
+      const assignedClass = document.getElementById("assign-gt-class").value.trim().toUpperCase();
+      if (!name) return showToast("Vui lòng chọn Giáo viên!", "error");
+      try {
+        const res = await callBackendApi("adminUpdateGiamThiClass", name, assignedClass);
+        if (res && res.status === "success") {
+          const found = (appData.giaoVienList || []).find(g => g.name === name);
+          if (found) found.assignedClass = assignedClass;
+          populateStaffSelectors();
+          showToast(res.msg, "success");
+          closeModal("modal-admin-add-user");
+        } else {
+          showToast(res?.msg || "Lỗi cập nhật cột Lớp!", "error");
+        }
+      } catch (err) {
+        showToast("Lỗi gán lớp: " + err.message, "error");
+      }
+    }
+
+    async function loadStudentsForRoleAssignment() {
+      const cls = document.getElementById("gv-assign-class").value;
+      const sel = document.getElementById("gv-assign-student");
+      if (!cls || !sel) return;
+      sel.innerHTML = '<option value="">⏳ Đang tải...</option>';
+      try {
+        const res = await callBackendApi("getClassDataRawStudents", cls);
+        sel.innerHTML = '<option value="">-- Chọn học sinh --</option>';
+        (res.students || []).forEach(st => {
+          sel.innerHTML += `<option value="${st.maHS || st.name}">${st.name} [${st.role || "Thành viên"}]</option>`;
+        });
+      } catch (err) {
+        sel.innerHTML = '<option value="">-- Lỗi tải danh sách --</option>';
+      }
+    }
+
+    async function submitAssignStudentAttendanceRole() {
+      if (!appData.adminUser) return;
+      const cls = document.getElementById("gv-assign-class").value;
+      const studentIdOrName = document.getElementById("gv-assign-student").value;
+      const newRole = document.getElementById("gv-assign-role").value;
+      if (!cls || !studentIdOrName) return showToast("Vui lòng chọn lớp và học sinh!", "error");
+      try {
+        const res = await callBackendApi(
+          "updateStudentAttendanceRole",
+          cls,
+          studentIdOrName,
+          newRole,
+          appData.adminUser.name,
+          appData.adminUser.role
+        );
+        if (res && res.status === "success") {
+          showToast(res.msg, "success");
+          loadStudentsForRoleAssignment();
+        } else {
+          showToast(res?.msg || "Không thể cập nhật quyền!", "error");
+        }
+      } catch (err) {
+        showToast("Lỗi phân công: " + err.message, "error");
+      }
     }
 
     async function submitAdminAddHS() {
@@ -2628,8 +2808,11 @@
     async function submitAdminAddGT() {
       const name = document.getElementById("new-gt-name").value.trim();
       const role = document.getElementById("new-gt-role").value.trim();
+      const assignedClass = document.getElementById("new-gt-class").value.trim().toUpperCase();
       if (!name) return showToast("Vui lòng nhập họ tên!", "error");
-      const msg = await callBackendApi("adminAddGiamThi", name, role);
+      const msg = await callBackendApi("adminAddGiamThi", name, role, assignedClass);
+      appData.giaoVienList.push({ name, role: role || "Giáo viên chủ nhiệm", assignedClass });
+      populateStaffSelectors();
       showToast(msg, "success");
       closeModal("modal-admin-add-user");
     }
@@ -2763,7 +2946,7 @@
         const theme = SUGGESTION_COLOR_THEMES[idx % SUGGESTION_COLOR_THEMES.length];
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = `shrink-0 max-w-[170px] truncate px-2.5 py-1 border rounded-full text-[11px] font-bold transition shadow-sm active:scale-95 ${theme}`;
+        btn.className = `max-w-full truncate px-2.5 py-1 border rounded-full text-[11px] font-bold leading-tight transition shadow-sm active:scale-95 ${theme}`;
         btn.innerText = q;
         btn.onclick = () => {
           document.getElementById("chat-input-field").value = q;

@@ -2664,8 +2664,7 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
       `Thông tin ngữ cảnh người dùng: ${name} | Vai trò: ${role}${maHS ? ` | Mã HS: ${maHS}` : ""}${className ? ` | Lớp: ${className}` : ""} | Khu vực: ${tabContext}${dateStr ? ` | Ngày: ${dateStr}${sessionStr ? ` (${sessionStr})` : ""}` : ""}.`,
       `Câu hỏi/yêu cầu của người dùng: "${msg}"`
     ];
-    return contextLines.join("
-");
+    return contextLines.join("\n");
   }
 
   function buildLocalPortalFallbackReply(msg, role, name, className, tabContext) {
@@ -2673,14 +2672,10 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
 
     if (tabContext === "Thẻ Học sinh") {
       if (q.includes("tâm lí") || q.includes("tâm lý") || q.includes("áp lực") || q.includes("căng thẳng") || q.includes("stress")) {
-        return `Chào **${name}**, mình luôn sẵn sàng lắng nghe và đồng hành cùng bạn! Khi gặp áp lực học tập hay tâm lý căng thẳng, bạn có thể áp dụng 4 cách sau:
-` +
-               `1. **Chia nhỏ áp lực:** Viết ra 2–3 việc ưu tiên nhất trong ngày thay vì lo lắng cùng lúc quá nhiều thứ.
-` +
-               `2. **Giữ nhịp nghỉ ngơi & giấc ngủ:** Ngủ đủ 7–8 tiếng, hít thở sâu 4-4-4 khi hồi hộp trước giờ kiểm tra.
-` +
-               `3. **Chia sẻ đúng lúc:** Trò chuyện thẳng thắn với bạn thân, gia đình, giáo viên chủ nhiệm hoặc cán bộ tư vấn tâm lý học đường.
-` +
+        return `Chào **${name}**, mình luôn sẵn sàng lắng nghe và đồng hành cùng bạn! Khi gặp áp lực học tập hay tâm lý căng thẳng, bạn có thể áp dụng 4 cách sau:\n` +
+               `1. **Chia nhỏ áp lực:** Viết ra 2–3 việc ưu tiên nhất trong ngày thay vì lo lắng cùng lúc quá nhiều thứ.\n` +
+               `2. **Giữ nhịp nghỉ ngơi & giấc ngủ:** Ngủ đủ 7–8 tiếng, hít thở sâu 4-4-4 khi hồi hộp trước giờ kiểm tra.\n` +
+               `3. **Chia sẻ đúng lúc:** Trò chuyện thẳng thắn với bạn thân, gia đình, giáo viên chủ nhiệm hoặc cán bộ tư vấn tâm lý học đường.\n` +
                `4. **Tách khỏi màn hình 15–20 phút:** Vận động nhẹ hoặc nghe nhạc thư giãn để tái tạo năng lượng tinh thần.`;
       }
       if (q.includes("xin nghỉ") || q.includes("đơn xin phép") || (q.includes("nghỉ") && q.includes("phép"))) {
@@ -2690,12 +2685,9 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
         return `Chào **${name}**, bạn chọn **Từ ngày** và **Đến ngày** (dạng **dd/mm/yyyy**) ở mục **Tra Cứu Lịch Sử Vi Phạm Cá Nhân** trên màn hình rồi bấm **Tra cứu** để xem chi tiết từng buổi nhé! 🔍`;
       }
       if (q.includes("quy định") || q.includes("nề nếp") || q.includes("điện thoại") || q.includes("đi trễ")) {
-        return `Chào **${name}**, quy định nề nếp tại **nhà trường**:
-` +
-               `1. **Đi học đúng giờ:** Có mặt trước giờ vào lớp đầu buổi; đi trễ quá 45 phút sẽ tính vào diện vắng buổi.
-` +
-               `2. **Xin nghỉ phép:** Gửi đơn xin phép online trước buổi học hoặc có xác nhận của phụ huynh/GVCN.
-` +
+        return `Chào **${name}**, quy định nề nếp tại **nhà trường**:\n` +
+               `1. **Đi học đúng giờ:** Có mặt trước giờ vào lớp đầu buổi; đi trễ quá 45 phút sẽ tính vào diện vắng buổi.\n` +
+               `2. **Xin nghỉ phép:** Gửi đơn xin phép online trước buổi học hoặc có xác nhận của phụ huynh/GVCN.\n` +
                `3. **Sử dụng điện thoại & đồng phục:** Chấp hành nghiêm túc quy định không sử dụng điện thoại trái phép trong giờ học và mặc đúng đồng phục quy định.`;
       }
       if (q.includes("qr") || q.includes("khuôn mặt") || q.includes("điểm danh lớp")) {
@@ -2711,87 +2703,59 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
         return `Thưa Thầy/Cô **${name}**, tại mục **Duyệt Đơn Xin Phép Online** trong **Khu Vực Giáo Viên Chủ Nhiệm / Bộ Môn**, Thầy/Cô bấm **Tải lại** để cập nhật danh sách đơn mới nhất và bấm **Duyệt Phép** cho từng học sinh ạ! 📋`;
       }
       if (q.includes("nề nếp") || q.includes("kỷ luật") || q.includes("quản lý lớp") || q.includes("chủ nhiệm")) {
-        return `Thưa Thầy/Cô **${name}**, để quản lý nề nếp học sinh hiệu quả, Thầy/Cô có thể kết hợp 4 giải pháp trọng tâm:
-` +
-               `1. **Thống nhất nội quy & tiêu chí thi đua rõ ràng:** Công khai bảng điểm cộng/trừ theo tuần ngay đầu học kỳ để học sinh tự giác thực hiện.
-` +
-               `2. **Phát huy vai trò ban cán sự lớp:** Phân công lớp trưởng, cờ đỏ theo dõi chuyên cần, đồng phục và phản hồi kịp thời cuối mỗi buổi.
-` +
-               `3. **Theo dõi dữ liệu điểm danh hằng ngày:** Kiểm tra sớm các trường hợp đi trễ hoặc vắng không phép để trao đổi riêng với học sinh và phối hợp kịp thời với phụ huynh.
-` +
+        return `Thưa Thầy/Cô **${name}**, để quản lý nề nếp học sinh hiệu quả, Thầy/Cô có thể kết hợp 4 giải pháp trọng tâm:\n` +
+               `1. **Thống nhất nội quy & tiêu chí thi đua rõ ràng:** Công khai bảng điểm cộng/trừ theo tuần ngay đầu học kỳ để học sinh tự giác thực hiện.\n` +
+               `2. **Phát huy vai trò ban cán sự lớp:** Phân công lớp trưởng, cờ đỏ theo dõi chuyên cần, đồng phục và phản hồi kịp thời cuối mỗi buổi.\n` +
+               `3. **Theo dõi dữ liệu điểm danh hằng ngày:** Kiểm tra sớm các trường hợp đi trễ hoặc vắng không phép để trao đổi riêng với học sinh và phối hợp kịp thời với phụ huynh.\n` +
                `4. **Động viên tích cực:** Khen thưởng nhóm/tổ có tiến bộ theo tuần thay vì chỉ nhắc nhở vi phạm.`;
       }
     }
 
     if (q.includes("toán")) {
-      return `Chào **${name}**, để học tốt môn **Toán**, bạn nên áp dụng 4 bước trọng tâm sau:
-` +
-             `1. **Nắm chắc định nghĩa, định lý và công thức gốc:** Hiểu bản chất và điều kiện áp dụng thay vì học thuộc máy móc.
-` +
-             `2. **Luyện bài tập theo từng dạng từ cơ bản đến vận dụng:** Làm thành thạo các dạng chuẩn trong SGK trước khi chuyển sang bài tổng hợp.
-` +
-             `3. **Ghi sổ tay lỗi sai:** Mỗi khi làm sai phép biến đổi, điều kiện xác định hoặc tính toán, hãy ghi lại nguyên nhân để tránh lặp lại.
-` +
+      return `Chào **${name}**, để học tốt môn **Toán**, bạn nên áp dụng 4 bước trọng tâm sau:\n` +
+             `1. **Nắm chắc định nghĩa, định lý và công thức gốc:** Hiểu bản chất và điều kiện áp dụng thay vì học thuộc máy móc.\n` +
+             `2. **Luyện bài tập theo từng dạng từ cơ bản đến vận dụng:** Làm thành thạo các dạng chuẩn trong SGK trước khi chuyển sang bài tổng hợp.\n` +
+             `3. **Ghi sổ tay lỗi sai:** Mỗi khi làm sai phép biến đổi, điều kiện xác định hoặc tính toán, hãy ghi lại nguyên nhân để tránh lặp lại.\n` +
              `4. **Tự giải lại đề sau 2–3 ngày:** Che lời giải và tự trình bày lại trọn vẹn để rèn phản xạ phòng thi.`;
     }
 
     if (q.includes("lý") || q.includes("vật lý")) {
-      return `Chào **${name}**, để học tốt môn **Vật lý**, bạn hãy tập trung vào 4 bước:
-` +
-             `1. **Hiểu hiện tượng vật lý trước khi nhớ công thức:** Xác định rõ đại lượng nào không đổi, đại lượng nào biến thiên.
-` +
-             `2. **Vẽ hình, tóm tắt và đổi đơn vị chuẩn (SI):** Giúp tránh sai sót ngay từ bước đặt phương trình.
-` +
-             `3. **Phân tích mối liên hệ giữa các đại lượng:** Chú ý tỉ lệ thuận, tỉ lệ nghịch và đồ thị đặc trưng của từng chương.
-` +
+      return `Chào **${name}**, để học tốt môn **Vật lý**, bạn hãy tập trung vào 4 bước:\n` +
+             `1. **Hiểu hiện tượng vật lý trước khi nhớ công thức:** Xác định rõ đại lượng nào không đổi, đại lượng nào biến thiên.\n` +
+             `2. **Vẽ hình, tóm tắt và đổi đơn vị chuẩn (SI):** Giúp tránh sai sót ngay từ bước đặt phương trình.\n` +
+             `3. **Phân tích mối liên hệ giữa các đại lượng:** Chú ý tỉ lệ thuận, tỉ lệ nghịch và đồ thị đặc trưng của từng chương.\n` +
              `4. **Làm bài tập theo chuyên đề:** Luyện từ bài cơ bản đến bài vận dụng để quen cách phối hợp nhiều công thức.`;
     }
 
     if (q.includes("hóa")) {
-      return `Chào **${name}**, để học tốt môn **Hóa học**, bạn nên:
-` +
-             `1. **Nắm vững tính chất hóa học đặc trưng** của từng loại chất và dãy hoạt động hóa học.
-` +
-             `2. **Thành thạo các định luật bảo toàn** (bảo toàn khối lượng, bảo toàn nguyên tố, bảo toàn electron, bảo toàn điện tích) để giải nhanh bài tập.
-` +
-             `3. **Lập sơ đồ chuỗi phản ứng** theo từng chương để hệ thống hóa kiến thức.
-` +
+      return `Chào **${name}**, để học tốt môn **Hóa học**, bạn nên:\n` +
+             `1. **Nắm vững tính chất hóa học đặc trưng** của từng loại chất và dãy hoạt động hóa học.\n` +
+             `2. **Thành thạo các định luật bảo toàn** (bảo toàn khối lượng, bảo toàn nguyên tố, bảo toàn electron, bảo toàn điện tích) để giải nhanh bài tập.\n` +
+             `3. **Lập sơ đồ chuỗi phản ứng** theo từng chương để hệ thống hóa kiến thức.\n` +
              `4. **Luyện viết phương trình và cân bằng chính xác** trước khi tính toán số mol.`;
     }
 
     if (q.includes("anh") || q.includes("tiếng anh")) {
-      return `Chào **${name}**, để học tốt môn **Tiếng Anh**, bạn hãy duy trì đều đặn mỗi ngày:
-` +
-             `1. **Học từ vựng theo cụm từ và ngữ cảnh** (collocations/phrasal verbs) thay vì học từng từ đơn lẻ.
-` +
-             `2. **Nắm chắc các chuyên đề ngữ pháp cốt lõi:** Thì động từ, câu điều kiện, mệnh đề quan hệ, câu bị động và từ loại.
-` +
-             `3. **Luyện đọc hiểu mỗi ngày 1 đoạn ngắn:** Gạch chân từ khóa và rèn kỹ năng đoán nghĩa theo ngữ cảnh.
-` +
+      return `Chào **${name}**, để học tốt môn **Tiếng Anh**, bạn hãy duy trì đều đặn mỗi ngày:\n` +
+             `1. **Học từ vựng theo cụm từ và ngữ cảnh** (collocations/phrasal verbs) thay vì học từng từ đơn lẻ.\n` +
+             `2. **Nắm chắc các chuyên đề ngữ pháp cốt lõi:** Thì động từ, câu điều kiện, mệnh đề quan hệ, câu bị động và từ loại.\n` +
+             `3. **Luyện đọc hiểu mỗi ngày 1 đoạn ngắn:** Gạch chân từ khóa và rèn kỹ năng đoán nghĩa theo ngữ cảnh.\n` +
              `4. **Nghe – nhắc lại (Shadowing)** 10–15 phút/ngày để cải thiện phản xạ nghe và phát âm.`;
     }
 
     if (q.includes("văn") || q.includes("ngữ văn")) {
-      return `Chào **${name}**, để học tốt môn **Ngữ văn**, bạn nên:
-` +
-             `1. **Đọc kỹ văn bản và lập sơ đồ luận điểm** cho từng tác phẩm/chủ đề.
-` +
-             `2. **Rèn kỹ năng đọc hiểu theo cấu trúc câu hỏi** (nhận biết – thông hiểu – vận dụng) và trả lời đúng trọng tâm, đủ ý.
-` +
-             `3. **Tích lũy dẫn chứng nghị luận xã hội** ngắn gọn, thực tế và giàu tính thuyết phục.
-` +
+      return `Chào **${name}**, để học tốt môn **Ngữ văn**, bạn nên:\n` +
+             `1. **Đọc kỹ văn bản và lập sơ đồ luận điểm** cho từng tác phẩm/chủ đề.\n` +
+             `2. **Rèn kỹ năng đọc hiểu theo cấu trúc câu hỏi** (nhận biết – thông hiểu – vận dụng) và trả lời đúng trọng tâm, đủ ý.\n` +
+             `3. **Tích lũy dẫn chứng nghị luận xã hội** ngắn gọn, thực tế và giàu tính thuyết phục.\n` +
              `4. **Luyện viết mở bài, kết bài và đoạn văn chuẩn cấu trúc** (diễn dịch, quy nạp, tổng – phân – hợp).`;
     }
 
     if (q.includes("ôn thi") || q.includes("phương pháp học") || q.includes("học tốt")) {
-      return `Chào **${name}**, để học tập và ôn thi đạt hiệu quả cao, bạn có thể áp dụng 4 nguyên tắc sau:
-` +
-             `1. **Chia nhỏ mục tiêu theo tuần và học theo khung giờ tập trung (Pomodoro 25–45 phút)** để giữ sự tỉnh táo.
-` +
-             `2. **Chủ động tự kiểm tra (Active Recall):** Đóng sách lại và tự tóm tắt kiến thức hoặc làm đề thử thay vì chỉ đọc lướt.
-` +
-             `3. **Ôn tập ngắt quãng (Spaced Repetition):** Xem lại kiến thức sau 1 ngày, 3 ngày và 7 ngày để ghi nhớ dài hạn.
-` +
+      return `Chào **${name}**, để học tập và ôn thi đạt hiệu quả cao, bạn có thể áp dụng 4 nguyên tắc sau:\n` +
+             `1. **Chia nhỏ mục tiêu theo tuần và học theo khung giờ tập trung (Pomodoro 25–45 phút)** để giữ sự tỉnh táo.\n` +
+             `2. **Chủ động tự kiểm tra (Active Recall):** Đóng sách lại và tự tóm tắt kiến thức hoặc làm đề thử thay vì chỉ đọc lướt.\n` +
+             `3. **Ôn tập ngắt quãng (Spaced Repetition):** Xem lại kiến thức sau 1 ngày, 3 ngày và 7 ngày để ghi nhớ dài hạn.\n` +
              `4. **Tổng hợp sổ tay lỗi sai:** Tập trung khắc phục đúng phần kiến thức hay nhầm lẫn nhất.`;
     }
 
@@ -3002,8 +2966,7 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
       .replace(/\*\*(.*?)\*\*/g, "<b>$1</b>")
       .replace(/\*(.*?)\*/g, "<i>$1</i>")
-      .replace(/
-/g, "<br>");
+      .replace(/\n/g, "<br>");
   }
 
   function detectCurrentTabContext(currentRole) {

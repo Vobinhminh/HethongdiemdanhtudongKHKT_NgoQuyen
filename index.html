@@ -285,7 +285,7 @@
           </div>
         </div>
 
-        <!-- KHỐI NÚT ĐIỂM DANH (CHỈ HIỂN THỊ KHI CHỨC VỤ LÀ LỚP TRƯỞNG, LỚP PHÓ, BÍ THƯ / CÁN SỰ ĐƯỢC ỦY QUYỀN) -->
+        <!-- KHỐI NÚT ĐIỂM DANH  -->
         <div id="hs-cansu-attendance-card" class="hidden glass-card rounded-[1.5rem] p-5 border-2 border-emerald-400/80 bg-gradient-to-r from-emerald-50/90 to-teal-50/90">
           <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
             <div>
@@ -302,7 +302,7 @@
           </button>
         </div>
 
-        <!-- 1. BẢNG THỐNG KÊ VẮNG TRỄ VÀ VI PHẠM NỀ NẾP (CHI TIẾT THEO BUỔI, MÔN) -->
+        <!-- 1. BẢNG THỐNG KÊ VẮNG TRỄ VÀ VI PHẠM NỀ NẾP  -->
         <div class="glass-card rounded-[1.5rem] p-5 border-t-4 border-indigo-600">
           <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
             <h3 class="font-extrabold text-slate-800 text-lg flex items-center gap-2">
@@ -396,7 +396,7 @@
 
       </div>
 
-      <!-- BƯỚC 3: BẢNG ĐIỂM DANH CHI TIẾT (DÀNH CHO CÁN SỰ KHI BẤM VÀO TRANG ĐIỂM DANH) -->
+      <!-- BƯỚC 3: BẢNG ĐIỂM DANH CHI TIẾT-->
       <div id="hs-step-3" class="hidden space-y-4">
         
         <div class="bg-gradient-to-r from-slate-800 to-indigo-950 text-white rounded-2xl p-4 shadow-lg flex flex-wrap justify-between items-center gap-2 border border-indigo-500/30">
@@ -498,6 +498,7 @@
           <div>
             <span id="gv-role-badge" class="bg-sky-400 text-slate-900 text-xs uppercase font-extrabold px-2.5 py-1 rounded-md shadow-sm">GIÁO VIÊN / GIÁM THỊ</span>
             <h3 id="gv-welcome-name" class="font-bold text-xl mt-1.5 text-white">Xin chào, Thầy/Cô</h3>
+            <p id="gv-scope-subtitle" class="text-xs text-indigo-200 mt-0.5">Phạm vi quản lý: Đang xác định...</p>
           </div>
           <div class="flex flex-wrap gap-2">
             <a id="btn-open-sheet" href="#" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-1.5 shadow-md transition">
@@ -509,101 +510,201 @@
           </div>
         </div>
 
-        <div class="glass-card rounded-[1.5rem] p-5">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2"><i class="fa-solid fa-chart-pie text-indigo-600"></i> Tiến Độ Điểm Danh Hôm Nay</h3>
-            <button onclick="loadAdminStats('gv')" class="text-sm text-indigo-600 hover:text-indigo-800 font-bold bg-indigo-50 px-3 py-1.5 rounded-xl"><i class="fa-solid fa-rotate mr-1"></i> Làm mới</button>
-          </div>
-
-          <div class="grid grid-cols-3 gap-3 mb-4 text-center">
-            <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
-              <span class="block text-xs text-slate-500 font-bold">Tổng số lớp</span>
-              <span id="admin-stat-total" class="text-2xl font-extrabold text-slate-800">0</span>
-            </div>
-            <div class="bg-emerald-50 p-3.5 rounded-2xl border border-emerald-200">
-              <span class="block text-xs text-emerald-600 font-bold">Đã nộp</span>
-              <span id="admin-stat-sub" class="text-2xl font-extrabold text-emerald-600">0</span>
-            </div>
-            <div class="bg-rose-50 p-3.5 rounded-2xl border border-rose-200">
-              <span class="block text-xs text-rose-600 font-bold">Chưa nộp</span>
-              <span id="admin-stat-miss" class="text-2xl font-extrabold text-rose-600">0</span>
-            </div>
-          </div>
-
-          <div id="missing-classes-box" class="hidden bg-rose-50/80 border border-rose-200 rounded-xl p-4">
-            <span class="text-sm font-bold text-rose-800 block mb-2">Các lớp chưa gửi báo cáo:</span>
-            <div id="missing-classes-list" class="flex flex-wrap gap-2"></div>
-          </div>
-        </div>
-
-        <div class="glass-card rounded-[1.5rem] p-5">
+        <!-- BẢNG THỐNG KÊ VẮNG TRỄ & VI PHẠM NỀ NẾP -->
+        <div id="gv-stats-card" class="glass-card rounded-[1.5rem] p-5 border-t-4 border-blue-600">
           <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
-            <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2"><i class="fa-solid fa-envelope-open-text text-amber-500"></i> Duyệt Đơn Xin Phép Online</h3>
-            <div class="flex gap-2">
-              <button onclick="loadPendingLeaves('gv')" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded-xl transition">
-                <i class="fa-solid fa-rotate mr-1"></i> Tải đơn
-              </button>
-              <button onclick="document.getElementById('file-upload-leave').click()" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-3 py-1.5 rounded-xl border border-indigo-200 transition">
-                <i class="fa-solid fa-file-csv mr-1"></i> Nạp File CSV
-              </button>
-              <input type="file" id="file-upload-leave" accept=".csv" class="hidden" onchange="handleImportLeaveFile(this, 'gv')">
+            <div>
+              <h3 id="gv-stats-title" class="font-extrabold text-slate-800 text-lg flex items-center gap-2">
+                <i class="fa-solid fa-clipboard-list text-blue-600"></i> Bảng Thống Kê Vắng Trễ & Vi Phạm Nề Nếp
+              </h3>
+              <p id="gv-stats-desc" class="text-xs text-slate-500 mt-0.5">Chi tiết theo buổi, môn học • Hỗ trợ lọc ngày dd/mm/yyyy và in báo cáo Tuần / Tháng</p>
+            </div>
+            <span id="gv-stats-scope-badge" class="text-xs font-extrabold px-3 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200">---</span>
+          </div>
+
+          <!-- CHỌN NHANH KỲ BÁO CÁO (TUẦN NÀY / THÁNG NÀY / HÔM NAY) -->
+          <div class="flex flex-wrap items-center gap-2 mb-3">
+            <span class="text-xs font-bold text-slate-500">Chọn nhanh kỳ:</span>
+            <button type="button" onclick="applyQuickDateRange('today')" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 text-slate-700 hover:text-white text-xs font-bold transition">Hôm nay</button>
+            <button type="button" onclick="applyQuickDateRange('week')" class="px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 text-xs font-bold transition">Tuần này (T2 - CN)</button>
+            <button type="button" onclick="applyQuickDateRange('month')" class="px-3 py-1.5 rounded-lg bg-purple-50 hover:bg-purple-600 text-purple-700 hover:text-white border border-purple-200 text-xs font-bold transition">Tháng này</button>
+          </div>
+
+          <!-- BỘ LỌC LỚP + NGÀY BẮT ĐẦU  -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+            <div id="gv-report-class-wrapper">
+              <label class="block text-xs font-bold text-slate-600 mb-1">Phạm vi lớp</label>
+              <select id="gv-report-class" onchange="fetchClassAbsenceSummary()" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 text-sm outline-none focus:border-blue-500">
+                <option value="ALL">Tất cả các lớp</option>
+              </select>
+              <input type="text" id="gv-report-class-locked" readonly class="hidden w-full p-3 bg-blue-50 border-2 border-blue-300 rounded-xl font-extrabold text-blue-900 text-sm outline-none cursor-default">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Ngày bắt đầu (dd/mm/yyyy)</label>
+              <div class="relative">
+                <i class="fa-regular fa-calendar absolute left-3 top-3.5 text-slate-400"></i>
+                <input type="text" id="gv-report-start" maxlength="10" oninput="formatDateInputVn(this)" placeholder="dd/mm/yyyy" class="w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-blue-500 focus:bg-white">
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Ngày kết thúc (dd/mm/yyyy)</label>
+              <div class="relative">
+                <i class="fa-regular fa-calendar-check absolute left-3 top-3.5 text-slate-400"></i>
+                <input type="text" id="gv-report-end" maxlength="10" oninput="formatDateInputVn(this)" placeholder="dd/mm/yyyy" class="w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-blue-500 focus:bg-white">
+              </div>
             </div>
           </div>
-          <div id="leave-requests-container" class="space-y-3 text-sm text-slate-500">
-            <p class="text-center py-4 italic">Bấm "Tải đơn" để xem danh sách học sinh xin nghỉ phép...</p>
-          </div>
-        </div>
 
-        <div class="glass-card rounded-[1.5rem] p-5">
-          <h3 class="font-bold text-slate-800 text-lg mb-3 flex items-center gap-2"><i class="fa-solid fa-clipboard-list text-blue-600"></i> Tra Cứu Vi Phạm & Nghỉ Học Của Lớp</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-            <select id="gv-report-class" data-smart-type="class" data-smart-placeholder="Nhập số hoặc lớp (VD: 1 -> 10,11,12)..." class="p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500">
-              <option value="">-- Chọn lớp --</option>
-            </select>
-            <input type="text" id="gv-report-start" maxlength="10" oninput="formatDateInputVn(this)" placeholder="Từ ngày (dd/mm/yyyy)" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-blue-500">
-            <input type="text" id="gv-report-end" maxlength="10" oninput="formatDateInputVn(this)" placeholder="Đến ngày (dd/mm/yyyy)" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-blue-500">
+          <!-- HÀNG NÚT XEM THỐNG KÊ + IN BÁO CÁO TUẦN / THÁNG -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <button type="button" onclick="fetchClassAbsenceSummary()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-xl text-sm shadow-md transition flex items-center justify-center gap-1.5 active:scale-95">
+              <i class="fa-solid fa-magnifying-glass"></i> Xem Bảng Thống Kê
+            </button>
+            <button type="button" onclick="printStaffAbsenceReport('WEEK')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-sm shadow-md transition flex items-center justify-center gap-1.5 active:scale-95">
+              <i class="fa-solid fa-print"></i> In Báo Cáo Tuần
+            </button>
+            <button type="button" onclick="printStaffAbsenceReport('MONTH')" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-4 rounded-xl text-sm shadow-md transition flex items-center justify-center gap-1.5 active:scale-95">
+              <i class="fa-solid fa-file-pdf"></i> In Báo Cáo Tháng
+            </button>
           </div>
-          <button onclick="fetchClassAbsenceSummary()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow transition">
-            <i class="fa-solid fa-magnifying-glass mr-1.5"></i> Xem Báo Cáo Vi Phạm Lớp
-          </button>
+
+          <!-- TÓM TẮT SỐ LIỆU THỐNG KÊ -->
+          <div id="gv-report-summary-cards" class="hidden grid grid-cols-4 gap-2 text-center mt-4">
+            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+              <span class="block text-[11px] text-slate-500 font-bold">Tổng lượt</span>
+              <span id="gv-sum-total" class="text-lg font-extrabold text-slate-800">0</span>
+            </div>
+            <div class="bg-amber-50 p-2.5 rounded-xl border border-amber-200">
+              <span class="block text-[11px] text-amber-700 font-bold">Vắng CP</span>
+              <span id="gv-sum-cp" class="text-lg font-extrabold text-amber-600">0</span>
+            </div>
+            <div class="bg-rose-50 p-2.5 rounded-xl border border-rose-200">
+              <span class="block text-[11px] text-rose-700 font-bold">Vắng KP</span>
+              <span id="gv-sum-kp" class="text-lg font-extrabold text-rose-600">0</span>
+            </div>
+            <div class="bg-orange-50 p-2.5 rounded-xl border border-orange-200">
+              <span class="block text-[11px] text-orange-700 font-bold">Trễ / Khác</span>
+              <span id="gv-sum-other" class="text-lg font-extrabold text-orange-600">0</span>
+            </div>
+          </div>
+
+          <!-- BẢNG KẾT QUẢ THỐNG KÊ CHI TIẾT THEO BUỔI, MÔN -->
           <div id="gv-class-absence-result" class="mt-4 hidden overflow-x-auto"></div>
         </div>
 
-        <!-- PHÂN CÔNG CÁN SỰ & CHỈ ĐỊNH THÀNH VIÊN ĐIỂM DANH (GVCN / GIÁM THỊ) -->
-        <div class="glass-card rounded-[1.5rem] p-5 border-l-4 border-emerald-500">
-          <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
-            <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
-              <i class="fa-solid fa-user-check text-emerald-600"></i> Chỉ Định Thành Viên Điểm Danh Lớp
-            </h3>
-            <span id="gv-homeroom-tag" class="text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg">Toàn trường</span>
+        <!-- KHỐI DÀNH RIÊNG CHO GIÁO VIÊN CHỦ NHIỆM (ẨN KHI CHỨC VỤ LÀ GIÁM THỊ) -->
+        <div id="gvcn-exclusive-sections" class="space-y-5">
+
+          <!-- 1. NỘP ĐƠN XIN PHÉP ONLINE CỦA LỚP MÌNH CHỦ NHIỆM -->
+          <div class="glass-card rounded-[1.5rem] p-5 border-t-4 border-amber-500">
+            <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+              <div>
+                <h3 class="font-extrabold text-slate-800 text-lg flex items-center gap-2">
+                  <i class="fa-solid fa-file-signature text-amber-500"></i> Nộp Đơn Xin Phép Online (Lớp Chủ Nhiệm)
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">GVCN nộp đơn xin nghỉ phép trực tiếp cho học sinh thuộc lớp mình chủ nhiệm</p>
+              </div>
+              <span id="gvcn-leave-class-badge" class="text-xs font-extrabold bg-amber-50 text-amber-800 border border-amber-200 px-3 py-1 rounded-lg">Lớp ---</span>
+            </div>
+
+            <div class="space-y-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1">Lớp chủ nhiệm</label>
+                  <select id="gvcn-leave-class" onchange="loadStudentsForGvcnLeave()" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-amber-500">
+                    <option value="">-- Chọn lớp chủ nhiệm --</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1">Học sinh xin nghỉ <span class="text-rose-500">*</span></label>
+                  <select id="gvcn-leave-student" data-smart-type="person" data-smart-placeholder="Nhập số thứ tự hoặc tên học sinh lớp..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-amber-500">
+                    <option value="">-- Chọn học sinh --</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1">Ngày xin nghỉ (dd/mm/yyyy) <span class="text-rose-500">*</span></label>
+                  <input type="text" id="gvcn-leave-date" maxlength="10" oninput="formatDateInputVn(this)" placeholder="dd/mm/yyyy" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-amber-500 focus:bg-white">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1">Buổi xin nghỉ <span class="text-rose-500">*</span></label>
+                  <select id="gvcn-leave-session" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-amber-500 focus:bg-white">
+                    <option value="Cả ngày">Cả ngày</option>
+                    <option value="Buổi Sáng">Buổi Sáng</option>
+                    <option value="Buổi Chiều">Buổi Chiều</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Lý do xin nghỉ phép <span class="text-rose-500">*</span></label>
+                <textarea id="gvcn-leave-reason" rows="2" placeholder="Nhập lý do xin nghỉ phép (VD: Phụ huynh gọi điện báo em bị ốm, đi khám bệnh...)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-amber-500 focus:bg-white"></textarea>
+              </div>
+
+              <button id="btn-gvcn-submit-leave" type="button" onclick="submitGvcnOnlineLeave()" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold rounded-xl shadow-md shadow-amber-500/20 text-sm transition flex items-center justify-center gap-2 active:scale-95">
+                <i class="fa-solid fa-paper-plane"></i> Nộp Đơn Xin Phép Online Của Lớp Chủ Nhiệm
+              </button>
+            </div>
           </div>
-          <p class="text-xs text-slate-500 mb-3">GVCN chỉ định cán sự lớp hoặc thành viên hỗ trợ điểm danh cho lớp được phân công ở cột <b>Lớp</b> trên sheet <b>GiamThi</b>.</p>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-3">
-            <select id="gv-assign-class" onchange="loadStudentsForRoleAssignment()" data-smart-type="class" data-smart-placeholder="Chọn lớp chủ nhiệm..." class="p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-emerald-500">
-              <option value="">-- Chọn lớp chủ nhiệm --</option>
-            </select>
-            <select id="gv-assign-student" data-smart-type="person" data-smart-placeholder="Chọn học sinh..." class="p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-emerald-500">
-              <option value="">-- Chọn học sinh --</option>
-            </select>
-            <select id="gv-assign-role" class="p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-emerald-500">
-              <option value="Thành viên (GVCN chỉ định)">Thành viên (GVCN chỉ định)</option>
-              <option value="Lớp trưởng">Lớp trưởng</option>
-              <option value="Lớp phó">Lớp phó</option>
-              <option value="Bí thư">Bí thư</option>
-              <option value="Phó bí thư">Phó bí thư</option>
-              <option value="Thành viên">Gỡ quyền (Thành viên)</option>
-            </select>
+
+          <!-- 2. DUYỆT ĐƠN XIN PHÉP ONLINE CỦA LỚP CHỦ NHIỆM -->
+          <div class="glass-card rounded-[1.5rem] p-5">
+            <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+              <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2"><i class="fa-solid fa-envelope-open-text text-amber-500"></i> Duyệt Đơn Xin Phép Lớp Chủ Nhiệm</h3>
+              <div class="flex gap-2">
+                <button onclick="loadPendingLeaves('gv')" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded-xl transition">
+                  <i class="fa-solid fa-rotate mr-1"></i> Tải đơn
+                </button>
+                <button onclick="document.getElementById('file-upload-leave').click()" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-3 py-1.5 rounded-xl border border-indigo-200 transition">
+                  <i class="fa-solid fa-file-csv mr-1"></i> Nạp File CSV
+                </button>
+                <input type="file" id="file-upload-leave" accept=".csv" class="hidden" onchange="handleImportLeaveFile(this, 'gv')">
+              </div>
+            </div>
+            <div id="leave-requests-container" class="space-y-3 text-sm text-slate-500">
+              <p class="text-center py-4 italic">Bấm "Tải đơn" để xem danh sách học sinh xin nghỉ phép...</p>
+            </div>
           </div>
-          <button onclick="submitAssignStudentAttendanceRole()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm shadow transition">
-            <i class="fa-solid fa-floppy-disk mr-1.5"></i> Lưu Phân Công Quyền Điểm Danh
-          </button>
+
+          <!-- 3. PHÂN CÔNG CÁN SỰ & CHỈ ĐỊNH THÀNH VIÊN ĐIỂM DANH LỚP CHỦ NHIỆM -->
+          <div class="glass-card rounded-[1.5rem] p-5 border-l-4 border-emerald-500">
+            <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+              <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+                <i class="fa-solid fa-user-check text-emerald-600"></i> Chỉ Định Thành Viên Điểm Danh Lớp
+              </h3>
+              <span id="gv-homeroom-tag" class="text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg">Lớp chủ nhiệm</span>
+            </div>
+            <p class="text-xs text-slate-500 mb-3">GVCN chỉ định cán sự lớp hoặc thành viên hỗ trợ điểm danh cho lớp được ấn định ở cột <b>Lớp</b> trên sheet <b>GiamThi</b>.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-3">
+              <select id="gv-assign-class" onchange="loadStudentsForRoleAssignment()" class="p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-emerald-500">
+                <option value="">-- Chọn lớp chủ nhiệm --</option>
+              </select>
+              <select id="gv-assign-student" data-smart-type="person" data-smart-placeholder="Chọn học sinh..." class="p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-emerald-500">
+                <option value="">-- Chọn học sinh --</option>
+              </select>
+              <select id="gv-assign-role" class="p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-emerald-500">
+                <option value="Thành viên (GVCN chỉ định)">Thành viên (GVCN chỉ định)</option>
+                <option value="Lớp trưởng">Lớp trưởng</option>
+                <option value="Lớp phó">Lớp phó</option>
+                <option value="Bí thư">Bí thư</option>
+                <option value="Phó bí thư">Phó bí thư</option>
+                <option value="Thành viên">Gỡ quyền (Thành viên)</option>
+              </select>
+            </div>
+            <button onclick="submitAssignStudentAttendanceRole()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm shadow transition">
+              <i class="fa-solid fa-floppy-disk mr-1.5"></i> Lưu Phân Công Quyền Điểm Danh
+            </button>
+          </div>
+
         </div>
 
       </div>
     </div>
 
     <!-- ========================================================== -->
-    <!-- KHU VỰC 3: QUẢN TRỊ HỆ THỐNG (CHỈ TÀI KHOẢN QUẢN TRỊ)      -->
+    <!-- KHU VỰC 3: QUẢN TRỊ HỆ THỐNG                               -->
     <!-- ========================================================== -->
     <div id="tab-quantri" class="hidden space-y-4">
       
@@ -1473,6 +1574,22 @@
       return parsed;
     }
 
+    function getStaffAssignedClass(staff) {
+      if (!staff) return "";
+      const direct = String(staff.assignedClass || staff.lop || staff.Lop || staff.className || "").trim().toUpperCase();
+      if (direct) return direct;
+      const roleMatch = String(staff.role || "").match(/\b\d{2}[A-Za-z]{1,2}\d{0,2}\b/);
+      return roleMatch ? roleMatch[0].toUpperCase() : "";
+    }
+
+    function isHomeroomTeacherAccount(staff) {
+      if (!staff) return false;
+      const roleLow = String(staff.role || "").trim().toLowerCase();
+      const cls = getStaffAssignedClass(staff);
+      if (isAdminAccountRole(roleLow)) return false;
+      return Boolean(cls) || roleLow.includes("chủ nhiệm") || roleLow.includes("chu nhiem") || roleLow.includes("gvcn");
+    }
+
     function populateStaffSelectors() {
       const gvSel = document.getElementById("gv-select-name");
       const qtSel = document.getElementById("qt-select-name");
@@ -1480,11 +1597,15 @@
       qtSel.innerHTML = '<option value="">-- Chọn tài khoản Quản trị --</option>';
 
       (appData.giaoVienList || []).forEach(staff => {
-        const clsTag = staff.assignedClass ? ` - Lớp ${staff.assignedClass}` : "";
+        const cls = getStaffAssignedClass(staff);
+        staff.assignedClass = cls;
+        const displayRole = cls && !String(staff.role || "").toLowerCase().includes("chủ nhiệm")
+          ? `GVCN Lớp ${cls}`
+          : (cls ? `${staff.role} - Lớp ${cls}` : (staff.role || "Giám thị"));
         if (isAdminAccountRole(staff.role)) {
           qtSel.innerHTML += `<option value="${staff.name}">${staff.name} (${staff.role})</option>`;
         } else {
-          gvSel.innerHTML += `<option value="${staff.name}">${staff.name} (${staff.role}${clsTag})</option>`;
+          gvSel.innerHTML += `<option value="${staff.name}">${staff.name} (${displayRole})</option>`;
         }
       });
     }
@@ -2627,8 +2748,53 @@
     }
 
     // ==========================================================
-    // ĐĂNG NHẬP GIÁO VIÊN / GIÁM THỊ (CHẶN TÀI KHOẢN QUẢN TRỊ)
+    // ĐĂNG NHẬP GIÁO VIÊN CHỦ NHIỆM / GIÁM THỊ (PHÂN TÁCH VAI TRÒ RÕ RÀNG)
     // ==========================================================
+    let latestGvReportRecords = [];
+    let gvcnLeaveStudentsCache = [];
+
+    function parseVnDateObject(vnStr) {
+      const m = String(vnStr || "").trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (!m) return null;
+      const dd = parseInt(m[1], 10);
+      const mm = parseInt(m[2], 10);
+      const yyyy = parseInt(m[3], 10);
+      const d = new Date(yyyy, mm - 1, dd);
+      if (d.getFullYear() !== yyyy || d.getMonth() !== mm - 1 || d.getDate() !== dd) return null;
+      return d;
+    }
+
+    function formatDateObjectToVn(dateObj) {
+      const dd = String(dateObj.getDate()).padStart(2, "0");
+      const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const yyyy = dateObj.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    }
+
+    function applyQuickDateRange(mode, autoFetch = true) {
+      const baseDate = parseVnDateObject(appData.dateStr) || new Date();
+      let startObj = new Date(baseDate);
+      let endObj = new Date(baseDate);
+
+      if (mode === "week") {
+        const day = baseDate.getDay(); // 0=CN, 1=T2 ... 6=T7
+        const diffToMon = (day === 0 ? -6 : 1 - day);
+        startObj.setDate(baseDate.getDate() + diffToMon);
+        endObj = new Date(startObj);
+        endObj.setDate(startObj.getDate() + 6);
+      } else if (mode === "month") {
+        startObj = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
+        endObj = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0);
+      }
+
+      document.getElementById("gv-report-start").value = formatDateObjectToVn(startObj);
+      document.getElementById("gv-report-end").value = formatDateObjectToVn(endObj);
+
+      if (autoFetch && appData.adminUser) {
+        fetchClassAbsenceSummary();
+      }
+    }
+
     async function loginGiaoVien() {
       const name = document.getElementById("gv-select-name").value;
       const pin = document.getElementById("gv-input-pin").value.trim();
@@ -2649,49 +2815,107 @@
           return showToast("Tài khoản Quản trị chỉ được phép đăng nhập tại cổng Quản trị!", "error");
         }
 
+        const mergedAssignedClass = String(
+          res.assignedClass || res.lop || (selectedObj ? selectedObj.assignedClass : "") || ""
+        ).trim().toUpperCase();
+
+        const isGvcn = isHomeroomTeacherAccount({ role: res.role, assignedClass: mergedAssignedClass });
+        const assignedClassesArr = mergedAssignedClass
+          ? mergedAssignedClass.split(/[,;|\s]+/).map(s => s.trim().toUpperCase()).filter(Boolean)
+          : [];
+
         appData.adminUser = {
           type: "GV",
           name: res.adminName,
-          role: res.role || "Giám thị",
-          assignedClass: res.assignedClass || "",
+          role: res.role || (isGvcn ? "Giáo viên chủ nhiệm" : "Giám thị"),
+          assignedClass: mergedAssignedClass,
+          assignedClasses: assignedClassesArr,
+          isGvcn: isGvcn,
           url: res.url || "#"
         };
 
-        const clsSuffix = appData.adminUser.assignedClass ? ` • LỚP ${appData.adminUser.assignedClass}` : "";
-        document.getElementById("gv-role-badge").innerText = (appData.adminUser.role + clsSuffix).toUpperCase();
         document.getElementById("gv-welcome-name").innerText = `Xin chào, ${appData.adminUser.name}`;
         document.getElementById("btn-open-sheet").href = appData.adminUser.url;
 
-        const hmTag = document.getElementById("gv-homeroom-tag");
-        if (hmTag) {
-          hmTag.innerText = appData.adminUser.assignedClass
-            ? `Lớp gán: ${appData.adminUser.assignedClass}`
-            : "Quyền Giám thị";
-        }
+        const reportSelect = document.getElementById("gv-report-class");
+        const reportLocked = document.getElementById("gv-report-class-locked");
+        const gvcnSections = document.getElementById("gvcn-exclusive-sections");
 
-        const assignClsSel = document.getElementById("gv-assign-class");
-        if (assignClsSel) {
-          assignClsSel.innerHTML = '<option value="">-- Chọn lớp --</option>';
-          const targetClasses = appData.adminUser.assignedClass
-            ? appData.adminUser.assignedClass.split(/[,;|\s]+/).filter(Boolean)
-            : appData.classes;
-          targetClasses.forEach(c => {
-            assignClsSel.innerHTML += `<option value="${c}">Lớp ${c}</option>`;
-          });
-          if (targetClasses.length === 1) {
-            assignClsSel.value = targetClasses[0];
-            if (assignClsSel._syncSmartUI) assignClsSel._syncSmartUI();
-            loadStudentsForRoleAssignment();
+        if (isGvcn) {
+          // VAI TRÒ GIÁO VIÊN CHỦ NHIỆM: Cố định theo lớp ở cột Lớp sheet GiamThi + Hiển thị nộp đơn xin phép online của lớp chủ nhiệm
+          const clsDisplay = assignedClassesArr.length > 0 ? assignedClassesArr.join(", ") : "Chưa gán lớp";
+          document.getElementById("gv-role-badge").innerText = `GIÁO VIÊN CHỦ NHIỆM • LỚP ${clsDisplay}`;
+          document.getElementById("gv-scope-subtitle").innerText = `Lớp chủ nhiệm được ấn định: ${clsDisplay}`;
+          document.getElementById("gv-stats-title").innerHTML = `<i class="fa-solid fa-clipboard-list text-blue-600"></i> Thống Kê Vắng Trễ & Vi Phạm Nề Nếp Lớp ${clsDisplay}`;
+          document.getElementById("gv-stats-scope-badge").innerText = `Lớp chủ nhiệm: ${clsDisplay}`;
+          document.getElementById("gvcn-leave-class-badge").innerText = `Lớp ${clsDisplay}`;
+
+          gvcnSections.classList.remove("hidden");
+
+          if (assignedClassesArr.length === 1) {
+            reportSelect.innerHTML = `<option value="${assignedClassesArr[0]}">Lớp ${assignedClassesArr[0]}</option>`;
+            reportSelect.value = assignedClassesArr[0];
+            reportSelect.classList.add("hidden");
+            reportLocked.value = `Lớp ${assignedClassesArr[0]} (Lớp chủ nhiệm)`;
+            reportLocked.classList.remove("hidden");
+          } else if (assignedClassesArr.length > 1) {
+            reportLocked.classList.add("hidden");
+            reportSelect.classList.remove("hidden");
+            reportSelect.innerHTML = assignedClassesArr.map(c => `<option value="${c}">Lớp ${c}</option>`).join("");
+            reportSelect.value = assignedClassesArr[0];
+          } else {
+            reportLocked.classList.add("hidden");
+            reportSelect.classList.remove("hidden");
+            reportSelect.innerHTML = '<option value="">-- Chưa ấn định cột Lớp ở sheet GiamThi --</option>' +
+              appData.classes.map(c => `<option value="${c}">Lớp ${c}</option>`).join("");
           }
+
+          // Cài đặt form Nộp đơn xin phép online của lớp mình chủ nhiệm
+          const gvcnLeaveClsSel = document.getElementById("gvcn-leave-class");
+          const targetClasses = assignedClassesArr.length > 0 ? assignedClassesArr : appData.classes;
+          gvcnLeaveClsSel.innerHTML = targetClasses.map(c => `<option value="${c}">Lớp ${c}</option>`).join("");
+          document.getElementById("gvcn-leave-date").value = appData.dateStr;
+          document.getElementById("gvcn-leave-reason").value = "";
+          if (targetClasses.length > 0) {
+            gvcnLeaveClsSel.value = targetClasses[0];
+            loadStudentsForGvcnLeave();
+          }
+
+          // Cài đặt form Chỉ định thành viên điểm danh lớp chủ nhiệm
+          const hmTag = document.getElementById("gv-homeroom-tag");
+          if (hmTag) hmTag.innerText = `Lớp chủ nhiệm: ${clsDisplay}`;
+          const assignClsSel = document.getElementById("gv-assign-class");
+          if (assignClsSel) {
+            assignClsSel.innerHTML = targetClasses.map(c => `<option value="${c}">Lớp ${c}</option>`).join("");
+            if (targetClasses.length > 0) {
+              assignClsSel.value = targetClasses[0];
+              loadStudentsForRoleAssignment();
+            }
+          }
+
+          loadPendingLeaves("gv");
+        } else {
+          // VAI TRÒ GIÁM THỊ: Chỉ hiển thị bảng thống kê vắng trễ & vi phạm nề nếp (chi tiết theo buổi, môn) của TẤT CẢ CÁC LỚP + In báo cáo Tuần / Tháng
+          document.getElementById("gv-role-badge").innerText = (appData.adminUser.role || "GIÁM THỊ").toUpperCase();
+          document.getElementById("gv-scope-subtitle").innerText = "Phạm vi giám sát: Tất cả các lớp toàn trường";
+          document.getElementById("gv-stats-title").innerHTML = `<i class="fa-solid fa-clipboard-list text-blue-600"></i> Thống Kê Vắng Trễ & Vi Phạm Nề Nếp Toàn Trường`;
+          document.getElementById("gv-stats-scope-badge").innerText = "Tất cả các lớp";
+
+          gvcnSections.classList.add("hidden");
+          reportLocked.classList.add("hidden");
+          reportSelect.classList.remove("hidden");
+          reportSelect.innerHTML = '<option value="ALL">Tất cả các lớp (Toàn trường)</option>' +
+            appData.classes.map(c => `<option value="${c}">Lớp ${c}</option>`).join("");
+          reportSelect.value = "ALL";
         }
 
         document.getElementById("gv-login-box").classList.add("hidden");
         document.getElementById("gv-dashboard").classList.remove("hidden");
         updateHeaderActionButtons();
-
         refreshChatPortalContext(true);
-        loadAdminStats("gv");
-        loadPendingLeaves("gv");
+
+        // Tự động tải thống kê mặc định hôm nay ngay khi đăng nhập
+        applyQuickDateRange("today", true);
 
         if (res.isFirstLogin || pin === "123456") {
           openChangePinModal(true);
@@ -2703,14 +2927,82 @@
 
     function logoutGiaoVien() {
       appData.adminUser = null;
+      latestGvReportRecords = [];
       document.getElementById("gv-dashboard").classList.add("hidden");
       document.getElementById("gv-login-box").classList.remove("hidden");
       document.getElementById("gv-input-pin").value = "";
+      document.getElementById("gv-class-absence-result").classList.add("hidden");
+      document.getElementById("gv-report-summary-cards").classList.add("hidden");
       updateHeaderActionButtons();
       refreshChatPortalContext(true);
     }
 
-    // ==========================================================
+    async function loadStudentsForGvcnLeave() {
+      const cls = document.getElementById("gvcn-leave-class").value;
+      const sel = document.getElementById("gvcn-leave-student");
+      if (!cls || !sel) return;
+      sel.innerHTML = '<option value="">⏳ Đang tải danh sách lớp...</option>';
+      try {
+        const res = await callBackendApi("getClassDataRawStudents", cls);
+        gvcnLeaveStudentsCache = res.students || [];
+        sel.innerHTML = '<option value="">-- Chọn học sinh xin nghỉ --</option>';
+        gvcnLeaveStudentsCache.forEach((st, idx) => {
+          sel.innerHTML += `<option value="${idx}">${st.name} (${st.maHS || "---"})</option>`;
+        });
+        if (sel._syncSmartUI) sel._syncSmartUI();
+      } catch (err) {
+        sel.innerHTML = '<option value="">-- Lỗi tải danh sách học sinh --</option>';
+      }
+    }
+
+    async function submitGvcnOnlineLeave() {
+      if (!appData.adminUser || !appData.adminUser.isGvcn) {
+        return showToast("Chức năng này chỉ dành cho Giáo viên chủ nhiệm!", "error");
+      }
+      const cls = document.getElementById("gvcn-leave-class").value;
+      const idx = document.getElementById("gvcn-leave-student").value;
+      const date = document.getElementById("gvcn-leave-date").value.trim();
+      const session = document.getElementById("gvcn-leave-session").value;
+      const reason = document.getElementById("gvcn-leave-reason").value.trim();
+
+      if (!cls) return showToast("Vui lòng chọn lớp chủ nhiệm!", "error");
+      if (idx === "" || !gvcnLeaveStudentsCache[parseInt(idx, 10)]) {
+        return showToast("Vui lòng chọn học sinh xin nghỉ phép!", "error");
+      }
+      if (!date || !parseVnDateToIso(date)) {
+        return showToast("Vui lòng nhập ngày xin nghỉ đúng định dạng dd/mm/yyyy!", "error");
+      }
+      if (!reason) {
+        return showToast("Vui lòng nhập lý do xin nghỉ phép!", "error");
+      }
+
+      const st = gvcnLeaveStudentsCache[parseInt(idx, 10)];
+      const btn = document.getElementById("btn-gvcn-submit-leave");
+      const oldHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi đơn xin phép...';
+
+      try {
+        await callBackendApi("submitOnlineLeaveRequest", {
+          maHS: st.maHS || "",
+          name: st.name,
+          className: cls,
+          date: date,
+          session: session,
+          reason: `${reason} (GVCN ${appData.adminUser.name} nộp)`
+        });
+        document.getElementById("gvcn-leave-reason").value = "";
+        showToast(`✅ Đã nộp đơn xin phép online cho em ${st.name} (${cls})!`, "success");
+        loadPendingLeaves("gv");
+      } catch (err) {
+        showToast("Lỗi nộp đơn xin phép: " + err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = oldHtml;
+      }
+    }
+
+        // ==========================================================
     // ĐĂNG NHẬP QUẢN TRỊ ĐỘC LẬP (CHỈ TÀI KHOẢN QUẢN TRỊ MỚI VÀO)
     // ==========================================================
     async function loginQuanTri() {
@@ -2800,16 +3092,21 @@
             missBox.classList.add("hidden");
           }
         } else {
-          document.getElementById("admin-stat-total").innerText = total;
-          document.getElementById("admin-stat-sub").innerText = submitted;
-          document.getElementById("admin-stat-miss").innerText = missing.length;
+          const elTotal = document.getElementById("admin-stat-total");
+          const elSub = document.getElementById("admin-stat-sub");
+          const elMiss = document.getElementById("admin-stat-miss");
           const missBox = document.getElementById("missing-classes-box");
           const missList = document.getElementById("missing-classes-list");
-          if (missing.length > 0) {
-            missBox.classList.remove("hidden");
-            missList.innerHTML = missing.map(c => `<span class="px-3 py-1 bg-rose-600 text-white rounded-lg text-xs font-bold shadow-sm">${c}</span>`).join("");
-          } else {
-            missBox.classList.add("hidden");
+          if (elTotal) elTotal.innerText = total;
+          if (elSub) elSub.innerText = submitted;
+          if (elMiss) elMiss.innerText = missing.length;
+          if (missBox && missList) {
+            if (missing.length > 0) {
+              missBox.classList.remove("hidden");
+              missList.innerHTML = missing.map(c => `<span class="px-3 py-1 bg-rose-600 text-white rounded-lg text-xs font-bold shadow-sm">${c}</span>`).join("");
+            } else {
+              missBox.classList.add("hidden");
+            }
           }
         }
       } catch (err) {
@@ -2888,47 +3185,139 @@
       return { iso: `${yyyy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}` };
     }
 
-    async function fetchClassAbsenceSummary() {
-      const cls = document.getElementById("gv-report-class").value;
-      const startVn = document.getElementById("gv-report-start").value;
-      const endVn = document.getElementById("gv-report-end").value;
-      const resDiv = document.getElementById("gv-class-absence-result");
+    function normalizeSessionAndSubject(item) {
+      const rawSession = String(item.session || "").trim();
+      let buoi = rawSession || "---";
+      let mon = String(item.subject || item.monHoc || item.mon || "").trim();
 
-      if (!cls) return showToast("Vui lòng chọn lớp cần xem báo cáo!", "error");
+      if (!mon && rawSession.includes("-")) {
+        const parts = rawSession.split("-");
+        buoi = parts[0].trim();
+        mon = parts.slice(1).join("-").trim();
+      }
+      if (!mon) {
+        mon = "Theo buổi / Chung";
+      }
+      return { buoi, mon };
+    }
+
+    function escapeHtmlSafe(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    async function fetchClassAbsenceSummary() {
+      const selectedCls = document.getElementById("gv-report-class").value;
+      const startVn = document.getElementById("gv-report-start").value.trim();
+      const endVn = document.getElementById("gv-report-end").value.trim();
+      const resDiv = document.getElementById("gv-class-absence-result");
+      const sumCards = document.getElementById("gv-report-summary-cards");
+
+      const isGvcn = Boolean(appData.adminUser && appData.adminUser.isGvcn);
+      if (!selectedCls) {
+        return showToast("Vui lòng chọn lớp cần xem thống kê!", "error");
+      }
       const startParsed = parseVnDateToIso(startVn);
       const endParsed = parseVnDateToIso(endVn);
       if (!startParsed || !endParsed) {
-        return showToast("Vui lòng nhập ngày đúng định dạng dd/mm/yyyy!", "error");
+        return showToast("Vui lòng nhập ngày bắt đầu và ngày kết thúc đúng định dạng dd/mm/yyyy!", "error");
       }
 
       resDiv.classList.remove("hidden");
-      resDiv.innerHTML = '<p class="text-center py-4 text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang tổng hợp dữ liệu vi phạm...</p>';
+      resDiv.innerHTML = '<p class="text-center py-5 text-slate-500 text-sm"><i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Đang tổng hợp dữ liệu vắng trễ & vi phạm nề nếp chi tiết theo buổi, môn...</p>';
 
       try {
-        const list = await callBackendApi("getClassAbsenceReport", cls, startParsed.iso, endParsed.iso);
-        if (!Array.isArray(list) || list.length === 0) {
-          resDiv.innerHTML = `<div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center text-emerald-700 font-bold text-sm">✅ Lớp ${cls} không có học sinh nào vắng/trễ/vi phạm từ ${startVn} đến ${endVn}!</div>`;
+        let mergedList = [];
+        const targetClassList = (selectedCls === "ALL")
+          ? (appData.classes || [])
+          : [selectedCls];
+
+        if (targetClassList.length === 0) {
+          resDiv.innerHTML = '<div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-center text-amber-800 font-bold text-sm">Chưa có danh sách lớp trong hệ thống.</div>';
           return;
         }
+
+        const results = await Promise.all(
+          targetClassList.map(async clsName => {
+            try {
+              const rows = await callBackendApi("getClassAbsenceReport", clsName, startParsed.iso, endParsed.iso);
+              return Array.isArray(rows)
+                ? rows.map(r => Object.assign({ className: r.className || r.lop || clsName }, r))
+                : [];
+            } catch (e) {
+              return [];
+            }
+          })
+        );
+
+        results.forEach(arr => { mergedList = mergedList.concat(arr); });
+
+        // Sắp xếp theo Ngày -> Lớp -> Buổi -> Tên học sinh
+        mergedList.sort((a, b) => {
+          const da = parseVnDateToIso(a.date)?.iso || a.date || "";
+          const db = parseVnDateToIso(b.date)?.iso || b.date || "";
+          if (da !== db) return da.localeCompare(db);
+          const ca = String(a.className || "");
+          const cb = String(b.className || "");
+          if (ca !== cb) return ca.localeCompare(cb);
+          return String(a.studentName || a.name || "").localeCompare(String(b.studentName || b.name || ""), "vi");
+        });
+
+        latestGvReportRecords = mergedList;
+
+        let cpCount = 0, kpCount = 0, otherCount = 0;
+        mergedList.forEach(r => {
+          const vLow = String(r.violation || "").toLowerCase();
+          if (vLow.includes("có phép")) cpCount++;
+          if (vLow.includes("không phép")) kpCount++;
+          if (vLow.includes("trễ") || vLow.includes("bỏ tiết") || vLow.includes("đt") || vLow.includes("đồng phục")) otherCount++;
+        });
+
+        sumCards.classList.remove("hidden");
+        document.getElementById("gv-sum-total").innerText = mergedList.length;
+        document.getElementById("gv-sum-cp").innerText = cpCount;
+        document.getElementById("gv-sum-kp").innerText = kpCount;
+        document.getElementById("gv-sum-other").innerText = otherCount;
+
+        if (mergedList.length === 0) {
+          const scopeLabel = selectedCls === "ALL" ? "Tất cả các lớp" : `Lớp ${selectedCls}`;
+          resDiv.innerHTML = `<div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center text-emerald-700 font-bold text-sm">✅ ${scopeLabel} không có học sinh nào vắng, đi trễ hoặc vi phạm nề nếp từ ${startVn} đến ${endVn}!</div>`;
+          return;
+        }
+
+        const showClassCol = (selectedCls === "ALL" || !isGvcn);
+
         resDiv.innerHTML = `
-          <table class="w-full text-left border-collapse text-xs sm:text-sm">
+          <table class="w-full text-left border-collapse text-xs sm:text-sm border border-slate-200 rounded-xl overflow-hidden">
             <thead>
               <tr class="bg-slate-800 text-white">
-                <th class="p-2.5 rounded-tl-xl">Ngày</th>
-                <th class="p-2.5">Ca</th>
-                <th class="p-2.5">Học sinh</th>
-                <th class="p-2.5 rounded-tr-xl">Nội dung ghi nhận</th>
+                <th class="p-2.5">STT</th>
+                <th class="p-2.5">Ngày</th>
+                ${showClassCol ? '<th class="p-2.5">Lớp</th>' : ''}
+                <th class="p-2.5">Buổi</th>
+                <th class="p-2.5">Môn học</th>
+                <th class="p-2.5">Họ và tên học sinh</th>
+                <th class="p-2.5">Chi tiết vắng trễ / vi phạm nề nếp</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-200 bg-white">
-              ${list.map(r => `
-                <tr>
-                  <td class="p-2.5 font-bold">${r.date}</td>
-                  <td class="p-2.5">${r.session}</td>
-                  <td class="p-2.5 font-extrabold text-slate-800">${r.studentName || r.name}</td>
-                  <td class="p-2.5 text-rose-600 font-bold">${r.violation}</td>
-                </tr>
-              `).join("")}
+              ${mergedList.map((r, idx) => {
+                const { buoi, mon } = normalizeSessionAndSubject(r);
+                return `
+                  <tr class="hover:bg-slate-50 transition">
+                    <td class="p-2.5 font-bold text-slate-600">${idx + 1}</td>
+                    <td class="p-2.5 font-bold text-slate-800 whitespace-nowrap">${escapeHtmlSafe(r.date)}</td>
+                    ${showClassCol ? `<td class="p-2.5 font-extrabold text-indigo-700 whitespace-nowrap">${escapeHtmlSafe(r.className)}</td>` : ''}
+                    <td class="p-2.5 font-bold text-slate-700 whitespace-nowrap">${escapeHtmlSafe(buoi)}</td>
+                    <td class="p-2.5 font-bold text-blue-800">${escapeHtmlSafe(mon)}</td>
+                    <td class="p-2.5 font-extrabold text-slate-900">${escapeHtmlSafe(r.studentName || r.name)}</td>
+                    <td class="p-2.5 text-rose-600 font-bold">${escapeHtmlSafe(r.violation)}</td>
+                  </tr>
+                `;
+              }).join("")}
             </tbody>
           </table>
         `;
@@ -2937,7 +3326,201 @@
       }
     }
 
-    // ==========================================
+    async function printStaffAbsenceReport(periodType) {
+      const startVn = document.getElementById("gv-report-start").value.trim();
+      const endVn = document.getElementById("gv-report-end").value.trim();
+      if (!parseVnDateToIso(startVn) || !parseVnDateToIso(endVn)) {
+        return showToast("Vui lòng nhập ngày bắt đầu và ngày kết thúc (dd/mm/yyyy) trước khi in!", "error");
+      }
+
+      // Đảm bảo dữ liệu thống kê khớp với ngày đang chọn trước khi xuất bản in
+      await fetchClassAbsenceSummary();
+
+      const selectedCls = document.getElementById("gv-report-class").value;
+      const isGvcn = Boolean(appData.adminUser && appData.adminUser.isGvcn);
+      const staffName = appData.adminUser ? appData.adminUser.name : "";
+      const roleTitle = isGvcn ? "GIÁO VIÊN CHỦ NHIỆM" : "GIÁM THỊ";
+      const scopeName = selectedCls === "ALL" ? "TẤT CẢ CÁC LỚP TOÀN TRƯỜNG" : `LỚP ${selectedCls}`;
+      const periodTitle = periodType === "MONTH" ? "BÁO CÁO THÁNG" : "BÁO CÁO TUẦN";
+
+      let cpTotal = 0, kpTotal = 0, treTotal = 0, otherTotal = 0;
+      const perStudentSummary = {};
+
+      latestGvReportRecords.forEach(r => {
+        const vLow = String(r.violation || "").toLowerCase();
+        if (vLow.includes("có phép")) cpTotal++;
+        if (vLow.includes("không phép")) kpTotal++;
+        if (vLow.includes("trễ")) treTotal++;
+        if (vLow.includes("bỏ tiết") || vLow.includes("đt") || vLow.includes("đồng phục")) otherTotal++;
+
+        const stKey = `${r.className || ""}__${r.studentName || r.name || ""}`;
+        if (!perStudentSummary[stKey]) {
+          perStudentSummary[stKey] = {
+            className: r.className || selectedCls,
+            name: r.studentName || r.name || "",
+            cp: 0,
+            kp: 0,
+            tre: 0,
+            other: 0,
+            total: 0
+          };
+        }
+        const entry = perStudentSummary[stKey];
+        if (vLow.includes("có phép")) entry.cp++;
+        if (vLow.includes("không phép")) entry.kp++;
+        if (vLow.includes("trễ")) entry.tre++;
+        if (vLow.includes("bỏ tiết") || vLow.includes("đt") || vLow.includes("đồng phục")) entry.other++;
+        entry.total++;
+      });
+
+      const summaryRows = Object.values(perStudentSummary);
+      const detailRowsHtml = latestGvReportRecords.length === 0
+        ? `<tr><td colspan="7" style="text-align:center; padding:14px; font-style:italic;">Không có học sinh nào vắng, đi trễ hoặc vi phạm nề nếp trong khoảng thời gian này.</td></tr>`
+        : latestGvReportRecords.map((r, i) => {
+            const { buoi, mon } = normalizeSessionAndSubject(r);
+            return `
+              <tr>
+                <td style="text-align:center;">${i + 1}</td>
+                <td style="text-align:center; white-space:nowrap;">${escapeHtmlSafe(r.date)}</td>
+                <td style="text-align:center; font-weight:bold;">${escapeHtmlSafe(r.className)}</td>
+                <td style="text-align:center;">${escapeHtmlSafe(buoi)}</td>
+                <td>${escapeHtmlSafe(mon)}</td>
+                <td style="font-weight:bold;">${escapeHtmlSafe(r.studentName || r.name)}</td>
+                <td>${escapeHtmlSafe(r.violation)}</td>
+              </tr>
+            `;
+          }).join("");
+
+      const summaryRowsHtml = summaryRows.length === 0
+        ? ""
+        : `
+          <h4 style="margin: 18px 0 6px; font-size: 13pt;">II. TỔNG HỢP SỐ LƯỢT THEO HỌC SINH</h4>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:45px;">STT</th>
+                <th style="width:75px;">Lớp</th>
+                <th>Họ và tên học sinh</th>
+                <th style="width:85px;">Vắng CP</th>
+                <th style="width:85px;">Vắng KP</th>
+                <th style="width:85px;">Đi trễ</th>
+                <th style="width:95px;">Vi phạm khác</th>
+                <th style="width:80px;">Tổng lượt</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${summaryRows.map((s, idx) => `
+                <tr>
+                  <td style="text-align:center;">${idx + 1}</td>
+                  <td style="text-align:center; font-weight:bold;">${escapeHtmlSafe(s.className)}</td>
+                  <td style="font-weight:bold;">${escapeHtmlSafe(s.name)}</td>
+                  <td style="text-align:center;">${s.cp}</td>
+                  <td style="text-align:center;">${s.kp}</td>
+                  <td style="text-align:center;">${s.tre}</td>
+                  <td style="text-align:center;">${s.other}</td>
+                  <td style="text-align:center; font-weight:bold;">${s.total}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        `;
+
+      const now = new Date();
+      const printDateStr = `Ngày ${String(now.getDate()).padStart(2, "0")} tháng ${String(now.getMonth() + 1).padStart(2, "0")} năm ${now.getFullYear()}`;
+
+      const printWin = window.open("", "_blank", "width=1024,height=768");
+      if (!printWin) {
+        return showToast("Trình duyệt đang chặn cửa sổ bật lên (Popup). Vui lòng cho phép mở popup để in báo cáo!", "warning");
+      }
+
+      printWin.document.write(`
+        <!DOCTYPE html>
+        <html lang="vi">
+        <head>
+          <meta charset="UTF-8">
+          <title>${periodTitle} - ${scopeName}</title>
+          <style>
+            @page { size: A4 portrait; margin: 15mm; }
+            body { font-family: "Times New Roman", Times, serif; color: #000; font-size: 12pt; line-height: 1.4; }
+            .header-table { width: 100%; border: none; margin-bottom: 12px; }
+            .header-table td { border: none; vertical-align: top; text-align: center; padding: 2px; }
+            h2 { text-align: center; font-size: 15pt; margin: 10px 0 4px; text-transform: uppercase; }
+            .sub-title { text-align: center; font-weight: bold; font-size: 12.5pt; margin-bottom: 4px; }
+            .date-range { text-align: center; font-style: italic; font-size: 11.5pt; margin-bottom: 12px; }
+            .stats-bar { border: 1px solid #000; padding: 8px 12px; margin-bottom: 14px; font-weight: bold; text-align: center; background: #f8fafc; }
+            table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 11pt; }
+            th, td { border: 1px solid #000; padding: 6px 8px; }
+            th { background: #e2e8f0; font-weight: bold; text-align: center; }
+            .sign-box { margin-top: 26px; width: 100%; display: flex; justify-content: flex-end; }
+            .sign-inner { width: 260px; text-align: center; }
+          </style>
+        </head>
+        <body>
+          <table class="header-table">
+            <tr>
+              <td style="width:45%;">
+                <div style="font-weight:bold;">SỞ GIÁO DỤC VÀ ĐÀO TẠO</div>
+                <div style="font-weight:bold; text-decoration:underline;">TRƯỜNG TRUNG HỌC PHỔ THÔNG</div>
+              </td>
+              <td style="width:55%;">
+                <div style="font-weight:bold;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                <div style="font-weight:bold; text-decoration:underline;">Độc lập - Tự do - Hạnh phúc</div>
+              </td>
+            </tr>
+          </table>
+
+          <h2>${periodTitle}: THỐNG KÊ VẮNG TRỄ & VI PHẠM NỀ NẾP</h2>
+          <div class="sub-title">Phạm vi: ${escapeHtmlSafe(scopeName)}</div>
+          <div class="date-range">Từ ngày ${escapeHtmlSafe(startVn)} đến ngày ${escapeHtmlSafe(endVn)}</div>
+
+          <div class="stats-bar">
+            Tổng số lượt ghi nhận: ${latestGvReportRecords.length} &nbsp;|&nbsp;
+            Vắng có phép: ${cpTotal} &nbsp;|&nbsp;
+            Vắng không phép: ${kpTotal} &nbsp;|&nbsp;
+            Đi trễ: ${treTotal} &nbsp;|&nbsp;
+            Vi phạm khác: ${otherTotal}
+          </div>
+
+          <h4 style="margin: 10px 0 6px; font-size: 13pt;">I. CHI TIẾT VẮNG TRỄ VÀ VI PHẠM NỀ NẾP THEO BUỔI, MÔN</h4>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:42px;">STT</th>
+                <th style="width:92px;">Ngày</th>
+                <th style="width:68px;">Lớp</th>
+                <th style="width:72px;">Buổi</th>
+                <th style="width:120px;">Môn học</th>
+                <th>Họ và tên học sinh</th>
+                <th>Nội dung vắng trễ / vi phạm</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${detailRowsHtml}
+            </tbody>
+          </table>
+
+          ${summaryRowsHtml}
+
+          <div class="sign-box">
+            <div class="sign-inner">
+              <div style="font-style:italic;">${printDateStr}</div>
+              <div style="font-weight:bold; margin-top:4px;">${roleTitle}</div>
+              <div style="font-style:italic; font-size:10.5pt;">(Ký và ghi rõ họ tên)</div>
+              <div style="margin-top:62px; font-weight:bold;">${escapeHtmlSafe(staffName)}</div>
+            </div>
+          </div>
+          <script>
+            window.onload = function() {
+              setTimeout(function() { window.print(); }, 250);
+            };
+          <\/script>
+        </body>
+        </html>
+      `);
+      printWin.document.close();
+    }
+
+        // ==========================================
     // ĐỔI MÃ PIN & CÁC MODAL QUẢN TRỊ ĐỘC QUYỀN
     // ==========================================
     function openChangePinModal(isForced = false) {
@@ -3096,8 +3679,12 @@
         title.innerText = "Thêm Giáo Viên / Giám Thị";
         body.innerHTML = `
           <input type="text" id="new-gt-name" placeholder="Họ và tên Giáo viên / Giám thị" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold">
-          <input type="text" id="new-gt-role" placeholder="Chức vụ (VD: Giáo viên chủ nhiệm, Giám thị)" value="Giáo viên chủ nhiệm" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm">
-          <input type="text" id="new-gt-class" placeholder="Lớp gán ở cột Lớp (VD: 12A01, để trống nếu Giám thị)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold uppercase">
+          <select id="new-gt-role" onchange="const clsIn=document.getElementById('new-gt-class'); if(this.value==='Giám thị'){clsIn.value=''; clsIn.placeholder='Để trống nếu là Giám thị toàn trường';}else{clsIn.placeholder='Nhập lớp chủ nhiệm (VD: 12A01) vào cột Lớp sheet GiamThi';}" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold">
+            <option value="Giáo viên chủ nhiệm">Giáo viên chủ nhiệm</option>
+            <option value="Giám thị">Giám thị</option>
+            <option value="Quản trị">Quản trị</option>
+          </select>
+          <input type="text" id="new-gt-class" placeholder="Nhập lớp chủ nhiệm (VD: 12A01) vào cột Lớp sheet GiamThi" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold uppercase">
           <button onclick="submitAdminAddGT()" class="w-full py-3 bg-purple-600 text-white font-bold rounded-xl text-sm">Lưu Giáo Viên / Giám Thị</button>
         `;
       }

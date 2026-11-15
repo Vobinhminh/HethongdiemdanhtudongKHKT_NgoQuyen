@@ -285,7 +285,7 @@
           </div>
         </div>
 
-        <!-- KHỐI NÚT ĐIỂM DANH  -->
+        <!-- KHỐI NÚT ĐIỂM DANH (CHỈ HIỂN THỊ KHI CHỨC VỤ LÀ LỚP TRƯỞNG, LỚP PHÓ, BÍ THƯ / CÁN SỰ ĐƯỢC ỦY QUYỀN) -->
         <div id="hs-cansu-attendance-card" class="hidden glass-card rounded-[1.5rem] p-5 border-2 border-emerald-400/80 bg-gradient-to-r from-emerald-50/90 to-teal-50/90">
           <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
             <div>
@@ -302,7 +302,7 @@
           </button>
         </div>
 
-        <!-- 1. BẢNG THỐNG KÊ VẮNG TRỄ VÀ VI PHẠM NỀ NẾP  -->
+        <!-- 1. BẢNG THỐNG KÊ VẮNG TRỄ VÀ VI PHẠM NỀ NẾP (CHI TIẾT THEO BUỔI, MÔN) -->
         <div class="glass-card rounded-[1.5rem] p-5 border-t-4 border-indigo-600">
           <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
             <h3 class="font-extrabold text-slate-800 text-lg flex items-center gap-2">
@@ -396,7 +396,7 @@
 
       </div>
 
-      <!-- BƯỚC 3: BẢNG ĐIỂM DANH CHI TIẾT-->
+      <!-- BƯỚC 3: BẢNG ĐIỂM DANH CHI TIẾT (DÀNH CHO CÁN SỰ KHI BẤM VÀO TRANG ĐIỂM DANH) -->
       <div id="hs-step-3" class="hidden space-y-4">
         
         <div class="bg-gradient-to-r from-slate-800 to-indigo-950 text-white rounded-2xl p-4 shadow-lg flex flex-wrap justify-between items-center gap-2 border border-indigo-500/30">
@@ -510,7 +510,7 @@
           </div>
         </div>
 
-        <!-- BẢNG THỐNG KÊ VẮNG TRỄ & VI PHẠM NỀ NẾP -->
+        <!-- BẢNG THỐNG KÊ VẮNG TRỄ & VI PHẠM NỀ NẾP (CHI TIẾT THEO BUỔI, MÔN) — DÙNG CHO CẢ GVCN (LỚP MÌNH) VÀ GIÁM THỊ (TẤT CẢ CÁC LỚP) -->
         <div id="gv-stats-card" class="glass-card rounded-[1.5rem] p-5 border-t-4 border-blue-600">
           <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
             <div>
@@ -530,7 +530,7 @@
             <button type="button" onclick="applyQuickDateRange('month')" class="px-3 py-1.5 rounded-lg bg-purple-50 hover:bg-purple-600 text-purple-700 hover:text-white border border-purple-200 text-xs font-bold transition">Tháng này</button>
           </div>
 
-          <!-- BỘ LỌC LỚP + NGÀY BẮT ĐẦU  -->
+          <!-- BỘ LỌC LỚP + NGÀY BẮT ĐẦU (dd/mm/yyyy) + NGÀY KẾT THÚC (dd/mm/yyyy) -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
             <div id="gv-report-class-wrapper">
               <label class="block text-xs font-bold text-slate-600 mb-1">Phạm vi lớp</label>
@@ -704,7 +704,7 @@
     </div>
 
     <!-- ========================================================== -->
-    <!-- KHU VỰC 3: QUẢN TRỊ HỆ THỐNG                               -->
+    <!-- KHU VỰC 3: QUẢN TRỊ HỆ THỐNG (CHỈ TÀI KHOẢN QUẢN TRỊ)      -->
     <!-- ========================================================== -->
     <div id="tab-quantri" class="hidden space-y-4">
       
@@ -894,7 +894,7 @@
       </div>
 
       <div id="scan-result-log" class="bg-slate-800/80 rounded-xl p-3 text-xs text-slate-300 max-h-28 overflow-y-auto space-y-1">
-        <p class="text-slate-400 italic">Sẵn sàng quét... (Mặc định toàn lớp đang tính Vắng KP — quét thành công sẽ chuyển sang Có mặt)</p>
+        <p class="text-slate-400 italic">Sẵn sàng quét... (Bạn chưa quét sẽ tự động tính Vắng KP)</p>
       </div>
 
       <div id="ai-capture-btn-box" class="hidden mt-3">
@@ -1724,8 +1724,7 @@
       if (!cls) return;
 
       const needSbj = !document.getElementById("hs-subject-box").classList.contains("hidden");
-      const sbj = needSbj ? document.getElementById("hs-select-subject").value : "";
-      appData.selectedSubject = sbj;
+      const sbj = document.getElementById("hs-select-subject").value;
       if (needSbj && appData.requireSubject && !sbj) return;
 
       await loadClassStudentsForStep2(cls, sbj);
@@ -2082,16 +2081,15 @@
       scanModeActive = false;
       appData.silentLogs = [];
 
-      // Mặc định toàn bộ học sinh là Vắng (Vắng KP) cho đến khi điểm danh / quét QR / AI
       appData.students.forEach((st, idx) => {
-        attendanceState[idx] = { status: "kp", lateMinutes: 5, note: "Mặc định vắng - chưa điểm danh" };
+        attendanceState[idx] = { status: "present", lateMinutes: 5, note: "" };
       });
       renderStudentList();
       updateAttendanceStats();
     }
 
     // Đồng bộ quy tắc điểm danh quét QR / Khuôn mặt:
-    // Ai đã điểm danh bằng quét sẽ chuyển sang "Có mặt", các bạn chưa điểm danh giữ nguyên "Vắng mặt" (kp)
+    // Ai đã điểm danh bằng quét sẽ là "Có mặt", tất cả bạn khác chưa điểm danh phải để "Vắng mặt" (kp)
     function enforceScanAbsenceRule() {
       scanModeActive = true;
       appData.students.forEach((_, idx) => {
@@ -3581,7 +3579,6 @@
       leaveStudentsCache.forEach((s, idx) => {
         sel.innerHTML += `<option value="${idx}">${s.name} (${s.maHS || ""})</option>`;
       });
-      if (sel._syncSmartUI) sel._syncSmartUI();
     }
 
     async function submitOnlineLeave() {
@@ -3627,7 +3624,6 @@
       histStudentsCache.forEach((s, idx) => {
         sel.innerHTML += `<option value="${idx}">${s.name} (${s.maHS || ""})</option>`;
       });
-      if (sel._syncSmartUI) sel._syncSmartUI();
     }
 
     async function lookupStudentHistory() {
@@ -3681,51 +3677,35 @@
         `;
       } else {
         title.innerText = "Thêm Giáo Viên / Giám Thị";
-        const clsDatalist = (appData.classes || []).map(c => `<option value="${c}">`).join("");
         body.innerHTML = `
-          <datalist id="gt-class-datalist">${clsDatalist}</datalist>
           <input type="text" id="new-gt-name" placeholder="Họ và tên Giáo viên / Giám thị" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold">
-          <select id="new-gt-role" onchange="const clsIn=document.getElementById('new-gt-class'); if(this.value==='Giám thị'){clsIn.value=''; clsIn.placeholder='Để trống nếu là Giám thị toàn trường';}else if(this.value==='Quản trị'){clsIn.value=''; clsIn.placeholder='Để trống đối với tài khoản Quản trị';}else{clsIn.placeholder='Chọn/nhập lớp chủ nhiệm (VD: 12A01) vào cột Lớp';}" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold">
+          <select id="new-gt-role" onchange="const clsIn=document.getElementById('new-gt-class'); if(this.value==='Giám thị'){clsIn.value=''; clsIn.placeholder='Để trống nếu là Giám thị toàn trường';}else{clsIn.placeholder='Nhập lớp chủ nhiệm (VD: 12A01) vào cột Lớp sheet GiamThi';}" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold">
             <option value="Giáo viên chủ nhiệm">Giáo viên chủ nhiệm</option>
             <option value="Giám thị">Giám thị</option>
             <option value="Quản trị">Quản trị</option>
           </select>
-          <input type="text" id="new-gt-class" list="gt-class-datalist" placeholder="Chọn/nhập lớp chủ nhiệm (VD: 12A01) vào cột Lớp" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold uppercase">
+          <input type="text" id="new-gt-class" placeholder="Nhập lớp chủ nhiệm (VD: 12A01) vào cột Lớp sheet GiamThi" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold uppercase">
           <button onclick="submitAdminAddGT()" class="w-full py-3 bg-purple-600 text-white font-bold rounded-xl text-sm">Lưu Giáo Viên / Giám Thị</button>
         `;
       }
       openModal("modal-admin-add-user");
     }
 
-    function onSelectStaffForClassAssign() {
-      const name = document.getElementById("assign-gt-name").value;
-      const clsInput = document.getElementById("assign-gt-class");
-      if (!clsInput) return;
-      const found = (appData.giaoVienList || []).find(g => g.name === name);
-      clsInput.value = found ? getStaffAssignedClass(found) : "";
-    }
-
     function openAdminAssignGvClassModal() {
       if (!appData.superAdminUser) return showToast("Chỉ tài khoản Quản trị mới có quyền thao tác này!", "error");
       const title = document.getElementById("admin-add-title");
       const body = document.getElementById("admin-add-form-body");
-      title.innerText = "Gán Lớp Chủ Nhiệm (Cột Lớp - Sheet GiamThi)";
-      const clsDatalist = (appData.classes || []).map(c => `<option value="${c}">`).join("");
+      title.innerText = "Gán Lớp Cho Giáo Viên Chủ Nhiệm";
       const staffOptions = (appData.giaoVienList || [])
         .filter(s => !isAdminAccountRole(s.role))
-        .map(s => {
-          const curCls = getStaffAssignedClass(s);
-          return `<option value="${s.name}">${s.name} (${s.role}${curCls ? " - Cột Lớp: " + curCls : " - Chưa gán lớp"})</option>`;
-        })
+        .map(s => `<option value="${s.name}">${s.name} (${s.role}${s.assignedClass ? " - Hiện tại: " + s.assignedClass : ""})</option>`)
         .join("");
       body.innerHTML = `
-        <datalist id="assign-class-datalist">${clsDatalist}</datalist>
-        <select id="assign-gt-name" onchange="onSelectStaffForClassAssign()" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold">
+        <select id="assign-gt-name" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold">
           <option value="">-- Chọn Giáo viên / Giám thị --</option>
           ${staffOptions}
         </select>
-        <input type="text" id="assign-gt-class" list="assign-class-datalist" placeholder="Nhập/chọn lớp chủ nhiệm (VD: 12A01 hoặc để trống để gỡ)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold uppercase">
-        <p class="text-[11px] text-slate-500">* Tài khoản có lớp ở cột <b>Lớp</b> sheet <b>GiamThi</b> sẽ tự động nhận diện là GVCN của lớp đó.</p>
+        <input type="text" id="assign-gt-class" placeholder="Nhập lớp chủ nhiệm (VD: 12A01 hoặc để trống để gỡ)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold uppercase">
         <button onclick="submitAdminAssignGvClass()" class="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-sm">Lưu Cột Lớp Vào Sheet GiamThi</button>
       `;
       openModal("modal-admin-add-user");
@@ -3913,7 +3893,7 @@
         return {
           role: appData.adminUser ? (appData.adminUser.role || "GV") : "GV",
           name: appData.adminUser ? appData.adminUser.name : "Giáo viên",
-          className: appData.adminUser ? (appData.adminUser.assignedClass || "") : "",
+          className: "",
           currentTab: "Thẻ Giáo viên/Giám thị"
         };
       }

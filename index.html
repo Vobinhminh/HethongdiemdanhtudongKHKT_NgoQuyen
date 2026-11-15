@@ -139,7 +139,7 @@
           <i class="fa-solid fa-right-from-bracket"></i> <span class="hidden sm:inline">Thoát</span>
         </button>
 
-        <!-- NÚT QUẢN TRỊ ĐỘC LẬP-->
+        <!-- NÚT QUẢN TRỊ ĐỘC LẬP -->
         <button id="btn-header-admin-portal" onclick="switchTab('tab-quantri')" class="bg-amber-400/20 hover:bg-amber-400/30 backdrop-blur px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-1.5 border border-amber-300/40 shadow-sm text-amber-200">
           <i class="fa-solid fa-user-shield"></i> <span>Quản trị</span>
         </button>
@@ -169,7 +169,7 @@
       <div id="hs-step-1" class="glass-card rounded-[1.75rem] p-5 sm:p-6">
         <div class="flex items-center gap-2.5 mb-5 border-b border-slate-100 pb-3">
           <span class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow">1</span>
-          <h2 class="font-bold text-slate-800 text-lg sm:text-xl">Chọn Thông Tin Điểm Danh</h2>
+          <h2 class="font-bold text-slate-800 text-lg sm:text-xl">Chọn Lớp Học</h2>
         </div>
 
         <div class="space-y-4">
@@ -207,14 +207,17 @@
         </div>
       </div>
 
-      <!-- BƯỚC 2: XÁC THỰC CÁN SỰ -->
+      <!-- BƯỚC 2: ĐĂNG NHẬP HỌC SINH / CÁN SỰ (TÁCH RIÊNG Ô CHỨC VỤ) -->
       <div id="hs-step-2" class="hidden glass-card rounded-[1.75rem] p-5 sm:p-6">
         <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
           <div class="flex items-center gap-2.5">
             <span class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow">2</span>
-            <h2 class="font-bold text-slate-800 text-lg">Xác Thực Cán Sự</h2>
+            <div>
+              <h2 class="font-bold text-slate-800 text-lg leading-tight">Đăng Nhập Học Sinh</h2>
+              <p id="hs-step2-class-label" class="text-xs text-indigo-600 font-bold"></p>
+            </div>
           </div>
-          <button onclick="resetToStep1()" class="text-sm text-blue-600 hover:text-blue-800 font-bold bg-blue-50 px-3 py-1 rounded-lg">Đổi lớp/môn</button>
+          <button onclick="resetToStep1()" class="text-sm text-blue-600 hover:text-blue-800 font-bold bg-blue-50 px-3 py-1.5 rounded-lg transition">Đổi lớp/môn</button>
         </div>
 
         <div id="locked-alert" class="hidden bg-amber-50 border-l-4 border-amber-500 p-4 rounded-xl mb-4">
@@ -222,34 +225,178 @@
             <i class="fa-solid fa-lock text-amber-600 text-xl mt-0.5"></i>
             <div>
               <h4 class="font-bold text-amber-900 text-base">Lớp đã nộp điểm danh ca/môn này!</h4>
-              <p class="text-sm text-amber-800 mt-0.5">Nếu có sai sót, Cán sự lớp hoặc Giáo viên có thể đăng nhập bên dưới để mở khóa và chỉnh sửa lại.</p>
+              <p class="text-sm text-amber-800 mt-0.5">Nút điểm danh của Cán sự lớp sẽ tự động khóa. Học sinh vẫn có thể đăng nhập để xem thống kê vắng trễ, vi phạm nề nếp và nộp đơn xin phép online.</p>
             </div>
           </div>
         </div>
 
         <div class="space-y-4">
+          <!-- Ô CHỌN TÊN HỌC SINH (ĐÃ TÁCH RIÊNG CHỨC VỤ) -->
           <div>
-            <label class="block text-sm font-bold text-slate-700 mb-1.5">Người thực hiện <span class="text-xs font-normal text-indigo-600">(Chỉ Cán sự lớp & Thành viên được GVCN chỉ định)</span></label>
+            <label class="block text-sm font-bold text-slate-700 mb-1.5">Họ và tên học sinh <span class="text-rose-500">*</span></label>
             <div class="relative">
-              <select id="hs-select-reporter" data-smart-type="person" data-smart-placeholder="Nhập số thứ tự hoặc tên Cán sự / Thành viên chỉ định..." class="w-full p-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl font-bold text-slate-800 text-base outline-none focus:border-blue-500 appearance-none">
-                <option value="">-- Chọn Cán sự lớp / Thành viên được GVCN chỉ định --</option>
+              <select id="hs-select-reporter" onchange="onSelectStudentInStep2()" data-smart-type="person" data-smart-placeholder="Nhập số thứ tự hoặc họ tên học sinh..." class="w-full p-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl font-bold text-slate-800 text-base outline-none focus:border-blue-500 appearance-none">
+                <option value="">-- Chọn tên học sinh --</option>
               </select>
             </div>
           </div>
 
+          <!-- Ô CHỨC VỤ TÁCH RIÊNG - TỰ ĐỘNG HIỂN THỊ KHI CHỌN TÊN HỌC SINH -->
           <div>
-            <label class="block text-sm font-bold text-slate-700 mb-1.5">Mã PIN Bảo Mật</label>
-            <input type="password" id="hs-input-pin" maxlength="6" inputmode="numeric" placeholder="••••••" class="w-full p-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-center tracking-[0.5em] font-extrabold text-xl outline-none focus:border-blue-500 focus:bg-white transition">
+            <label class="block text-sm font-bold text-slate-700 mb-1.5">Chức vụ <span class="text-xs font-normal text-indigo-600">(Tự động hiển thị theo tên học sinh)</span></label>
+            <div class="relative flex items-center">
+              <i id="hs-role-icon" class="fa-solid fa-id-badge absolute left-3.5 text-slate-400 text-base"></i>
+              <input type="text" id="hs-display-role" readonly value="" placeholder="-- Tự động hiển thị khi chọn học sinh --" class="w-full pl-10 pr-3.5 py-3.5 bg-indigo-50/70 border-2 border-indigo-200 rounded-xl font-extrabold text-indigo-900 text-base outline-none cursor-default">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-1.5">Mã PIN Bảo Mật <span class="text-rose-500">*</span></label>
+            <input type="password" id="hs-input-pin" maxlength="6" inputmode="numeric" onkeydown="if(event.key==='Enter') verifyCanSu()" placeholder="••••••" class="w-full p-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-center tracking-[0.5em] font-extrabold text-xl outline-none focus:border-blue-500 focus:bg-white transition">
             <p class="text-xs text-slate-500 mt-1.5 text-center">* Mật khẩu mặc định lần đầu: <b>123456</b> (Hệ thống sẽ yêu cầu đổi sau khi vào)</p>
           </div>
 
           <button onclick="verifyCanSu()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-500/30 transition active:scale-95 text-base tracking-wide">
-            Mở Bảng Điểm Danh <i class="fa-solid fa-arrow-right ml-1.5"></i>
+            Đăng Nhập Cổng Học Sinh <i class="fa-solid fa-arrow-right ml-1.5"></i>
           </button>
         </div>
       </div>
 
-      <!-- BƯỚC 3: BẢNG ĐIỂM DANH CHI TIẾT -->
+      <!-- BƯỚC 2.5: CỔNG THÔNG TIN HỌC SINH SAU KHI ĐĂNG NHẬP -->
+      <div id="hs-dashboard" class="hidden space-y-4">
+        
+        <!-- THẺ THÔNG TIN HỌC SINH ĐANG ĐĂNG NHẬP -->
+        <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white rounded-[1.5rem] p-5 shadow-xl flex flex-wrap justify-between items-center gap-3 border border-indigo-400/30">
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span id="hs-dash-role-badge" class="bg-amber-400 text-slate-900 text-xs uppercase font-extrabold px-2.5 py-1 rounded-md shadow-sm">THÀNH VIÊN</span>
+              <span id="hs-dash-class-badge" class="bg-white/15 text-blue-100 text-xs font-bold px-2.5 py-1 rounded-md border border-white/20">Lớp ---</span>
+            </div>
+            <h3 id="hs-dash-welcome-name" class="font-extrabold text-xl mt-2 text-white">Xin chào, Học sinh</h3>
+            <p id="hs-dash-mahs" class="text-xs text-blue-200 mt-0.5">Mã HS: ---</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="openChangePinModal(false)" class="bg-white/15 hover:bg-white/25 text-amber-200 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition border border-white/20 flex items-center gap-1.5">
+              <i class="fa-solid fa-key"></i> Đổi PIN
+            </button>
+            <button onclick="logoutCurrentRole()" class="bg-rose-500 hover:bg-rose-600 text-white px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition shadow-md flex items-center gap-1.5">
+              <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+            </button>
+          </div>
+        </div>
+
+        <!-- KHỐI NÚT ĐIỂM DANH (CHỈ HIỂN THỊ KHI CHỨC VỤ LÀ LỚP TRƯỞNG, LỚP PHÓ, BÍ THƯ / CÁN SỰ ĐƯỢC ỦY QUYỀN) -->
+        <div id="hs-cansu-attendance-card" class="hidden glass-card rounded-[1.5rem] p-5 border-2 border-emerald-400/80 bg-gradient-to-r from-emerald-50/90 to-teal-50/90">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <div>
+              <span class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-lg">
+                <i class="fa-solid fa-clipboard-check"></i> Quyền Cán Sự Lớp
+              </span>
+              <h4 class="font-extrabold text-slate-800 text-lg mt-1.5">Điểm Danh Lớp <span id="hs-dash-att-class"></span></h4>
+              <p id="hs-dash-att-desc" class="text-xs text-slate-600 mt-0.5">Thực hiện điểm danh nhanh bằng danh sách, quét QR hoặc nhận diện khuôn mặt AI.</p>
+            </div>
+          </div>
+
+          <button id="btn-hs-goto-attendance" onclick="enterAttendanceSheetFromDashboard()" class="w-full py-4 px-5 rounded-xl font-extrabold text-base sm:text-lg shadow-lg transition flex items-center justify-center gap-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-emerald-500/30 active:scale-95">
+            <i class="fa-solid fa-user-check text-xl"></i> <span>VÀO TRANG ĐIỂM DANH LỚP</span>
+          </button>
+        </div>
+
+        <!-- 1. BẢNG THỐNG KÊ VẮNG TRỄ VÀ VI PHẠM NỀ NẾP (CHI TIẾT THEO BUỔI, MÔN) -->
+        <div class="glass-card rounded-[1.5rem] p-5 border-t-4 border-indigo-600">
+          <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+            <h3 class="font-extrabold text-slate-800 text-lg flex items-center gap-2">
+              <i class="fa-solid fa-chart-column text-indigo-600"></i> Thống Kê Vắng Trễ & Vi Phạm Nề Nếp
+            </h3>
+            <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100">Chi tiết theo buổi, môn</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Ngày bắt đầu (dd/mm/yyyy)</label>
+              <div class="relative">
+                <i class="fa-regular fa-calendar absolute left-3 top-3 text-slate-400"></i>
+                <input type="text" id="hs-dash-start" maxlength="10" oninput="formatDateInputVn(this)" placeholder="dd/mm/yyyy" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-indigo-500 focus:bg-white">
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Ngày kết thúc (dd/mm/yyyy)</label>
+              <div class="relative">
+                <i class="fa-regular fa-calendar-check absolute left-3 top-3 text-slate-400"></i>
+                <input type="text" id="hs-dash-end" maxlength="10" oninput="formatDateInputVn(this)" placeholder="dd/mm/yyyy" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-indigo-500 focus:bg-white">
+              </div>
+            </div>
+          </div>
+
+          <button onclick="loadLoggedStudentStats()" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition flex items-center justify-center gap-2 active:scale-95">
+            <i class="fa-solid fa-magnifying-glass"></i> Xem Thống Kê Chi Tiết
+          </button>
+
+          <!-- TÓM TẮT NHANH SỐ LIỆU -->
+          <div id="hs-dash-summary-cards" class="hidden grid grid-cols-4 gap-2 text-center mt-4">
+            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+              <span class="block text-[11px] text-slate-500 font-bold">Tổng lượt</span>
+              <span id="hs-sum-total" class="text-lg font-extrabold text-slate-800">0</span>
+            </div>
+            <div class="bg-amber-50 p-2.5 rounded-xl border border-amber-200">
+              <span class="block text-[11px] text-amber-700 font-bold">Vắng CP</span>
+              <span id="hs-sum-cp" class="text-lg font-extrabold text-amber-600">0</span>
+            </div>
+            <div class="bg-rose-50 p-2.5 rounded-xl border border-rose-200">
+              <span class="block text-[11px] text-rose-700 font-bold">Vắng KP</span>
+              <span id="hs-sum-kp" class="text-lg font-extrabold text-rose-600">0</span>
+            </div>
+            <div class="bg-orange-50 p-2.5 rounded-xl border border-orange-200">
+              <span class="block text-[11px] text-orange-700 font-bold">Trễ / Khác</span>
+              <span id="hs-sum-other" class="text-lg font-extrabold text-orange-600">0</span>
+            </div>
+          </div>
+
+          <!-- BẢNG CHI TIẾT THEO NGÀY, BUỔI, MÔN -->
+          <div id="hs-dash-stats-result" class="mt-4 overflow-x-auto">
+            <p class="text-center text-xs text-slate-400 italic py-2">Chọn khoảng ngày và bấm "Xem Thống Kê Chi Tiết" để tra cứu...</p>
+          </div>
+        </div>
+
+        <!-- 2. NỘP ĐƠN XIN PHÉP ONLINE (ĐÃ TỰ ĐỘNG ĐIỀN THÔNG TIN HỌC SINH ĐĂNG NHẬP) -->
+        <div class="glass-card rounded-[1.5rem] p-5 border-t-4 border-amber-500">
+          <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+            <h3 class="font-extrabold text-slate-800 text-lg flex items-center gap-2">
+              <i class="fa-solid fa-file-signature text-amber-500"></i> Nộp Đơn Xin Phép Online
+            </h3>
+            <span class="text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">Gửi trực tiếp GVCN & Giám thị</span>
+          </div>
+
+          <div class="space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Ngày xin nghỉ (dd/mm/yyyy) <span class="text-rose-500">*</span></label>
+                <input type="text" id="hs-dash-leave-date" maxlength="10" oninput="formatDateInputVn(this)" placeholder="dd/mm/yyyy" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-amber-500 focus:bg-white">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Buổi xin nghỉ <span class="text-rose-500">*</span></label>
+                <select id="hs-dash-leave-session" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-amber-500 focus:bg-white">
+                  <option value="Cả ngày">Cả ngày</option>
+                  <option value="Buổi Sáng">Buổi Sáng</option>
+                  <option value="Buổi Chiều">Buổi Chiều</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Lý do xin nghỉ phép <span class="text-rose-500">*</span></label>
+              <textarea id="hs-dash-leave-reason" rows="2" placeholder="Nhập lý do cụ thể (VD: Bị sốt cao, đi khám bệnh theo lịch hẹn bác sĩ...)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-amber-500 focus:bg-white"></textarea>
+            </div>
+
+            <button id="btn-hs-dash-submit-leave" onclick="submitLoggedStudentLeave()" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold rounded-xl shadow-md shadow-amber-500/20 text-sm transition flex items-center justify-center gap-2 active:scale-95">
+              <i class="fa-solid fa-paper-plane"></i> Nộp Đơn Xin Phép Online
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- BƯỚC 3: BẢNG ĐIỂM DANH CHI TIẾT (DÀNH CHO CÁN SỰ KHI BẤM VÀO TRANG ĐIỂM DANH) -->
       <div id="hs-step-3" class="hidden space-y-4">
         
         <div class="bg-gradient-to-r from-slate-800 to-indigo-950 text-white rounded-2xl p-4 shadow-lg flex flex-wrap justify-between items-center gap-2 border border-indigo-500/30">
@@ -257,7 +404,10 @@
             <span class="text-xs uppercase tracking-wider text-indigo-300 font-bold block">Người đang báo cáo</span>
             <p id="reporter-badge" class="font-bold text-base text-white mt-0.5"><i class="fa-solid fa-user-check text-emerald-400 mr-1.5"></i>...</p>
           </div>
-          <div class="flex gap-2">
+          <div class="flex flex-wrap gap-2">
+            <button onclick="backToStudentDashboard()" class="bg-white/15 hover:bg-white/25 text-white px-3 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 border border-white/20 transition">
+              <i class="fa-solid fa-arrow-left"></i> Bảng cá nhân
+            </button>
             <button onclick="openQuickScanModal('QR')" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-md active:scale-95 transition">
               <i class="fa-solid fa-qrcode"></i> Quét QR
             </button>
@@ -410,8 +560,8 @@
             <select id="gv-report-class" data-smart-type="class" data-smart-placeholder="Nhập số hoặc lớp (VD: 1 -> 10,11,12)..." class="p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-blue-500">
               <option value="">-- Chọn lớp --</option>
             </select>
-            <input type="text" id="gv-report-start" placeholder="Từ ngày (dd/mm/yyyy)" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-blue-500">
-            <input type="text" id="gv-report-end" placeholder="Đến ngày (dd/mm/yyyy)" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-blue-500">
+            <input type="text" id="gv-report-start" maxlength="10" oninput="formatDateInputVn(this)" placeholder="Từ ngày (dd/mm/yyyy)" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-blue-500">
+            <input type="text" id="gv-report-end" maxlength="10" oninput="formatDateInputVn(this)" placeholder="Đến ngày (dd/mm/yyyy)" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-blue-500">
           </div>
           <button onclick="fetchClassAbsenceSummary()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow transition">
             <i class="fa-solid fa-magnifying-glass mr-1.5"></i> Xem Báo Cáo Vi Phạm Lớp
@@ -669,7 +819,7 @@
         </select>
         <input type="password" id="leave-pin" maxlength="6" inputmode="numeric" placeholder="Nhập mã PIN học sinh xác nhận" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-center font-bold tracking-widest text-sm outline-none">
         <div class="grid grid-cols-2 gap-2">
-          <input type="text" id="leave-date" placeholder="Ngày nghỉ (dd/mm/yyyy)" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none">
+          <input type="text" id="leave-date" maxlength="10" oninput="formatDateInputVn(this)" placeholder="Ngày nghỉ (dd/mm/yyyy)" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none">
           <select id="leave-session" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none">
             <option value="Cả ngày">Cả ngày</option>
             <option value="Buổi Sáng">Buổi Sáng</option>
@@ -697,8 +847,8 @@
         </select>
         <input type="password" id="hist-pin" maxlength="6" inputmode="numeric" placeholder="Nhập mã PIN học sinh" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-center font-bold tracking-widest text-sm outline-none">
         <div class="grid grid-cols-2 gap-2">
-          <input type="text" id="hist-start" placeholder="Từ ngày (dd/mm/yyyy)" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none">
-          <input type="text" id="hist-end" placeholder="Đến ngày (dd/mm/yyyy)" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none">
+          <input type="text" id="hist-start" maxlength="10" oninput="formatDateInputVn(this)" placeholder="Từ ngày (dd/mm/yyyy)" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none">
+          <input type="text" id="hist-end" maxlength="10" oninput="formatDateInputVn(this)" placeholder="Đến ngày (dd/mm/yyyy)" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none">
         </div>
         <button onclick="lookupStudentHistory()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow">Tra Cứu Dữ Liệu</button>
         <div id="hist-result-box" class="max-h-48 overflow-y-auto space-y-2 pt-2"></div>
@@ -732,14 +882,14 @@
   <!-- WIDGET TRỢ LÝ AI CHATBOT NỔI               -->
   <!-- ========================================== -->
   <button id="ai-chat-fab" onclick="toggleChatWidget()" title="Mở Trợ lý AI" class="fixed bottom-5 right-5 z-40 w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-500 text-white shadow-2xl shadow-indigo-600/40 flex items-center justify-center overflow-hidden transition transform hover:scale-105 active:scale-95 border-2 border-white">
-    <img src="bot-avatar.jpg" alt="Trợ lý AI" class="w-full h-full object-cover" onerror="this.outerHTML='<i class=\'fa-solid fa-robot text-2xl\'></i>'">
+    <img src="bot-avatar.jpg" alt="Trợ lý AI" class="w-full h-full object-cover" onerror="this.outerHTML='<i class='fa-solid fa-robot text-2xl'></i>'">
   </button>
 
   <div id="ai-chat-window" class="hidden fixed bottom-22 right-4 sm:right-6 z-40 w-[92vw] max-w-[390px] bg-white rounded-[1.75rem] shadow-2xl border border-indigo-100 overflow-hidden flex flex-col" style="height: 540px; max-height: 82vh;">
     <div class="bg-gradient-to-r from-blue-700 to-indigo-700 text-white p-3.5 flex justify-between items-center shrink-0">
       <div class="flex items-center gap-2.5 min-w-0">
         <div class="w-10 h-10 rounded-full bg-white/20 overflow-hidden shrink-0 border border-white/60 shadow-sm flex items-center justify-center">
-          <img src="bot-avatar.jpg" alt="Trợ lý AI" class="w-full h-full object-cover" onerror="this.outerHTML='<i class=\'fa-solid fa-robot text-lg\'></i>'">
+          <img src="bot-avatar.jpg" alt="Trợ lý AI" class="w-full h-full object-cover" onerror="this.outerHTML='<i class='fa-solid fa-robot text-lg'></i>'">
         </div>
         <div class="min-w-0">
           <h4 class="font-bold text-sm leading-tight truncate">Trợ Lý AI - THPT Ngô Quyền</h4>
@@ -760,7 +910,7 @@
       </div>
     </div>
 
-    <!-- THANH GỢI Ý CÂU HỎI NHANH: TỰ XUỐNG DÒNG GỌN GÀNG, KHÔNG TRÀN KHUNG -->
+    <!-- THANH GỢI Ý CÂU HỎI NHANH -->
     <div id="chat-suggestions-bar" class="w-full max-w-full min-w-0 box-border px-2.5 py-1.5 bg-white border-t border-slate-100 flex flex-wrap items-center gap-1.5 max-h-[68px] overflow-y-auto no-scrollbar shrink-0"></div>
 
     <!-- THANH NHẬP TIN NHẮN + NHẬN DIỆN GIỌNG NÓI -->
@@ -867,7 +1017,7 @@
     function normalizeSearchStr(str) {
       return String(str || "")
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[̀-ͯ]/g, "")
         .replace(/đ/g, "d")
         .replace(/Đ/g, "D")
         .toLowerCase()
@@ -1092,6 +1242,7 @@
           clearBtn.classList.add("hidden");
           if (selectEl.value !== "") {
             selectEl.value = "";
+            selectEl.dispatchEvent(new Event("change", { bubbles: true }));
           }
         } else {
           clearBtn.classList.remove("hidden");
@@ -1139,6 +1290,7 @@
         selectEl.value = "";
         clearBtn.classList.add("hidden");
         activeIndex = -1;
+        selectEl.dispatchEvent(new Event("change", { bubbles: true }));
         renderDropdown("");
         dropdown.classList.remove("hidden");
         textInput.focus();
@@ -1202,6 +1354,18 @@
     function openModal(id) { document.getElementById(id).classList.remove("hidden"); }
     function closeModal(id) { document.getElementById(id).classList.add("hidden"); }
 
+    function formatDateInputVn(el) {
+      if (!el) return;
+      let digits = String(el.value || "").replace(/\D/g, "").slice(0, 8);
+      if (digits.length >= 5) {
+        el.value = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+      } else if (digits.length >= 3) {
+        el.value = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+      } else {
+        el.value = digits;
+      }
+    }
+
     function sha256Fallback_(ascii) {
       function rightRotate(value, amount) { return (value >>> amount) | (value << (32 - amount)); }
       const mathPow = Math.pow;
@@ -1220,8 +1384,8 @@
           k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
         }
       }
-      ascii += '\x80';
-      while (ascii.length % 64 - 56) ascii += '\x00';
+      ascii += '';
+      while (ascii.length % 64 - 56) ascii += ' ';
       for (let i = 0; i < ascii.length; i++) {
         const j = ascii.charCodeAt(i);
         words[i >> 2] |= j << ((3 - i) % 4) * 8;
@@ -1366,6 +1530,9 @@
         document.getElementById("hist-end").value = appData.dateStr;
         document.getElementById("gv-report-start").value = appData.dateStr;
         document.getElementById("gv-report-end").value = appData.dateStr;
+        document.getElementById("hs-dash-start").value = appData.dateStr;
+        document.getElementById("hs-dash-end").value = appData.dateStr;
+        document.getElementById("hs-dash-leave-date").value = appData.dateStr;
 
         renderChatSuggestions(LOCAL_PORTAL_SUGGESTIONS["Cổng điểm danh"]);
 
@@ -1450,6 +1617,7 @@
       await loadClassStudentsForStep2(cls, sbj);
     }
 
+    // Kiểm tra chức vụ được cấp nút điểm danh (Lớp trưởng, Lớp phó, Bí thư hoặc cán sự/chỉ định)
     function classifyAttendanceReporterRole(roleStr) {
       const r = String(roleStr || "").trim().toLowerCase();
       if (!r || r === "thành viên" || r === "thanh vien" || r === "học sinh" || r === "hoc sinh") {
@@ -1464,14 +1632,18 @@
         "lớp phó", "lop pho",
         "bí thư", "bi thu",
         "phó bí thư", "pho bi thu",
-        "cán sự", "can su",
-        "tổ trưởng", "to truong",
-        "tổ phó", "to pho"
+        "cán sự", "can su"
       ];
       if (canSuKeywords.some(kw => r.includes(kw))) {
         return { allowed: true, group: "cansu" };
       }
       return { allowed: false, group: "member" };
+    }
+
+    function hasAttendancePrivilege(student) {
+      if (!student) return false;
+      const info = classifyAttendanceReporterRole(student.role);
+      return Boolean(info.allowed || student.canTakeAttendance);
     }
 
     async function loadClassStudentsForStep2(cls, sbj) {
@@ -1486,76 +1658,298 @@
         if (appData.isEditMode) lockedAlert.classList.remove("hidden");
         else lockedAlert.classList.add("hidden");
 
-        const repSel = document.getElementById("hs-select-reporter");
-        repSel.innerHTML = '<option value="">-- Chọn Cán sự lớp / Thành viên được GVCN chỉ định --</option>';
+        const sbjLabel = sbj ? ` • Môn ${sbj}` : "";
+        document.getElementById("hs-step2-class-label").innerText = `Lớp ${cls} • Ca ${appData.session}${sbjLabel}`;
 
-        let authorizedCount = 0;
+        // Đổ danh sách TẤT CẢ học sinh vào ô chọn tên (TÁCH RIÊNG tên và chức vụ)
+        const repSel = document.getElementById("hs-select-reporter");
+        repSel.innerHTML = '<option value="">-- Chọn tên học sinh --</option>';
         appData.students.forEach((st, idx) => {
-          const info = classifyAttendanceReporterRole(st.role);
-          if (!info.allowed && !st.canTakeAttendance) return;
-          authorizedCount++;
-          const badge = info.group === "designated"
-            ? `✔ [GVCN chỉ định: ${st.role}]`
-            : `★ [Cán sự: ${st.role}]`;
-          repSel.innerHTML += `<option value="${idx}">${st.name} ${badge}</option>`;
+          repSel.innerHTML += `<option value="${idx}">${st.name}</option>`;
         });
 
-        if (authorizedCount === 0) {
-          showToast(`Lớp ${cls} chưa có Cán sự lớp hoặc Thành viên được GVCN chỉ định!`, "warning");
+        // Reset ô chức vụ tách riêng
+        const roleInput = document.getElementById("hs-display-role");
+        const roleIcon = document.getElementById("hs-role-icon");
+        if (roleInput) {
+          roleInput.value = "";
+          roleInput.className = "w-full pl-10 pr-3.5 py-3.5 bg-indigo-50/70 border-2 border-indigo-200 rounded-xl font-extrabold text-indigo-900 text-base outline-none cursor-default";
+        }
+        if (roleIcon) {
+          roleIcon.className = "fa-solid fa-id-badge absolute left-3.5 text-slate-400 text-base";
         }
 
         document.getElementById("hs-step-1").classList.add("hidden");
+        document.getElementById("hs-dashboard").classList.add("hidden");
+        document.getElementById("hs-step-3").classList.add("hidden");
         document.getElementById("hs-step-2").classList.remove("hidden");
       } catch (err) {
         showToast("Lỗi tải dữ liệu lớp: " + err.message, "error");
       }
     }
 
+    // Khi chọn tên học sinh -> Tự động điền ô Chức vụ tách riêng
+    function onSelectStudentInStep2() {
+      const idxStr = document.getElementById("hs-select-reporter").value;
+      const roleInput = document.getElementById("hs-display-role");
+      const roleIcon = document.getElementById("hs-role-icon");
+      if (!roleInput) return;
+
+      if (idxStr === "" || !appData.students[parseInt(idxStr, 10)]) {
+        roleInput.value = "";
+        roleInput.className = "w-full pl-10 pr-3.5 py-3.5 bg-indigo-50/70 border-2 border-indigo-200 rounded-xl font-extrabold text-indigo-900 text-base outline-none cursor-default";
+        if (roleIcon) roleIcon.className = "fa-solid fa-id-badge absolute left-3.5 text-slate-400 text-base";
+        return;
+      }
+
+      const st = appData.students[parseInt(idxStr, 10)];
+      const cleanRole = String(st.role || "").trim() || "Thành viên";
+      roleInput.value = cleanRole;
+
+      if (hasAttendancePrivilege(st)) {
+        roleInput.className = "w-full pl-10 pr-3.5 py-3.5 bg-emerald-50 border-2 border-emerald-400 rounded-xl font-extrabold text-emerald-800 text-base outline-none cursor-default";
+        if (roleIcon) roleIcon.className = "fa-solid fa-star absolute left-3.5 text-emerald-600 text-base";
+      } else {
+        roleInput.className = "w-full pl-10 pr-3.5 py-3.5 bg-indigo-50/80 border-2 border-indigo-200 rounded-xl font-extrabold text-indigo-900 text-base outline-none cursor-default";
+        if (roleIcon) roleIcon.className = "fa-solid fa-user-graduate absolute left-3.5 text-indigo-600 text-base";
+      }
+    }
+
     function resetToStep1() {
       document.getElementById("hs-step-2").classList.add("hidden");
+      document.getElementById("hs-dashboard").classList.add("hidden");
       document.getElementById("hs-step-3").classList.add("hidden");
       document.getElementById("hs-step-1").classList.remove("hidden");
       document.getElementById("hs-input-pin").value = "";
+      const roleInput = document.getElementById("hs-display-role");
+      if (roleInput) roleInput.value = "";
+    }
+
+    function updateDashboardAttendanceButtonState() {
+      const btn = document.getElementById("btn-hs-goto-attendance");
+      const desc = document.getElementById("hs-dash-att-desc");
+      if (!btn) return;
+
+      if (appData.isEditMode) {
+        btn.disabled = true;
+        btn.className = "w-full py-4 px-5 rounded-xl font-extrabold text-base sm:text-lg transition flex items-center justify-center gap-2.5 bg-slate-300 text-slate-600 border-2 border-slate-400 cursor-not-allowed opacity-90";
+        btn.innerHTML = '<i class="fa-solid fa-lock text-lg"></i> <span>ĐÃ ĐIỂM DANH RỒI (ĐÃ KHÓA NÚT)</span>';
+        if (desc) {
+          desc.innerText = "Lớp đã hoàn thành gửi điểm danh ca/môn này nên nút điểm danh đã tự động khóa.";
+        }
+      } else {
+        btn.disabled = false;
+        btn.className = "w-full py-4 px-5 rounded-xl font-extrabold text-base sm:text-lg shadow-lg transition flex items-center justify-center gap-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-emerald-500/30 active:scale-95";
+        btn.innerHTML = '<i class="fa-solid fa-user-check text-xl"></i> <span>VÀO TRANG ĐIỂM DANH LỚP</span>';
+        if (desc) {
+          desc.innerText = "Thực hiện điểm danh nhanh bằng danh sách, quét QR hoặc nhận diện khuôn mặt AI.";
+        }
+      }
     }
 
     async function verifyCanSu() {
       const idx = document.getElementById("hs-select-reporter").value;
       const pin = document.getElementById("hs-input-pin").value.trim();
 
-      if (idx === "") return showToast("Vui lòng chọn tên người điểm danh!", "error");
+      if (idx === "") return showToast("Vui lòng chọn họ và tên học sinh!", "error");
       if (!pin) return showToast("Vui lòng nhập mã PIN!", "error");
 
       const student = appData.students[parseInt(idx, 10)];
-      const roleCheck = classifyAttendanceReporterRole(student?.role);
-      if (!roleCheck.allowed && !student?.canTakeAttendance) {
-        return showToast("Chỉ Cán sự lớp hoặc Thành viên được GVCN chỉ định mới có quyền điểm danh!", "error");
-      }
       const valid = await verifyStudentCredential(appData.selectedClass, student, pin);
       if (!valid) {
         return showToast("Mã PIN không chính xác!", "error");
       }
+
+      const cleanRole = String(student.role || "").trim() || "Thành viên";
+      const canAttend = hasAttendancePrivilege(student);
 
       appData.reporter = {
         type: "HS",
         className: appData.selectedClass,
         name: student.name,
         maHS: student.maHS,
-        role: student.role || "Cán sự"
+        role: cleanRole,
+        isCanSu: canAttend
       };
 
-      document.getElementById("reporter-badge").innerHTML = `<i class="fa-solid fa-user-check text-emerald-400 mr-1.5"></i>${student.name} (${appData.selectedClass})`;
-      updateHeaderActionButtons();
+      // Cập nhật thông tin lên Cổng học sinh sau đăng nhập
+      document.getElementById("hs-dash-role-badge").innerText = cleanRole.toUpperCase();
+      document.getElementById("hs-dash-class-badge").innerText = `Lớp ${appData.selectedClass}`;
+      document.getElementById("hs-dash-welcome-name").innerText = `Xin chào, ${student.name}`;
+      document.getElementById("hs-dash-mahs").innerText = `Mã HS: ${student.maHS || "---"} • Ca ${appData.session} (${appData.dateStr})`;
+      document.getElementById("reporter-badge").innerHTML = `<i class="fa-solid fa-user-check text-emerald-400 mr-1.5"></i>${student.name} (${appData.selectedClass} • ${cleanRole})`;
 
-      initAttendanceSheet();
+      // Hiển thị hoặc ẩn nút điểm danh theo chức vụ (Lớp trưởng, Lớp phó, Bí thư / Cán sự)
+      const canSuCard = document.getElementById("hs-cansu-attendance-card");
+      if (canAttend) {
+        canSuCard.classList.remove("hidden");
+        document.getElementById("hs-dash-att-class").innerText = appData.selectedClass;
+        updateDashboardAttendanceButtonState();
+      } else {
+        canSuCard.classList.add("hidden");
+      }
+
+      // Khởi tạo ngày mặc định cho thống kê & đơn xin phép
+      document.getElementById("hs-dash-start").value = appData.dateStr;
+      document.getElementById("hs-dash-end").value = appData.dateStr;
+      document.getElementById("hs-dash-leave-date").value = appData.dateStr;
+      document.getElementById("hs-dash-leave-reason").value = "";
+
+      updateHeaderActionButtons();
       document.getElementById("hs-step-2").classList.add("hidden");
-      document.getElementById("hs-step-3").classList.remove("hidden");
+      document.getElementById("hs-step-3").classList.add("hidden");
+      document.getElementById("hs-dashboard").classList.remove("hidden");
       refreshChatPortalContext(true);
 
-      // Tải trước model nhận diện khuôn mặt ở chế độ nền để tăng tốc độ quét
-      setTimeout(() => { ensureFaceApiReady().catch(() => {}); }, 400);
+      // Tự động tải thống kê vi phạm cá nhân ngay khi đăng nhập xong
+      loadLoggedStudentStats();
 
       if (student.isFirstLogin || pin === "123456") {
         openChangePinModal(true);
+      }
+    }
+
+    function enterAttendanceSheetFromDashboard() {
+      if (!appData.reporter || !appData.reporter.isCanSu) {
+        return showToast("Chỉ Lớp trưởng, Lớp phó, Bí thư mới có quyền vào trang điểm danh!", "error");
+      }
+      if (appData.isEditMode) {
+        return showToast("Lớp đã điểm danh rồi nên nút này đã được khóa!", "warning");
+      }
+
+      initAttendanceSheet();
+      document.getElementById("hs-dashboard").classList.add("hidden");
+      document.getElementById("hs-step-3").classList.remove("hidden");
+
+      // Tải trước model nhận diện khuôn mặt ở chế độ nền
+      setTimeout(() => { ensureFaceApiReady().catch(() => {}); }, 400);
+    }
+
+    function backToStudentDashboard() {
+      document.getElementById("hs-step-3").classList.add("hidden");
+      document.getElementById("hs-dashboard").classList.remove("hidden");
+      updateDashboardAttendanceButtonState();
+    }
+
+    // Tải bảng thống kê vắng trễ và vi phạm nề nếp (chi tiết theo buổi, môn) cho học sinh đang đăng nhập
+    async function loadLoggedStudentStats() {
+      if (!appData.reporter) return;
+      const startVn = document.getElementById("hs-dash-start").value.trim();
+      const endVn = document.getElementById("hs-dash-end").value.trim();
+      const resBox = document.getElementById("hs-dash-stats-result");
+      const sumCards = document.getElementById("hs-dash-summary-cards");
+
+      const sIso = parseVnDateToIso(startVn);
+      const eIso = parseVnDateToIso(endVn);
+      if (!sIso || !eIso) {
+        return showToast("Vui lòng nhập ngày bắt đầu và ngày kết thúc đúng định dạng dd/mm/yyyy!", "error");
+      }
+
+      resBox.innerHTML = '<p class="text-center py-4 text-xs text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang tổng hợp dữ liệu vắng trễ & vi phạm nề nếp...</p>';
+      try {
+        const list = await callBackendApi("getStudentHistory", appData.reporter.maHS, appData.reporter.name, sIso.iso, eIso.iso);
+        if (!Array.isArray(list) || list.length === 0) {
+          sumCards.classList.remove("hidden");
+          document.getElementById("hs-sum-total").innerText = "0";
+          document.getElementById("hs-sum-cp").innerText = "0";
+          document.getElementById("hs-sum-kp").innerText = "0";
+          document.getElementById("hs-sum-other").innerText = "0";
+          resBox.innerHTML = `<div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center text-emerald-700 font-bold text-xs sm:text-sm">✅ Từ ngày ${startVn} đến ${endVn}, bạn đi học đầy đủ và không có vi phạm nề nếp nào!</div>`;
+          return;
+        }
+
+        let cpCount = 0, kpCount = 0, otherCount = 0;
+        const rowsHtml = list.map((item, i) => {
+          const rawSession = String(item.session || "").trim();
+          let buoiText = rawSession || "---";
+          let monText = String(item.subject || item.monHoc || item.mon || "").trim();
+
+          if (!monText && rawSession.includes("-")) {
+            const parts = rawSession.split("-");
+            buoiText = parts[0].trim();
+            monText = parts.slice(1).join("-").trim();
+          }
+          if (!monText) monText = "Toàn buổi / Chung";
+
+          const viol = String(item.violation || "").trim();
+          const vLow = viol.toLowerCase();
+          if (vLow.includes("có phép") || vLow.includes("vắng cp")) cpCount++;
+          else if (vLow.includes("không phép") || vLow.includes("vắng kp")) kpCount++;
+          else otherCount++;
+
+          return `
+            <tr class="hover:bg-slate-50 transition">
+              <td class="p-2.5 font-bold text-slate-700 whitespace-nowrap">${i + 1}</td>
+              <td class="p-2.5 font-bold text-slate-800 whitespace-nowrap">${item.date || "---"}</td>
+              <td class="p-2.5 font-bold text-indigo-700 whitespace-nowrap">${buoiText}</td>
+              <td class="p-2.5 font-bold text-slate-700">${monText}</td>
+              <td class="p-2.5 font-extrabold text-rose-600">${viol || "---"}</td>
+            </tr>
+          `;
+        }).join("");
+
+        sumCards.classList.remove("hidden");
+        document.getElementById("hs-sum-total").innerText = list.length;
+        document.getElementById("hs-sum-cp").innerText = cpCount;
+        document.getElementById("hs-sum-kp").innerText = kpCount;
+        document.getElementById("hs-sum-other").innerText = otherCount;
+
+        resBox.innerHTML = `
+          <table class="w-full text-left border-collapse text-xs sm:text-sm border border-slate-200 rounded-xl overflow-hidden">
+            <thead>
+              <tr class="bg-slate-800 text-white">
+                <th class="p-2.5">STT</th>
+                <th class="p-2.5">Ngày</th>
+                <th class="p-2.5">Buổi</th>
+                <th class="p-2.5">Môn học</th>
+                <th class="p-2.5">Chi tiết vắng trễ / vi phạm</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 bg-white">
+              ${rowsHtml}
+            </tbody>
+          </table>
+        `;
+      } catch (err) {
+        resBox.innerHTML = `<div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs font-bold">⚠️ Lỗi tải thống kê: ${err.message}</div>`;
+      }
+    }
+
+    // Nộp đơn xin phép online trực tiếp từ giao diện học sinh sau đăng nhập
+    async function submitLoggedStudentLeave() {
+      if (!appData.reporter) return;
+      const date = document.getElementById("hs-dash-leave-date").value.trim();
+      const session = document.getElementById("hs-dash-leave-session").value;
+      const reason = document.getElementById("hs-dash-leave-reason").value.trim();
+
+      if (!date || !parseVnDateToIso(date)) {
+        return showToast("Vui lòng nhập ngày xin nghỉ đúng định dạng dd/mm/yyyy!", "error");
+      }
+      if (!reason) {
+        return showToast("Vui lòng nhập lý do xin nghỉ phép!", "error");
+      }
+
+      const btn = document.getElementById("btn-hs-dash-submit-leave");
+      const oldHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi đơn xin phép...';
+
+      try {
+        await callBackendApi("submitOnlineLeaveRequest", {
+          maHS: appData.reporter.maHS,
+          name: appData.reporter.name,
+          className: appData.reporter.className,
+          date: date,
+          session: session,
+          reason: reason
+        });
+        document.getElementById("hs-dash-leave-reason").value = "";
+        showToast("✅ Đã nộp đơn xin phép online thành công!", "success");
+      } catch (err) {
+        showToast("Lỗi nộp đơn xin phép: " + err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = oldHtml;
       }
     }
 
@@ -1741,7 +2135,10 @@
 
       try {
         const msg = await callBackendApi("saveAttendance", payload);
+        appData.isEditMode = true;
+        updateDashboardAttendanceButtonState();
         showToast(typeof msg === "string" ? msg : "Đã gửi báo cáo điểm danh thành công!", "success");
+        backToStudentDashboard();
       } catch (err) {
         showToast("Lỗi gửi báo cáo: " + err.message, "error");
       } finally {
@@ -1817,7 +2214,6 @@
       const ctx = canvas.getContext("2d");
       ctx.clearRect(0, 0, w, h);
 
-      // Vẽ khung oval định vị trung tâm
       const cx = w / 2;
       const cy = h * 0.48;
       const rx = w * 0.32;
@@ -1837,7 +2233,6 @@
       ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Vòng cung tiến độ giữ yên 0 -> 100%
       if (progressPct > 0) {
         const endAngle = -Math.PI / 2 + (Math.PI * 2 * (progressPct / 100));
         ctx.strokeStyle = isDuplicate ? "#f59e0b" : "#10b981";
@@ -1857,8 +2252,6 @@
       const aiBtnBox = document.getElementById("ai-capture-btn-box");
 
       await stopAllScanners();
-
-      // Kích hoạt quy tắc: người được quét sẽ Có mặt, các bạn khác chưa điểm danh chuyển sang Vắng KP
       enforceScanAbsenceRule();
 
       if (mode === "QR") {
@@ -2057,7 +2450,6 @@
           return;
         }
 
-        // 1. Đối chiếu trực tiếp trên bộ nhớ đệm của lớp (tốc độ tức thì)
         let localBest = null;
         let localMinDist = 999;
         appData.students.forEach(s => {
@@ -2082,7 +2474,6 @@
           return;
         }
 
-        // 2. Đối chiếu qua Backend / Drive mẫu nếu máy khách chưa có vector
         statusBadge.innerText = "🌐 Đang đối chiếu dữ liệu mẫu AI của lớp...";
         const apiRes = await callBackendApi("recognizeStudentFaceAI", {
           className: appData.selectedClass,
@@ -2091,7 +2482,6 @@
         });
 
         if (apiRes && apiRes.matched && apiRes.student) {
-          // Lưu cache vector 128D để lần quét sau (báo trùng) phản hồi ngay lập tức
           const targetSt = appData.students.find(
             s => (s.maHS && s.maHS === apiRes.student.maHS) || s.name === apiRes.student.name
           );
@@ -2211,7 +2601,6 @@
       }
       const st = appData.students[idx];
 
-      // Kiểm tra quét lần 2 -> báo trùng
       if (scannedStudentIndices.has(idx)) {
         appendScanLog(`⚠️ TRÙNG: ${st.name} (${st.maHS}) đã được điểm danh trước đó!`);
         showToast(`⚠️ Trùng: ${st.name} đã điểm danh rồi!`, "warning");
@@ -2490,9 +2879,13 @@
     }
 
     function parseVnDateToIso(vnStr) {
-      const parts = String(vnStr || "").trim().split("/");
-      if (parts.length !== 3) return null;
-      return { iso: `${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}` };
+      const m = String(vnStr || "").trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (!m) return null;
+      const dd = parseInt(m[1], 10);
+      const mm = parseInt(m[2], 10);
+      const yyyy = parseInt(m[3], 10);
+      if (mm < 1 || mm > 12 || dd < 1 || dd > 31) return null;
+      return { iso: `${yyyy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}` };
     }
 
     async function fetchClassAbsenceSummary() {
@@ -2982,7 +3375,6 @@
       } catch (e) {}
     }
 
-    // Nhận diện giọng nói tiếng Việt cho Chatbox
     function toggleChatVoiceRecognition() {
       const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRec) {

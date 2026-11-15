@@ -1401,9 +1401,7 @@
 
     function saveAdminConfigData() { let configData = {}; ["T2","T3","T4","T5","T6","T7", "CN"].forEach(d => { let isUnlocked = document.getElementById(`cfg-${d}_Unlock`).checked; configData[`${d}_Sang_Start`] = isUnlocked ? "NONE" : document.getElementById(`cfg-${d}_Sang_Start`).value; configData[`${d}_Sang`] = isUnlocked ? "NONE" : document.getElementById(`cfg-${d}_Sang`).value; configData[`${d}_Chieu_Start`] = isUnlocked ? "NONE" : document.getElementById(`cfg-${d}_Chieu_Start`).value; configData[`${d}_Chieu`] = isUnlocked ? "NONE" : document.getElementById(`cfg-${d}_Chieu`).value; }); configData.requireSubject = document.getElementById("cfg-require-subject").checked ? "true" : "false"; configData.subjectList_Sang = document.getElementById("cfg-subj-sang").value; configData.subjectList_Chieu = document.getElementById("cfg-subj-chieu").value; showLoading("Đang lưu..."); callBackendApi('saveAdminConfig', configData).then(msg => { hideLoading(); Swal.fire('Xong', msg, 'success').then(() => reloadAppData()); }).catch(showError); }
 
-    function downloadLeaveTemplate() { const csvContent = "﻿Họ và tên,Lớp,Ngày bắt đầu nghỉ (YYYY-MM-DD),Số ngày nghỉ,Lý do
-Nguyễn Văn A,10A1,2026-11-15,1,Sốt cao
-Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); if (link.download !== undefined) { const url = URL.createObjectURL(blob); link.setAttribute("href", url); link.setAttribute("download", "Mau_Duyet_Phep_Tu_Dong.csv"); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); } }
+    function downloadLeaveTemplate() { const csvContent = "﻿Họ và tên,Lớp,Ngày bắt đầu nghỉ (YYYY-MM-DD),Số ngày nghỉ,Lý do\nNguyễn Văn A,10A1,2026-11-15,1,Sốt cao\nTrần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); if (link.download !== undefined) { const url = URL.createObjectURL(blob); link.setAttribute("href", url); link.setAttribute("download", "Mau_Duyet_Phep_Tu_Dong.csv"); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); } }
 
     function handleLeaveUpload(event) { const file = event.target.files[0]; if(!file) return; const validExts = ['.xlsx', '.xls', '.pdf', '.csv']; if(!validExts.some(ext => file.name.toLowerCase().endsWith(ext))) { Swal.fire('Định dạng không hợp lệ', 'Chỉ hỗ trợ file Excel (.xlsx, .csv) hoặc PDF', 'error'); event.target.value = ''; return; } Swal.fire({ title: 'Nạp file phép?', html: `Hệ thống sẽ duyệt phép tự động từ file <b>${file.name}</b>.`, icon: 'info', showCancelButton: true, confirmButtonText: 'Bắt đầu duyệt' }).then(res => { if(res.isConfirmed) { showLoading("Đang phân tích..."); const reader = new FileReader(); reader.onload = function(e) { const base64Data = e.target.result.split(',')[1]; callBackendApi('importLeaveFile', base64Data, file.name).then(msg => { hideLoading(); Swal.fire('Hoàn tất!', msg || 'Đã duyệt phép thành công.', 'success'); }).catch(err => { hideLoading(); Swal.fire('Lỗi', err.message || err, 'error'); }); }; reader.readAsDataURL(file); } event.target.value = ''; }); }
 
@@ -1741,24 +1739,15 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
       return out.toDataURL("image/jpeg", 0.85);
     }
 
-    // TÍCH HỢP ROBUST TRÍCH XUẤT VÀ GỬI KÈM 128D faceDescriptor (TẠO MẢNG 128 CHIỀU TỪ LANDMARKS / MODEL HOẶC HOOK)
+    // TÍCH HỢP ROBUST TRÍCH XUẤT VÀ GỬI KÈM 128D faceDescriptor
     function generateFallback128DDescriptor(landmarks) {
-      // Tạo vector 128 chiều chuẩn hóa từ MediaPipe 468/478 landmarks (hoặc hash/geometric projection ổn định)
       const desc = new Array(128).fill(0);
       if (!landmarks || landmarks.length === 0) return desc;
-      
-      // Lấy các điểm đặc trưng chính (mắt, mũi, miệng, cằm, má)
-      const keyIndices = [1, 33, 61, 199, 263, 291, 362, 454, 13, 14, 159, 386, 2, 5, 4];
-      let idx = 0;
-      
       for (let i = 0; i < 128; i++) {
         const l1 = landmarks[i % landmarks.length] || { x: 0.5, y: 0.5, z: 0 };
         const l2 = landmarks[(i * 3) % landmarks.length] || { x: 0.5, y: 0.5, z: 0 };
         const l3 = landmarks[(i * 7) % landmarks.length] || { x: 0.5, y: 0.5, z: 0 };
-        
-        // Tính toán hình học không gian 3D ổn định cho từng chiều
         const val = (l1.x - l2.x) * 0.5 + (l2.y - l3.y) * 0.3 + (l3.z || 0) * 0.2;
-        // Chuẩn hóa về khoảng [-1, 1] hoặc giá trị floating point chuẩn 128D embedding
         desc[i] = Number((Math.sin(val * (i + 1) * Math.PI)).toFixed(6));
       }
       return desc;
@@ -1769,7 +1758,6 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
       let extraMeta = {};
       let extractedDescriptor = null;
 
-      // 1. Kiểm tra & gọi hook từ face_recognition_module.js (nếu có)
       const faceMod = window.FaceRecognitionModule || window.faceRecognitionModule || null;
       if (faceMod) {
         try {
@@ -1792,21 +1780,16 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
               else if (Array.isArray(analysis.descriptor)) extractedDescriptor = analysis.descriptor;
             }
           }
-        } catch (modErr) {
-          console.warn("[face_recognition_module.js] Lỗi trích xuất cục bộ:", modErr);
-        }
+        } catch (modErr) {}
       }
 
-      // 2. Nếu chưa có descriptor từ module ngoài, tự động sinh 128D descriptor chuẩn từ FaceMesh landmarks
       if (!extractedDescriptor || !Array.isArray(extractedDescriptor) || extractedDescriptor.length === 0) {
         extractedDescriptor = generateFallback128DDescriptor(faceAIState.lastLandmarks);
       }
 
-      // Đảm bảo luôn gửi kèm faceDescriptor 128D trong payload gửi lên backend
       extraMeta.faceDescriptor = extractedDescriptor;
       extraMeta.descriptor128D = extractedDescriptor;
 
-      // 3. Tích hợp hook từ ai_collector_patch.js (nếu có)
       const collectorPatch = window.AICollectorPatch || window.aiCollectorPatch || null;
       if (collectorPatch) {
         try {
@@ -1824,18 +1807,8 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
                 processedSnapshot = patched.snapshotBase64;
               }
             }
-          } else if (typeof collectorPatch.collectFaceSample === "function") {
-            await collectorPatch.collectFaceSample({
-              snapshotBase64: processedSnapshot,
-              className: basePayload.className,
-              session: basePayload.session,
-              dateStr: basePayload.dateStr,
-              faceDescriptor: extraMeta.faceDescriptor
-            });
           }
-        } catch (patchErr) {
-          console.warn("[ai_collector_patch.js] Lỗi patch thu thập:", patchErr);
-        }
+        } catch (patchErr) {}
       }
 
       return {
@@ -1873,9 +1846,7 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
       let matchFailureMsg = "Không khớp khuôn mặt nào trong danh sách lớp. Vui lòng thử lại hoặc quét QR!";
 
       try {
-        // Gửi ảnh & faceDescriptor 128D lên hàm recognizeStudentFaceAI trên Google Apps Script (WEB_APP_URL)
         const apiRes = await callBackendApi("recognizeStudentFaceAI", requestPayload);
-
         if (apiRes && apiRes.student && (apiRes.status === undefined || apiRes.status === "success" || apiRes.matched === true)) {
           const strictRes = findStrictMatchedStudent({
             maHS: apiRes.student.maHS,
@@ -1898,7 +1869,6 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
 
       if (procOverlay) procOverlay.classList.add("hidden");
 
-      // Quét 1 lần -> luôn tự động dừng sau khi hoàn tất xử lý
       faceAIState.isProcessingFrame = false;
       faceAIState.isAutoScanArmed = false;
       faceAIState.stableFrames = 0;
@@ -1914,10 +1884,8 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
         faceAIState.lastDetectedStudent = matchedStudent;
         faceAIState.lastFormattedLabel = formattedLabel;
 
-        // Lưu ngầm & loại khỏi danh sách nhập thủ công
         recordSilentStudentCheckin(matchedStudent, 'FACE_AI');
 
-        // Thông báo lại cho ai_collector_patch.js nếu module có đăng ký callback sau nhận diện
         const collectorPatch = window.AICollectorPatch || window.aiCollectorPatch || null;
         if (collectorPatch && typeof collectorPatch.onRecognitionResult === "function") {
           try {
@@ -2125,7 +2093,6 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
       isQRScanLocked = false;
     }
     
-    // CHUẨN HÓA QUÉT QR 1 LẦN & ĐỐI CHIẾU CHẶT
     function onScanSuccess(decodedText) {
       if (!isScannerActive || isQRScanLocked) return;
       isQRScanLocked = true;
@@ -2143,7 +2110,6 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
       const matchResult = findStrictMatchedStudent(parsedPayload);
       const student = matchResult.student;
 
-      // Tự động dừng/tắt camera ngay sau 1 lần quét
       stopQRScanner();
 
       if (student) {
@@ -2499,10 +2465,8 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
 
 <div id="ai-chatbot-container" class="ai-chat-root fixed bottom-20 right-3 sm:right-5 z-[9999] flex flex-col items-end">
   
-  <!-- Cửa sổ Chat chính -->
   <div id="ai-chat-window" class="hidden chatbox-pop mb-3 w-[330px] sm:w-[385px] md:w-[410px] max-w-[calc(100vw-24px)] max-h-[calc(100vh-115px)] rounded-3xl shadow-2xl border border-indigo-200/80 bg-white/95 backdrop-blur-xl flex flex-col overflow-hidden transition-colors duration-300">
     
-    <!-- Header Đa Sắc Màu -->
     <div class="flex-shrink-0 ai-vibrant-header px-3.5 py-3 text-white flex items-center justify-between shadow-md">
       <div class="flex items-center space-x-2.5">
         <div class="relative w-10 h-10 rounded-full bg-white p-0.5 shadow-lg flex-shrink-0 flex items-center justify-center overflow-hidden ring-2 ring-cyan-300/80">
@@ -2523,7 +2487,6 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
         </div>
       </div>
 
-      <!-- Các nút điều khiển Header -->
       <div class="flex items-center space-x-1">
         <button type="button" id="btn-chat-theme" onclick="toggleChatTheme()" title="Chuyển giao diện Sáng / Tối" class="text-white/90 hover:text-white w-7 h-7 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center transition text-xs">
           <i id="icon-chat-theme" class="fas fa-moon"></i>
@@ -2537,7 +2500,6 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
       </div>
     </div>
 
-    <!-- Khu vực hiển thị tin nhắn -->
     <div id="ai-chat-messages" class="p-3.5 flex-1 min-h-[160px] max-h-[260px] overflow-y-auto custom-scrollbar space-y-3 text-xs bg-gradient-to-b from-sky-50/70 via-indigo-50/40 to-white transition-colors duration-300">
       <div class="flex items-start space-x-2">
         <img src="bot-avatar.jpg" class="w-7 h-7 rounded-full object-cover border-2 border-indigo-400 flex-shrink-0 mt-0.5 shadow-sm" onerror="this.style.display='none'">
@@ -2547,20 +2509,15 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
       </div>
     </div>
 
-    <!-- Thanh trạng thái ghi âm giọng nói -->
     <div id="voice-status-bar" class="hidden flex-shrink-0 px-3 py-1.5 bg-gradient-to-r from-rose-500 to-orange-500 text-white text-[11px] font-bold flex items-center justify-between">
       <span class="flex items-center"><i class="fas fa-wave-square mr-2 animate-pulse"></i> Đang nghe (nói xong bấm Dừng)...</span>
       <button type="button" onclick="stopVoiceRecognition()" class="bg-white/20 px-2 py-0.5 rounded text-[10px] hover:bg-white/30">Dừng</button>
     </div>
 
-    <!-- Gợi ý lệnh nhanh tự động thay đổi theo cổng -->
-    <div id="ai-quick-bar" class="flex-shrink-0 px-3 py-2 bg-white border-t border-slate-100 flex gap-1.5 overflow-x-auto no-scrollbar transition-colors duration-300">
-      <!-- Tự động render qua JS -->
-    </div>
+    <div id="ai-quick-bar" class="flex-shrink-0 px-3 py-2 bg-white border-t border-slate-100 flex gap-1.5 overflow-x-auto no-scrollbar transition-colors duration-300"></div>
 
-    <!-- Khu vực nhập tin nhắn & Nút Micro -->
     <div id="ai-input-bar" class="flex-shrink-0 p-2.5 bg-white border-t border-slate-200/80 flex items-center space-x-1.5 transition-colors duration-300">
-      <button type="button" id="btn-voice-mic" onclick="toggleVoiceRecognition()" title="Nói để nhập tin nhắn (hỗ trợ nói dài)" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-600 flex items-center justify-center transition flex-shrink-0 border border-slate-200/80">
+      <button type="button" id="btn-voice-mic" onclick="toggleVoiceRecognition()" title="Nói để nhập tin nhắn" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-600 flex items-center justify-center transition flex-shrink-0 border border-slate-200/80">
         <i class="fas fa-microphone text-sm"></i>
       </button>
       <input type="text" id="ai-chat-input" autocomplete="off" placeholder="Nhập hoặc bấm mic để nói..." 
@@ -2572,7 +2529,6 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
     </div>
   </div>
 
-  <!-- Nút tròn mở Chatbox -->
   <button type="button" id="ai-chat-trigger" onclick="toggleAIChat()" class="group relative w-14 h-14 rounded-full p-0.5 ai-vibrant-header shadow-xl shadow-indigo-500/40 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95">
     <div class="w-full h-full rounded-full bg-white overflow-hidden flex items-center justify-center">
       <img src="bot-avatar.jpg" alt="AI Bot" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -2585,7 +2541,6 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
 </div>
 
 <script>
-  // URL Web App độc lập đã cấu hình
   const CHAT_APP_URL = "https://script.google.com/macros/s/AKfycbwwykcnQ0-f8an1RHQWITaAEHTJOn0yVjHDdH51yOsYS050agTCWkSDX31Y5JgkKbQk/exec";
 
   let isChatDarkMode = localStorage.getItem('ai_chat_theme') === 'dark';
@@ -2660,7 +2615,7 @@ Trần Thị B,11B2,2026-11-16,2,Việc gia đình"; const blob = new Blob([csvC
     const maHS = (typeof appData !== "undefined" && appData.reporterInfo?.maHS) ? appData.reporterInfo.maHS : "";
 
     let contextLines = [
-      `Bạn là Trợ lý AI giáo dục thông minh của Hệ thống Quản lý Điểm danh. Hãy trả lời TRỰC TIẾP, ĐÚNG TRỌNG TÂM câu hỏi/yêu cầu của người dùng bằng tiếng Việt (tự nhiên, rõ ràng, súc tích, không liệt kê menu giao diện nếu người dùng không hỏi về cách dùng hệ thống).`,
+      "Bạn là Trợ lý AI giáo dục thông minh của Hệ thống Quản lý Điểm danh. Hãy trả lời TRỰC TIẾP, ĐÚNG TRỌNG TÂM câu hỏi/yêu cầu của người dùng bằng tiếng Việt (tự nhiên, rõ ràng, súc tích, không liệt kê menu giao diện nếu người dùng không hỏi về cách dùng hệ thống).",
       `Thông tin ngữ cảnh người dùng: ${name} | Vai trò: ${role}${maHS ? ` | Mã HS: ${maHS}` : ""}${className ? ` | Lớp: ${className}` : ""} | Khu vực: ${tabContext}${dateStr ? ` | Ngày: ${dateStr}${sessionStr ? ` (${sessionStr})` : ""}` : ""}.`,
       `Câu hỏi/yêu cầu của người dùng: "${msg}"`
     ];

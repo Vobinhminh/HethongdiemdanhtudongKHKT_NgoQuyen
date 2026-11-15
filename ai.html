@@ -11,9 +11,7 @@
 
   <!-- TỰ ĐỘNG CẬP NHẬT HỆ THỐNG -->
   <script src="version.js"></script>
-  <script src="face_recognition_module.js"></script>
-  <script src="ai_collector_patch.js"></script>
-  
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -23,6 +21,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js" crossorigin="anonymous"></script>
+
+  <!-- Thư viện Face-API trích xuất Vector đặc trưng khuôn mặt 128 chiều cục bộ -->
+  <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js" crossorigin="anonymous"></script>
   
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -74,7 +75,7 @@
           <div class="text-center mb-4">
               <h1 class="text-lg sm:text-xl font-extrabold text-cyan-700 uppercase tracking-wide flex items-center justify-center">
                 <img src="icon (1).png" class="w-7 h-7 mr-2 object-contain inline-block" onerror="this.style.display='none'">
-                Trạm Thu Thập 3 Mẫu Ảnh Thẻ AI
+                Trạm Thu Thập 3 Mẫu Ảnh & Vector AI 128D
               </h1>
           </div>
 
@@ -141,10 +142,15 @@
                   </div>
 
                   <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
-                      <h3 class="font-bold text-emerald-800 mb-1.5 text-sm uppercase"><i class="fas fa-cloud-upload-alt mr-1"></i> 2. Đẩy Bộ 3 Mẫu Ảnh Lên Drive</h3>
-                      <p class="text-[11px] text-slate-500 mb-2.5">Chụp đủ 3 góc mẫu ảnh + Nhập đúng PIN để mở khóa lưu dữ liệu.</p>
-                      <button id="ai-btn-upload" onclick="aiUploadToServer()" disabled class="w-full bg-slate-400 text-white font-bold py-2.5 rounded-xl shadow-md transition flex items-center justify-center text-sm">
-                          <i class="fas fa-upload mr-2"></i> LƯU VÀ ĐẨY BỘ 3 ẢNH LÊN DRIVE
+                      <div class="flex items-center justify-between mb-1.5">
+                        <h3 class="font-bold text-emerald-800 text-sm uppercase"><i class="fas fa-cloud-upload-alt mr-1"></i> 2. Lưu Ảnh & Vector 128D</h3>
+                        <span id="faceapi-model-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
+                          <i class="fas fa-spinner fa-spin mr-1"></i>Đang nạp AI 128D
+                        </span>
+                      </div>
+                      <p class="text-[11px] text-slate-500 mb-2.5">Chụp đủ 3 góc mẫu ảnh + Nhập đúng PIN. Hệ thống sẽ trích xuất vector khuôn mặt 128 chiều lưu vào Sheets và đẩy ảnh lên Drive.</p>
+                      <button id="ai-btn-upload" onclick="aiUploadToServer()" disabled class="w-full bg-slate-400 text-white font-bold py-2.5 rounded-xl shadow-md transition flex items-center justify-center text-xs sm:text-sm">
+                          <i class="fas fa-upload mr-2"></i> LƯU & ĐẨY BỘ 3 ẢNH + VECTOR AI
                       </button>
                   </div>
               </div>
@@ -261,6 +267,7 @@
   <script>
     const SCRIPT_ID = "AKfycbxYDm51fvs_fNToHqnNMQ4dV7hZLIggWFB2BjD0i3dMoRhlB7k48dhG5vNblVxtetkBfw";
     const WEB_APP_URL = `https://script.google.com/macros/s/${SCRIPT_ID}/exec`;
+    const FACEAPI_MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model";
 
     function goBackToPortal() { 
       aiStopCamera();
@@ -296,6 +303,115 @@
         }
       });
     }
+
+    // ==================== MODULE TRÍCH XUẤT VECTOR KHUÔN MẶT 128 CHIỀU ====================
+    let faceApiModelsReady = false;
+    let faceApiModelsPromise = null;
+
+    function updateFaceApiBadge(status, text) {
+      const badge = document.getElementById("faceapi-model-badge");
+      if (!badge) return;
+      if (status === "ready") {
+        badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-300";
+        badge.innerHTML = `<i class="fas fa-check-circle mr-1"></i>${text || "Sẵn sàng 128D"}`;
+      } else if (status === "error") {
+        badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-300";
+        badge.innerHTML = `<i class="fas fa-exclamation-triangle mr-1"></i>${text || "Lỗi tải AI 128D"}`;
+      } else {
+        badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200";
+        badge.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i>${text || "Đang nạp AI 128D"}`;
+      }
+    }
+
+    function ensureFaceApiModelsLoaded() {
+      if (faceApiModelsReady) return Promise.resolve(true);
+      if (faceApiModelsPromise) return faceApiModelsPromise;
+
+      updateFaceApiBadge("loading", "Đang nạp AI 128D");
+      faceApiModelsPromise = (async () => {
+        if (typeof faceapi === "undefined") {
+          throw new Error("Thư viện face-api.js chưa tải xong. Vui lòng kiểm tra kết nối mạng!");
+        }
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(FACEAPI_MODEL_URL),
+          faceapi.nets.faceLandmark68Net.loadFromUri(FACEAPI_MODEL_URL),
+          faceapi.nets.faceRecognitionNet.loadFromUri(FACEAPI_MODEL_URL)
+        ]);
+        faceApiModelsReady = true;
+        updateFaceApiBadge("ready", "Sẵn sàng 128D");
+        return true;
+      })().catch(err => {
+        faceApiModelsPromise = null;
+        updateFaceApiBadge("error", "Lỗi nạp AI 128D");
+        throw err;
+      });
+
+      return faceApiModelsPromise;
+    }
+
+    function loadHtmlImageFromBase64(base64Str) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error("Không thể đọc dữ liệu ảnh mẫu để trích xuất vector."));
+        img.src = base64Str;
+      });
+    }
+
+    function computeL2NormalizedMeanDescriptor(descriptorsList) {
+      if (!Array.isArray(descriptorsList) || descriptorsList.length === 0) return [];
+      const dim = descriptorsList[0].length;
+      const avg = new Array(dim).fill(0);
+      for (const vec of descriptorsList) {
+        for (let i = 0; i < dim; i++) {
+          avg[i] += vec[i];
+        }
+      }
+      let normSq = 0;
+      for (let i = 0; i < dim; i++) {
+        avg[i] /= descriptorsList.length;
+        normSq += avg[i] * avg[i];
+      }
+      const norm = Math.sqrt(normSq) || 1;
+      return avg.map(v => Number((v / norm).toFixed(6)));
+    }
+
+    async function extract3AngleFaceDescriptors(samplesBase64) {
+      await ensureFaceApiModelsLoaded();
+      const angleLabels = ["Chính diện", "Quay Trái", "Quay Phải"];
+      const extractedVectors = [];
+
+      for (let i = 0; i < samplesBase64.length; i++) {
+        const imgEl = await loadHtmlImageFromBase64(samplesBase64[i]);
+        // Thử cấu hình chuẩn trước, nếu góc nghiêng mạnh thì hạ ngưỡng scoreThreshold để bắt trọn khuôn mặt
+        let detection = await faceapi
+          .detectSingleFace(imgEl, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.45 }))
+          .withFaceLandmarks()
+          .withFaceDescriptor();
+
+        if (!detection) {
+          detection = await faceapi
+            .detectSingleFace(imgEl, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.25 }))
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+        }
+
+        if (!detection || !detection.descriptor) {
+          throw new Error(`Không trích xuất được đặc trưng khuôn mặt ở Mẫu ${i + 1} (${angleLabels[i]}). Vui lòng bấm "Quét lại" rõ mặt hơn!`);
+        }
+
+        const roundedVec = Array.from(detection.descriptor).map(v => Number(v.toFixed(6)));
+        extractedVectors.push(roundedVec);
+      }
+
+      const meanDescriptor = computeL2NormalizedMeanDescriptor(extractedVectors);
+      return {
+        descriptors: extractedVectors, // Mảng 3 vector 128D: [chinhDien, quayTrai, quayPhai]
+        meanDescriptor: meanDescriptor // Vector trung bình chuẩn hóa L2 (128 số)
+      };
+    }
+    // =========================================================================================
 
     let appData = { classes: [] };
     let aiCurrentStudents = [];
@@ -493,6 +609,9 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
+      // Nạp ngầm model trích xuất 128D song song với khởi tạo danh sách lớp
+      ensureFaceApiModelsLoaded().catch(() => {});
+
       callBackendApi('getAppInitData')
         .then(res => {
           appData.classes = res.classes || [];
@@ -950,7 +1069,7 @@
       const angleConfigs = [
         { title: "CHÍNH DIỆN", subtext: "Nhìn thẳng vào Camera & giữ yên 100%", btnNext: "Quét Mẫu 2 (Quay Trái)", instruction: "Đã xong Mẫu 1. Hãy quay mặt sang TRÁI và bấm nút quét Mẫu 2" },
         { title: "QUAY SANG TRÁI", subtext: "Xoay nhẹ đầu sang TRÁI & giữ yên 100%", btnNext: "Quét Mẫu 3 (Quay Phải)", instruction: "Đã xong Mẫu 2. Hãy quay mặt sang PHẢI và bấm nút quét Mẫu 3" },
-        { title: "QUAY SANG PHẢI", subtext: "Xoay nhẹ đầu sang PHẢI & giữ yên 100%", btnNext: "Đã thu thập đủ 3 Mẫu", instruction: "🎉 ĐÃ THU THẬP ĐỦ 3 MẪU ẢNH! Vui lòng nhập PIN để lưu." }
+        { title: "QUAY SANG PHẢI", subtext: "Xoay nhẹ đầu sang PHẢI & giữ yên 100%", btnNext: "Đã thu thập đủ 3 Mẫu", instruction: "🎉 ĐÃ THU THẬP ĐỦ 3 MẪU ẢNH! Vui lòng nhập PIN để lưu & trích xuất vector 128D." }
       ];
 
       const currentConfig = angleConfigs[currentStepIndex];
@@ -979,7 +1098,7 @@
           Swal.fire({
             icon: 'success',
             title: 'Thu thập thành công!',
-            text: `Đã hoàn tất 3 mẫu ảnh (${BG_COLOR_MAP[selectedBgMode].label}) với độ ổn định 100%. Vui lòng nhập PIN để gửi lên Drive.`,
+            text: `Đã hoàn tất 3 mẫu ảnh (${BG_COLOR_MAP[selectedBgMode].label}) với độ ổn định 100%. Vui lòng nhập PIN để trích xuất vector 128D và lưu dữ liệu.`,
             confirmButtonText: 'Đã hiểu'
           });
         }
@@ -1111,7 +1230,7 @@
       } catch(e) {}
     }
 
-    function aiUploadToServer() {
+    async function aiUploadToServer() {
         const clsInput = document.getElementById("ai-inp-class").value.trim(); 
         const name = document.getElementById("ai-inp-name").value.trim(); 
         const studentId = document.getElementById("ai-inp-id").value.trim();
@@ -1121,21 +1240,60 @@
         if (!capturedSamples.every(s => s !== null)) return Swal.fire('Lỗi', 'Chưa thu thập đủ 3 mẫu ảnh!', 'error');
 
         Swal.fire({ 
-          title: 'Đang lưu & Đẩy 3 ảnh lên Drive...', 
-          html: '<div class="text-xs text-slate-500">Đang tạo thư mục học sinh và đẩy bộ 3 mẫu AI...</div>',
+          title: 'Đang trích xuất Vector AI 128D...', 
+          html: '<div class="text-xs text-slate-500">Hệ thống đang mã hóa 3 góc khuôn mặt thành đặc trưng 128 chiều trên trình duyệt...</div>',
           allowOutsideClick: false, 
           didOpen: () => { Swal.showLoading(); } 
         });
 
+        let vectorBundle = null;
+        try {
+          vectorBundle = await extract3AngleFaceDescriptors(capturedSamples);
+        } catch (extractErr) {
+          Swal.fire('Chưa trích xuất được Vector', extractErr.message || String(extractErr), 'warning');
+          return;
+        }
+
+        const faceDescriptorJson = JSON.stringify({
+          v: 1,
+          dim: 128,
+          mean: vectorBundle.meanDescriptor,
+          angles: vectorBundle.descriptors
+        });
+
+        Swal.update({
+          title: 'Đang lưu Vector vào Sheets & Đẩy 3 ảnh...',
+          html: '<div class="text-xs text-slate-500">Đã trích xuất xong 3 vector 128D. Đang đồng bộ lên Google Sheets và Drive...</div>'
+        });
+
         const uploadSuccessHandler = (folderName) => {
-          Swal.fire('Hoàn thành xuất sắc!', `Đã tạo thư mục <b>${folderName || clsInput}</b> trên Drive và lưu thành công 3 mẫu ảnh AI!`, 'success')
-          .then(() => { 
+          Swal.fire(
+            'Hoàn thành xuất sắc!',
+            `Đã trích xuất <b>3 vector đặc trưng 128D</b> lưu vào Google Sheets lớp <b>${clsInput}</b> và đẩy bộ 3 ảnh lên thư mục <b>${folderName || clsInput}</b> trên Drive!`,
+            'success'
+          ).then(() => { 
             aiReset3AngleSequence(); 
             document.getElementById("ai-inp-name").value = ""; 
             document.getElementById("search-ai-student-input").value = "";
             aiClearInfo(); 
             aiCheckEnableUpload();
           });
+        };
+
+        const syncVectorFallbackIfNeeded = async () => {
+          try {
+            await callBackendApi('saveStudentFaceVector', {
+              className: clsInput,
+              ten_hs: name,
+              ma_hs: studentId,
+              dob: dob,
+              meanDescriptor: vectorBundle.meanDescriptor,
+              descriptors: vectorBundle.descriptors,
+              faceDescriptorJson: faceDescriptorJson
+            });
+          } catch (e) {
+            // Bỏ qua nếu backend đã xử lý gộp trong aiUploadToServerMulti
+          }
         };
 
         const uploadFallbackSequential = async () => {
@@ -1147,13 +1305,17 @@
               className: clsInput,
               ten_hs: `${name}_${angleTags[i]}`,
               dob: dob,
-              ma_hs: studentId
+              ma_hs: studentId,
+              descriptor: vectorBundle.descriptors[i],
+              meanDescriptor: vectorBundle.meanDescriptor,
+              faceDescriptorJson: faceDescriptorJson
             });
             if (!singleRes || singleRes.status !== 'success') {
               throw new Error((singleRes && singleRes.msg) || `Gửi mẫu ảnh ${i + 1}/3 thất bại`);
             }
             if (singleRes.folderName) savedFolder = singleRes.folderName;
           }
+          await syncVectorFallbackIfNeeded();
           return savedFolder;
         };
 
@@ -1162,10 +1324,16 @@
           className: clsInput,
           ten_hs: name,
           dob: dob,
-          ma_hs: studentId
+          ma_hs: studentId,
+          descriptors: vectorBundle.descriptors,
+          meanDescriptor: vectorBundle.meanDescriptor,
+          faceDescriptorJson: faceDescriptorJson
         })
-        .then(res => {
+        .then(async (res) => {
           if (res && res.status === 'success') {
+              if (!res.vectorSaved) {
+                await syncVectorFallbackIfNeeded();
+              }
               uploadSuccessHandler(res.folderName);
           } else { 
               Swal.fire('Lỗi từ Server', (res && res.msg) || 'Gửi ảnh thất bại', 'error'); 

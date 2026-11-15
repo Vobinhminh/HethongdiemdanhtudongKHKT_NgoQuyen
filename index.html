@@ -8,9 +8,15 @@
   <link rel="icon" type="image/png" href="icon (1).png">
   <link rel="apple-touch-icon" href="icon (1).png">
  
-  <script src="face_recognition_module.js"></script>
-  <script src="ai_collector_patch.js"></script>
-  <script src="version.js"></script>
+  <script>
+    window.__LOCAL_AI_MODULES__ = {
+      faceModuleLoaded: false,
+      collectorPatchLoaded: false
+    };
+  </script>
+  <script src="face_recognition_module.js" onload="window.__LOCAL_AI_MODULES__.faceModuleLoaded=true" onerror="console.warn('[AI Module] Không tìm thấy hoặc lỗi nạp face_recognition_module.js')"></script>
+  <script src="ai_collector_patch.js" onload="window.__LOCAL_AI_MODULES__.collectorPatchLoaded=true" onerror="console.warn('[AI Patch] Không tìm thấy hoặc lỗi nạp ai_collector_patch.js')"></script>
+  <script src="version.js" onerror="console.warn('[Version] Không tìm thấy version.js')"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -510,7 +516,7 @@
           google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[fnName](...args);
         } else {
           fetch(WEB_APP_URL, {
-            method: "POST", mode: "cors",
+            method: "POST", mode: "cors", redirect: "follow",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify({ action: fnName, args: args })
           })
@@ -1419,7 +1425,8 @@
       faceMesh: null,
       selfieSeg: null,
       lastDetectedStudent: null,
-      lastFormattedLabel: ""
+      lastFormattedLabel: "",
+      lastLandmarks: null
     };
 
     function formatStudentNameDob(student) {
@@ -1689,6 +1696,7 @@
       ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
 
       const hasFace = results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0;
+      faceAIState.lastLandmarks = hasFace ? results.multiFaceLandmarks[0] : null;
       if (faceAIState.isARActive && hasFace) {
         for (const landmarks of results.multiFaceLandmarks) {
           drawConnectors(ctx, landmarks, FACEMESH_TESSELATION, { color: "#C0C0C070", lineWidth: 1 });
@@ -1733,6 +1741,71 @@
       return out.toDataURL("image/jpeg", 0.85);
     }
 
+    // Cầu nối đồng bộ giữa 2 module cục bộ (face_recognition_module.js, ai_collector_patch.js) và GAS recognizeStudentFaceAI
+    async function runLocalFaceHelperModules(snapshotBase64, videoEl, basePayload) {
+      let processedSnapshot = snapshotBase64;
+      let extraMeta = {};
+
+      // 1. Tích hợp hook từ face_recognition_module.js (nếu có)
+      const faceMod = window.FaceRecognitionModule || window.faceRecognitionModule || null;
+      if (faceMod) {
+        try {
+          if (typeof faceMod.prepareSnapshot === "function") {
+            const customImg = await faceMod.prepareSnapshot(processedSnapshot, videoEl, faceAIState.lastLandmarks);
+            if (typeof customImg === "string" && customImg.startsWith("data:image/")) {
+              processedSnapshot = customImg;
+            }
+          }
+          if (typeof faceMod.extractFaceDescriptor === "function") {
+            const descriptor = await faceMod.extractFaceDescriptor(processedSnapshot, faceAIState.lastLandmarks);
+            if (descriptor) extraMeta.faceDescriptor = descriptor;
+          } else if (typeof faceMod.analyzeFrame === "function") {
+            const analysis = await faceMod.analyzeFrame(processedSnapshot, faceAIState.lastLandmarks);
+            if (analysis && typeof analysis === "object") extraMeta.faceAnalysis = analysis;
+          }
+        } catch (modErr) {
+          console.warn("[face_recognition_module.js] Bỏ qua lỗi tiền xử lý cục bộ:", modErr);
+        }
+      }
+
+      // 2. Tích hợp hook từ ai_collector_patch.js (nếu có)
+      const collectorPatch = window.AICollectorPatch || window.aiCollectorPatch || null;
+      if (collectorPatch) {
+        try {
+          if (typeof collectorPatch.enrichRecognitionPayload === "function") {
+            const patched = await collectorPatch.enrichRecognitionPayload({
+              ...basePayload,
+              snapshotBase64: processedSnapshot,
+              image_data: processedSnapshot,
+              ...extraMeta
+            });
+            if (patched && typeof patched === "object") {
+              extraMeta = { ...extraMeta, ...patched };
+              if (typeof patched.snapshotBase64 === "string" && patched.snapshotBase64.startsWith("data:image/")) {
+                processedSnapshot = patched.snapshotBase64;
+              }
+            }
+          } else if (typeof collectorPatch.collectFaceSample === "function") {
+            await collectorPatch.collectFaceSample({
+              snapshotBase64: processedSnapshot,
+              className: basePayload.className,
+              session: basePayload.session,
+              dateStr: basePayload.dateStr
+            });
+          }
+        } catch (patchErr) {
+          console.warn("[ai_collector_patch.js] Bỏ qua lỗi patch thu thập:", patchErr);
+        }
+      }
+
+      return {
+        ...basePayload,
+        ...extraMeta,
+        snapshotBase64: processedSnapshot,
+        image_data: processedSnapshot
+      };
+    }
+
     async function captureAndRecognizeFaceAI() {
       const video = document.getElementById("face-ai-video");
       const procOverlay = document.getElementById("face-ai-processing");
@@ -1743,18 +1816,26 @@
       playBeepSound();
       if (procOverlay) procOverlay.classList.remove("hidden");
 
-      const snapshotBase64 = buildCroppedFaceSnapshot(video);
+      const rawSnapshotBase64 = buildCroppedFaceSnapshot(video);
+      const basePayload = {
+        snapshotBase64: rawSnapshotBase64,
+        image_data: rawSnapshotBase64,
+        className: appData.className || "",
+        session: appData.session || "",
+        dateStr: appData.dateStr || "",
+        students: (appData.students || []).map(s => ({ name: s.name, maHS: s.maHS || "", dob: s.dob || "" }))
+      };
+
+      const requestPayload = await runLocalFaceHelperModules(rawSnapshotBase64, video, basePayload);
+      const snapshotBase64 = requestPayload.snapshotBase64 || rawSnapshotBase64;
+
       let matchedStudent = null;
       let matchFailureMsg = "Không khớp khuôn mặt nào trong danh sách lớp. Vui lòng thử lại hoặc quét QR!";
 
       try {
-        const apiRes = await callBackendApi("recognizeStudentFaceAI", {
-          image_data: snapshotBase64,
-          className: appData.className || "",
-          students: (appData.students || []).map(s => ({ name: s.name, maHS: s.maHS || "", dob: s.dob || "" }))
-        }).catch(() => null);
+        // Gửi ảnh đóng gói snapshotBase64 lên hàm recognizeStudentFaceAI trên Google Apps Script (WEB_APP_URL)
+        const apiRes = await callBackendApi("recognizeStudentFaceAI", requestPayload);
 
-        // Đối chiếu chặt: chỉ chấp nhận khi backend xác thực thành công và khớp chính xác học sinh thuộc lớp hiện tại
         if (apiRes && apiRes.student && (apiRes.status === undefined || apiRes.status === "success" || apiRes.matched === true)) {
           const strictRes = findStrictMatchedStudent({
             maHS: apiRes.student.maHS,
@@ -1769,7 +1850,11 @@
         } else if (apiRes && apiRes.msg) {
           matchFailureMsg = apiRes.msg;
         }
-      } catch (e) {}
+      } catch (err) {
+        if (err) {
+          matchFailureMsg = typeof err === "string" ? err : (err.message || matchFailureMsg);
+        }
+      }
 
       if (procOverlay) procOverlay.classList.add("hidden");
 
@@ -1791,6 +1876,20 @@
 
         // Lưu ngầm & loại khỏi danh sách nhập thủ công
         recordSilentStudentCheckin(matchedStudent, 'FACE_AI');
+
+        // Thông báo lại cho ai_collector_patch.js nếu module có đăng ký callback sau nhận diện
+        const collectorPatch = window.AICollectorPatch || window.aiCollectorPatch || null;
+        if (collectorPatch && typeof collectorPatch.onRecognitionResult === "function") {
+          try {
+            collectorPatch.onRecognitionResult({
+              student: matchedStudent,
+              className: appData.className || "",
+              snapshotBase64: snapshotBase64,
+              session: appData.session || "",
+              dateStr: appData.dateStr || ""
+            });
+          } catch (cbErr) {}
+        }
 
         const canvas = document.getElementById("face-ai-canvas");
         if (canvas && canvas.width > 0) {

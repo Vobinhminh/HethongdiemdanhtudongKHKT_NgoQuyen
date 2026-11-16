@@ -10,7 +10,43 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Cổng Điểm Danh & Trạm AI Trung Học Phổ Thông</title>
+  <script>
+      const APP_VERSION = "1.1.0"; // Cập nhật số này mỗi khi sửa file
 
+      async function checkAppUpdate() {
+        try {
+          const res = await fetch(`./version.json?t=${Date.now()}`, { cache: "no-store" });
+          if (!res.ok) return;
+          const remote = await res.json();
+
+          if (remote.version && remote.version !== APP_VERSION) {
+            console.log(`Phát hiện phiên bản mới: ${remote.version} (hiện tại: ${APP_VERSION})`);
+            
+            if ('caches' in window) {
+              const cacheNames = await caches.keys();
+              await Promise.all(cacheNames.map(name => caches.delete(name)));
+            }
+            if ('serviceWorker' in navigator) {
+              const registrations = await navigator.serviceWorker.getRegistrations();
+              for (let reg of registrations) {
+                await reg.unregister();
+              }
+            }
+
+            if (remote.forceUpdate) {
+              const url = new URL(window.location.href);
+              url.searchParams.set('v', remote.version);
+              window.location.replace(url.toString());
+            }
+          }
+        } catch (err) {
+          console.warn("Bỏ qua kiểm tra cập nhật (đang offline hoặc chưa có version.json):", err);
+        }
+      }
+
+      window.addEventListener("load", checkAppUpdate);
+      setInterval(checkAppUpdate, 5 * 60 * 1000);
+    </script>
   <!-- Phông chữ & Tailwind CSS -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

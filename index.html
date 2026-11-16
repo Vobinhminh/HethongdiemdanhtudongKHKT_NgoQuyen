@@ -2445,7 +2445,80 @@
       document.getElementById("statOther").textContent = other;
     }
 
-    function switchAttendanceSubMode(mode) {
+   /* --- NẠP NGẦM MÔ HÌNH AI 128D NGAY KHI MỞ TRANG --- */
+    let aiModelLoadingPromise = null;
+    function preloadAiModelsInBackground() {
+      if (APP_STATE.aiModelsLoaded || typeof faceapi === "undefined") return Promise.resolve();
+      if (aiModelLoadingPromise) return aiModelLoadingPromise;
+
+      aiModelLoadingPromise = Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODEL_URL),
+        faceapi.nets.faceLandmark68TinyNet.loadFromUri(FACE_MODEL_URL),
+        faceapi.nets.faceRecognitionNet.loadFromUri(FACE_MODEL_URL)
+      ]).then(() => {
+        APP_STATE.aiModelsLoaded = true;
+      }).catch(() => {
+        aiModelLoadingPromise = null;
+      });
+      return aiModelLoadingPromise;
+    }
+
+    /* --- ÂM BÁO "TING" NHẸ BẰNG WEB AUDIO API KHI QUÉT THÀNH CÔNG --- */
+    let stationAudioCtx = null;
+    function playCheckinBeep(isDuplicate = false) {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        if (!stationAudioCtx) stationAudioCtx = new AudioCtx();
+        if (stationAudioCtx.state === "suspended") stationAudioCtx.resume();
+
+        const osc = stationAudioCtx.createOscillator();
+        const gain = stationAudioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(isDuplicate ? 520 : 880, stationAudioCtx.currentTime);
+        if (!isDuplicate) {
+          osc.frequency.setValueAtTime(1174.66, stationAudioCtx.currentTime + 0.08);
+        }
+        gain.gain.setValueAtTime(0.12, stationAudioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, stationAudioCtx.currentTime + 0.22);
+
+        osc.connect(gain);
+        gain.connect(stationAudioCtx.destination);
+        osc.start();
+        osc.stop(stationAudioCtx.currentTime + 0.22);
+      } catch (_) {}
+    }
+
+    /* --- HÀNG ĐỢI GOM LÔ LOG ĐIỂM DANH TRÁNH NGHẼN LOCKSERVICE GAS --- */
+    const SILENT_LOG_QUEUE = [];
+    let silentLogFlushTimer = null;
+    let isFlushingSilentLogs = false;
+
+    function enqueueSilentAttendanceLog(logEntry) {
+      SILENT_LOG_QUEUE.push(logEntry);
+      if (!silentLogFlushTimer) {
+        silentLogFlushTimer = setTimeout(flushSilentAttendanceLogs, 3500);
+      }
+    }
+
+    async function flushSilentAttendanceLogs() {
+      silentLogFlushTimer = null;
+      if (isFlushingSilentLogs || SILENT_LOG_QUEUE.length === 0) return;
+      isFlushingSilentLogs = true;
+
+      while (SILENT_LOG_QUEUE.length > 0) {
+        const nextItem = SILENT_LOG_QUEUE.shift();
+        try {
+          await callGasApi("logSilentAttendanceCheckin", nextItem);
+        } catch (_) {
+          // Dữ liệu đã lưu chắc chắn trong APP_STATE.attendance.statusMap để gửi báo cáo tổng
+        }
+      }
+      isFlushingSilentLogs = false;
+    }
+
+    /* --- CHUYỂN CHẾ ĐỘ CAMERA TUẦN TỰ (TRÁNH XUNG ĐỘT PHẦN CỨNG) --- */
+    async function switchAttendanceSubMode(mode) {
       if (mode === "QR" || mode === "AI") {
         const gate = refreshAttendanceTimeGateUI();
         if (!gate.allowed) {
@@ -2467,15 +2540,20 @@
         }
       });
 
-      if (mode !== "QR") stopQrScanner();
+      if (mode !== "QR") await stopQrScanner();
       if (mode !== "AI") stopAiScanner();
 
-      if (mode === "QR") startQrScanner();
-      if (mode === "AI") startAiScanner();
+      if (mode === "LIST") {
+        renderAttendanceStudentList();
+      } else if (mode === "QR") {
+        await startQrScanner();
+      } else if (mode === "AI") {
+        await startAiScanner();
+      }
     }
 
     /* --- QUÉT MÃ QR THẺ HỌC SINH --- */
-    function startQrScanner() {
+    async function startQrScanner() {
       stopChatVoiceInput();
       const gate = refreshAttendanceTimeGateUI();
       if (!gate.allowed) {
@@ -2486,13 +2564,13 @@
         showToast("Thư viện quét mã QR chưa sẵn sàng!", "error");
         return;
       }
-      stopQrScanner();
+      await stopQrScanner();
       const scanner = new Html5Qrcode("qrReaderBox");
       APP_STATE.qrScanner = scanner;
 
       scanner.start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 220, height: 220 } },
+        { fps: 12, qrbox: { width: 220, height: 220 } },
         (decodedText) => {
           handleAutoCheckinMatch(decodedText.trim(), "QR");
         },
@@ -2502,16 +2580,25 @@
       });
     }
 
-    function stopQrScanner() {
+    async function stopQrScanner() {
       if (APP_STATE.qrScanner) {
-        APP_STATE.qrScanner.stop().catch(() => {});
+        const sc = APP_STATE.qrScanner;
         APP_STATE.qrScanner = null;
+        try {
+          await sc.stop();
+          sc.clear();
+        } catch (_) {}
       }
     }
 
-    /* --- NHẬN DIỆN KHUÔN MẶT AI 128D --- */
+    /* --- NHẬN DIỆN KHUÔN MẶT AI 128D (VÒNG LẶP TUẦN TỰ + VẼ CANVAS + 2-FRAME CONFIRM) --- */
+    let aiLoopActive = false;
+    let aiLastCandidate = { key: "", hits: 0 };
+
     async function startAiScanner() {
       stopChatVoiceInput();
+      stopAiScanner();
+
       const gate = refreshAttendanceTimeGateUI();
       const feedback = document.getElementById("aiScanFeedback");
       if (!gate.allowed) {
@@ -2520,28 +2607,24 @@
       }
 
       const video = document.getElementById("aiVideoEl");
+      const canvas = document.getElementById("aiOverlayCanvas");
       if (typeof faceapi === "undefined") {
         feedback.textContent = "Thư viện nhận diện khuôn mặt chưa tải xong, vui lòng kiểm tra mạng!";
         return;
       }
 
       try {
-        feedback.textContent = "Đang tải mô hình mạng nơ-ron 128D...";
         if (!APP_STATE.aiModelsLoaded) {
-          await Promise.all([
-            faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODEL_URL),
-            faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODEL_URL),
-            faceapi.nets.faceRecognitionNet.loadFromUri(FACE_MODEL_URL)
-          ]);
-          APP_STATE.aiModelsLoaded = true;
+          feedback.textContent = "Đang nạp mô hình mạng nơ-ron 128D (lần đầu)...";
+          await preloadAiModelsInBackground();
         }
 
         const descriptors = [];
         APP_STATE.attendance.students.forEach((st, idx) => {
           if (Array.isArray(st.faceDescriptor) && st.faceDescriptor.length >= 64) {
             descriptors.push({
-              key: st.maHS || `${st.name}_${idx}`,
-              maHS: st.maHS || "",
+              key: String(st.maHS || `${st.name}_${idx}`),
+              maHS: String(st.maHS || ""),
               name: st.name,
               vector: new Float32Array(st.faceDescriptor)
             });
@@ -2550,64 +2633,151 @@
         APP_STATE.aiClassDescriptors = descriptors;
         document.getElementById("aiVectorCountBadge").textContent = `${descriptors.length} mẫu 128D`;
 
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
+          audio: false
+        });
         APP_STATE.aiStream = stream;
         video.srcObject = stream;
 
+        await new Promise((resolve) => {
+          if (video.readyState >= 2) return resolve();
+          video.onloadedmetadata = () => resolve();
+        });
+        await video.play();
+
         feedback.textContent = descriptors.length > 0
-          ? "Camera AI đã sẵn sàng! Quét khuôn mặt để tự động ghi nhận Có mặt."
+          ? "Camera AI đã sẵn sàng! Đưa khuôn mặt vào khung hình."
           : "Lớp chưa có mẫu 128D cục bộ; sẽ đối chiếu trực tiếp qua máy chủ.";
 
-        APP_STATE.aiInterval = setInterval(async () => {
-          if (!APP_STATE.aiStream || video.paused || video.ended) return;
-          if (!refreshAttendanceTimeGateUI().allowed) return;
+        aiLoopActive = true;
+        aiLastCandidate = { key: "", hits: 0 };
+        const detectorOptions = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.55 });
 
-          const det = await faceapi
-            .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
-            .withFaceLandmarks()
-            .withFaceDescriptor();
-
-          if (!det) return;
-          const queryVec = det.descriptor;
-
-          if (APP_STATE.aiClassDescriptors.length > 0) {
-            let best = null;
-            let minDist = 999;
-            for (const item of APP_STATE.aiClassDescriptors) {
-              const dist = faceapi.euclideanDistance(queryVec, item.vector);
-              if (dist < minDist) {
-                minDist = dist;
-                best = item;
-              }
-            }
-            if (best && minDist <= 0.54) {
-              feedback.textContent = `✓ Đã quét mặt: ${best.name} → CÓ MẶT • Sai số: ${minDist.toFixed(3)}`;
-              handleAutoCheckinMatch(best.maHS || best.name, "AI");
-            }
-          } else {
-            const srv = await callGasApi("recognizeStudentFaceAI", {
-              className: APP_STATE.attendance.className,
-              faceDescriptor: Array.from(queryVec)
-            });
-            if (srv && srv.matched && srv.student) {
-              feedback.textContent = `✓ Đã quét mặt: ${srv.student.name} → CÓ MẶT`;
-              handleAutoCheckinMatch(srv.student.maHS || srv.student.name, "AI");
-            }
+        const runDetectionLoop = async () => {
+          if (!aiLoopActive || !APP_STATE.aiStream) return;
+          if (document.hidden || video.paused || video.ended || !refreshAttendanceTimeGateUI().allowed) {
+            APP_STATE.aiInterval = setTimeout(runDetectionLoop, 600);
+            return;
           }
-        }, 1200);
+
+          try {
+            const displaySize = { width: video.clientWidth || 640, height: video.clientHeight || 360 };
+            if (canvas.width !== displaySize.width || canvas.height !== displaySize.height) {
+              canvas.width = displaySize.width;
+              canvas.height = displaySize.height;
+            }
+            const ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const det = await faceapi
+              .detectSingleFace(video, detectorOptions)
+              .withFaceLandmarks(true)
+              .withFaceDescriptor();
+
+            if (det && aiLoopActive) {
+              const resized = faceapi.resizeResults(det, displaySize);
+              const box = resized.detection.box;
+              // Tính tọa độ X sau khi lật gương video
+              const mirroredX = displaySize.width - box.x - box.width;
+
+              let labelText = "Đang nhận diện...";
+              let boxColor = "#f59e0b"; // Vàng hổ phách khi đang quét
+
+              if (APP_STATE.aiClassDescriptors.length > 0) {
+                let best = null;
+                let minDist = 999;
+                for (const item of APP_STATE.aiClassDescriptors) {
+                  const dist = faceapi.euclideanDistance(det.descriptor, item.vector);
+                  if (dist < minDist) {
+                    minDist = dist;
+                    best = item;
+                  }
+                }
+
+                if (best && minDist <= 0.50) {
+                  const curStatus = APP_STATE.attendance.statusMap[best.key];
+                  if (curStatus && curStatus.status === "PRESENT") {
+                    boxColor = "#06b6d4"; // Xanh cyan: đã điểm danh rồi
+                    labelText = `✓ Đã có mặt: ${best.name}`;
+                    feedback.textContent = `✓ ${best.name} đã được ghi nhận Có mặt trước đó.`;
+                  } else {
+                    if (aiLastCandidate.key === best.key) {
+                      aiLastCandidate.hits += 1;
+                    } else {
+                      aiLastCandidate = { key: best.key, hits: 1 };
+                    }
+
+                    if (aiLastCandidate.hits >= 2) {
+                      boxColor = "#10b981"; // Xanh lá: chốt điểm danh
+                      labelText = `✓ ${best.name} (${((1 - minDist) * 100).toFixed(0)}%)`;
+                      feedback.textContent = `✓ Đã quét mặt: ${best.name} → CÓ MẶT • Sai số: ${minDist.toFixed(3)}`;
+                      handleAutoCheckinMatch(best.maHS || best.name, "AI");
+                      aiLastCandidate = { key: "", hits: 0 };
+                    } else {
+                      labelText = `Giữ yên: ${best.name}...`;
+                    }
+                  }
+                } else {
+                  aiLastCandidate = { key: "", hits: 0 };
+                  labelText = "Chưa khớp dữ liệu lớp";
+                }
+              } else {
+                const srv = await callGasApi("recognizeStudentFaceAI", {
+                  className: APP_STATE.attendance.className,
+                  faceDescriptor: Array.from(det.descriptor)
+                });
+                if (srv && srv.matched && srv.student) {
+                  boxColor = "#10b981";
+                  labelText = `✓ ${srv.student.name}`;
+                  feedback.textContent = `✓ Đã quét mặt: ${srv.student.name} → CÓ MẶT`;
+                  handleAutoCheckinMatch(srv.student.maHS || srv.student.name, "AI");
+                }
+              }
+
+              // Vẽ khung nhận diện & nhãn tên lên canvas
+              ctx.strokeStyle = boxColor;
+              ctx.lineWidth = 3;
+              ctx.strokeRect(mirroredX, box.y, box.width, box.height);
+
+              ctx.font = "bold 13px 'Be Vietnam Pro', sans-serif";
+              const textWidth = ctx.measureText(labelText).width + 16;
+              const tagY = Math.max(0, box.y - 26);
+              ctx.fillStyle = boxColor;
+              ctx.fillRect(mirroredX, tagY, textWidth, 24);
+              ctx.fillStyle = "#ffffff";
+              ctx.fillText(labelText, mirroredX + 8, tagY + 16);
+            } else {
+              aiLastCandidate = { key: "", hits: 0 };
+            }
+          } catch (_) {}
+
+          if (aiLoopActive) {
+            APP_STATE.aiInterval = setTimeout(runDetectionLoop, 280);
+          }
+        };
+
+        runDetectionLoop();
       } catch (err) {
         feedback.textContent = "Lỗi khởi động trạm AI: " + err.message;
       }
     }
 
     function stopAiScanner() {
+      aiLoopActive = false;
+      aiLastCandidate = { key: "", hits: 0 };
       if (APP_STATE.aiInterval) {
-        clearInterval(APP_STATE.aiInterval);
+        clearTimeout(APP_STATE.aiInterval);
         APP_STATE.aiInterval = null;
       }
       if (APP_STATE.aiStream) {
         APP_STATE.aiStream.getTracks().forEach(t => t.stop());
         APP_STATE.aiStream = null;
+      }
+      const canvas = document.getElementById("aiOverlayCanvas");
+      if (canvas) {
+        const ctx = canvas.getContext("2d");
+        if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
     }
 
@@ -2623,13 +2793,13 @@
       if (!target) return;
 
       const now = Date.now();
-      if (recentCheckinCooldown[target] && now - recentCheckinCooldown[target] < 5000) return;
+      if (recentCheckinCooldown[target] && now - recentCheckinCooldown[target] < 4000) return;
       recentCheckinCooldown[target] = now;
 
-      const { students, statusMap, className } = APP_STATE.attendance;
+      const { students, statusMap, className, subMode } = APP_STATE.attendance;
       const idx = students.findIndex(s =>
-        (s.maHS && s.maHS.toLowerCase() === target) ||
-        (s.name && s.name.toLowerCase() === target)
+        String(s.maHS || "").trim().toLowerCase() === target ||
+        String(s.name || "").trim().toLowerCase() === target
       );
 
       if (idx === -1) {
@@ -2638,10 +2808,23 @@
       }
 
       const st = students[idx];
-      const key = st.maHS || `${st.name}_${idx}`;
+      const key = String(st.maHS || `${st.name}_${idx}`);
+
+      // Nếu học sinh đã Có mặt rồi thì chỉ báo nhẹ, không ghi log trùng
+      if (statusMap[key] && statusMap[key].status === "PRESENT") {
+        playCheckinBeep(true);
+        return;
+      }
+
       statusMap[key] = { status: "PRESENT", lateNote: "", method };
       updateAttendanceSummary();
-      renderAttendanceStudentList();
+
+      // Chỉ vẽ lại danh sách dài khi đang đứng ở tab LIST để giữ mượt luồng camera
+      if (subMode === "LIST") {
+        renderAttendanceStudentList();
+      }
+
+      playCheckinBeep(false);
 
       const timeNowStr = formatDateTimeVN(new Date());
       const bannerId = method === "QR" ? "qrLastMatchBanner" : "aiLastMatchBanner";
@@ -2658,16 +2841,16 @@
         dateStr,
         session,
         className,
-        maHS: st.maHS || "",
+        maHS: String(st.maHS || ""),
         name: st.name,
         method
       };
       APP_STATE.attendance.silentLogs.push(logEntry);
+      enqueueSilentAttendanceLog(logEntry);
 
-      callGasApi("logSilentAttendanceCheckin", logEntry).catch(() => {});
       showToast(`✓ [Quét ${method}] ${st.name} → CÓ MẶT`, "success");
     }
-
+    
     async function submitAttendanceReport() {
       const gate = refreshAttendanceTimeGateUI();
       if (!gate.allowed) {

@@ -84,6 +84,14 @@
     .ai-scanning-ring {
       animation: pulseBorder 2s infinite;
     }
+
+    @keyframes chatSlideUp {
+      from { opacity: 0; transform: translateY(14px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .chat-window-animate {
+      animation: chatSlideUp 0.22s ease-out forwards;
+    }
   </style>
 </head>
 <body class="antialiased flex flex-col">
@@ -100,7 +108,7 @@
   <!-- TOAST NOTIFICATION CONTAINER -->
   <div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
 
-  <!-- TOP HEADER BAR -->
+  <!-- TOP HEADER BAR (ĐÃ GỠ NÚT CẤU HÌNH API KHỎI THANH TIÊU ĐỀ) -->
   <header class="bg-gradient-to-r from-navy-900 via-navy-800 to-slate-800 text-white shadow-lg sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
@@ -125,11 +133,6 @@
           <span>📸</span>
           <span class="hidden sm:inline">Trạm Ảnh AI</span>
         </a>
-        <button onclick="openServerConfigModal()" title="Cấu hình kết nối Apps Script"
-                class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-semibold flex items-center gap-1.5 transition">
-          <span>⚙️</span>
-          <span id="connStatusLabel" class="hidden md:inline">Kết nối</span>
-        </button>
         <button id="btnLogout" onclick="logoutUser()" class="hidden px-3 py-1.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold shadow transition">
           Đăng xuất
         </button>
@@ -252,6 +255,25 @@
             <span id="staffRoleBadgeDisplay" class="font-extrabold text-navy-900 bg-white px-2.5 py-1 rounded-lg border border-blue-200">
               Giáo viên chủ nhiệm
             </span>
+          </div>
+
+          <!-- KHỐI KHỞI TẠO URL MÁY CHỦ LẦN ĐẦU (CHỈ HIỆN KHI CHỌN QUẢN TRỊ VÀ TRÌNH DUYỆT CHƯA CÓ URL) -->
+          <div id="adminFirstSetupUrlBox" class="hidden rounded-2xl bg-amber-50 border border-amber-300 p-4 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-amber-900">🔌 Thiết Lập Kết Nối Máy Chủ GAS (Dành Cho Quản Trị)</span>
+              <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-amber-200/70 text-amber-900">Lần đầu</span>
+            </div>
+            <p class="text-xs text-amber-800">
+              Trình duyệt này chưa lưu URL Web App. Dán URL <code>/exec</code> bên dưới để tải danh sách tài khoản Quản trị (sau khi đăng nhập, toàn bộ quản lý URL nằm trong mục <strong>Quản Trị Hệ Thống</strong>).
+            </p>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input type="url" id="bootstrapGasUrlInput" placeholder="https://script.google.com/macros/s/.../exec"
+                     class="flex-1 rounded-xl border border-amber-300 bg-white px-3 py-2 text-xs font-mono focus:ring-2 focus:ring-navy-800" />
+              <button type="button" onclick="applyBootstrapGasUrl()"
+                      class="px-4 py-2 rounded-xl bg-navy-800 hover:bg-navy-900 text-white text-xs font-bold shrink-0">
+                Kết nối ngay
+              </button>
+            </div>
           </div>
 
           <div>
@@ -700,7 +722,7 @@
       </div>
 
       <!-- ================================================================= -->
-      <!-- PANEL F: ADMIN SYSTEM MANAGEMENT (CONFIG, STAFF, STUDENTS, IMPORT)-->
+      <!-- PANEL F: ADMIN SYSTEM MANAGEMENT (CONFIG, STAFF, STUDENTS, API)   -->
       <!-- ================================================================= -->
       <div id="panelAdminSystem" class="hidden space-y-5">
 
@@ -721,6 +743,10 @@
           <button type="button" onclick="switchAdminSubTab('CONFIG')" id="adminTab_CONFIG"
                   class="px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200">
             ⚙️ Cấu Hình Giờ & Môn Học
+          </button>
+          <button type="button" onclick="switchAdminSubTab('API')" id="adminTab_API"
+                  class="px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200">
+            🔌 Kết Nối API & Máy Chủ
           </button>
         </div>
 
@@ -936,48 +962,141 @@
           </div>
         </div>
 
+        <!-- ADMIN SUB-TAB 5: KẾT NỐI API & CẤU HÌNH URL GOOGLE APPS SCRIPT (CHUYỂN TỪ HEADER VÀO ĐÂY) -->
+        <div id="adminSub_API" class="hidden glass-card rounded-2xl p-5 sm:p-6 space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
+            <div>
+              <h3 class="font-extrabold text-lg text-slate-900">🔌 Kết Nối API & Máy Chủ Google Apps Script</h3>
+              <p class="text-xs text-slate-500">Khu vực cấu hình độc quyền cho Quản trị viên — Học sinh và Giáo viên không thấy thông tin này trên giao diện chính</p>
+            </div>
+            <div id="connStatusPill" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800 text-white text-xs font-bold shadow-sm">
+              <span id="connStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              <span id="connStatusLabel">Đang kiểm tra...</span>
+            </div>
+          </div>
+
+          <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4 space-y-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Đường dẫn triển khai Web App (URL Exec)</label>
+              <div class="flex flex-col sm:flex-row gap-2">
+                <input type="url" id="gasUrlInput" placeholder="https://script.google.com/macros/s/AKfycb.../exec"
+                       class="flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-navy-800" />
+                <button type="button" onclick="saveGasUrlConfig()"
+                        class="px-5 py-2.5 rounded-xl bg-navy-800 hover:bg-navy-900 text-white text-xs font-extrabold shadow transition shrink-0">
+                  💾 Lưu & Kết Nối
+                </button>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-1.5">
+                Dán URL Web App từ Google Apps Script (<code>.../exec</code>). URL này dùng chung cho cả hệ thống Điểm danh, Trạm Ảnh AI và Trợ lý Chatbox AI.
+              </p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200">
+              <button type="button" onclick="testGasConnection()"
+                      class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition">
+                ⚡ Kiểm Tra Kết Nối API
+              </button>
+              <button type="button" onclick="copyShareableLinkWithGas()"
+                      class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition">
+                🔗 Sao Chép Link Chia Sẻ Kèm Cấu Hình
+              </button>
+              <button type="button" onclick="clearGasUrlConfig()"
+                      class="px-3.5 py-2 rounded-xl bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 text-xs font-bold transition">
+                🗑️ Xóa URL Đã Lưu
+              </button>
+            </div>
+          </div>
+
+          <div class="rounded-xl bg-blue-50/70 border border-blue-200 p-4 text-xs text-blue-900 space-y-1">
+            <p class="font-bold">💡 Mẹo triển khai cho lớp và giáo viên:</p>
+            <p>Sau khi lưu URL thành công, nhấn <strong>"Sao Chép Link Chia Sẻ Kèm Cấu Hình"</strong> để gửi cho giáo viên/cán sự lớp. Khi mở liên kết đó, trình duyệt sẽ tự động nạp cấu hình ngầm mà không hiển thị ô nhập URL cho người dùng thường.</p>
+          </div>
+        </div>
+
       </div>
     </section>
   </main>
 
   <!-- ===================================================================== -->
-  <!-- MODAL 1: SERVER GAS WEB APP URL CONFIGURATION                         -->
+  <!-- FLOATING AI CHATBOX WIDGET (#ai-chat-fab & #ai-chat-window)           -->
   <!-- ===================================================================== -->
-  <div id="serverConfigModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
-      <div class="flex items-center justify-between">
-        <h3 class="font-extrabold text-lg text-slate-900">⚙️ Cấu Hình Máy Chủ Google Apps Script</h3>
-        <button onclick="closeModal('serverConfigModal')" class="text-slate-400 hover:text-slate-700 text-xl font-bold">×</button>
-      </div>
-      <p class="text-xs text-slate-600 leading-relaxed">
-        Dán đường dẫn triển khai Web App (<code>https://script.google.com/macros/s/.../exec</code>) để kết nối giao diện GitHub Pages với dữ liệu Google Sheet của trường.
-      </p>
-      <div>
-        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">URL Web App (Exec)</label>
-        <input type="url" id="gasUrlInput" placeholder="https://script.google.com/macros/s/AKfycb.../exec"
-               class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs font-mono focus:ring-2 focus:ring-navy-800" />
-      </div>
-      <div class="flex flex-wrap items-center justify-between gap-2 pt-2">
-        <button type="button" onclick="copyShareableLinkWithGas()"
-                class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">
-          🔗 Sao chép link kèm cấu hình
-        </button>
-        <div class="flex items-center gap-2">
-          <button type="button" onclick="closeModal('serverConfigModal')"
-                  class="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-600">
-            Đóng
-          </button>
-          <button type="button" onclick="saveGasUrlConfig()"
-                  class="px-5 py-2 rounded-xl bg-navy-800 hover:bg-navy-900 text-white text-xs font-bold shadow">
-            Lưu & Kết Nối
-          </button>
+  <button id="ai-chat-fab" type="button" onclick="toggleChatWidget()" title="Mở Trợ lý AI Điểm danh"
+          class="fixed bottom-5 right-5 z-40 group flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-navy-900 via-navy-800 to-indigo-800 hover:from-navy-800 hover:to-indigo-700 text-white shadow-2xl shadow-navy-900/35 border border-white/15 transition-all duration-200 hover:scale-105 active:scale-95">
+    <span class="relative flex items-center justify-center w-7 h-7 rounded-full bg-white/15 text-base">
+      🤖
+      <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-navy-900"></span>
+    </span>
+    <span class="text-xs sm:text-sm font-extrabold tracking-tight pr-0.5">Trợ lý AI</span>
+  </button>
+
+  <div id="ai-chat-window"
+       class="fixed bottom-20 right-3 sm:right-5 z-40 w-[calc(100vw-1.5rem)] sm:w-[400px] h-[520px] max-h-[78vh] hidden flex-col rounded-3xl bg-white border border-slate-200 shadow-2xl overflow-hidden chat-window-animate">
+
+    <!-- CHAT HEADER -->
+    <div class="bg-gradient-to-r from-navy-900 via-navy-800 to-indigo-900 text-white px-4 py-3 flex items-center justify-between gap-2 shrink-0">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-9 h-9 rounded-2xl bg-white/15 border border-white/20 flex items-center justify-center text-lg shrink-0">
+          🤖
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5">
+            <h3 class="font-extrabold text-sm truncate">Trợ Lý AI Ngô Quyền</h3>
+            <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+          </div>
+          <p id="aiChatContextBadge" class="text-[11px] text-slate-300 truncate">Khách • Cổng Đăng Nhập</p>
         </div>
       </div>
+
+      <div class="flex items-center gap-1 shrink-0">
+        <button type="button" onclick="clearChatHistory()" title="Xóa lịch sử trò chuyện"
+                class="p-1.5 rounded-xl hover:bg-white/15 text-slate-200 hover:text-white text-xs transition">
+          🗑️
+        </button>
+        <button type="button" onclick="toggleChatWidget()" title="Thu gọn"
+                class="w-7 h-7 rounded-xl hover:bg-white/15 text-white font-bold text-lg flex items-center justify-center transition">
+          ×
+        </button>
+      </div>
     </div>
+
+    <!-- CHAT MESSAGES STREAM -->
+    <div id="aiChatMessages" class="flex-1 overflow-y-auto p-3.5 space-y-3 bg-slate-50/70 text-xs sm:text-sm">
+      <!-- Populated dynamically -->
+    </div>
+
+    <!-- TYPING INDICATOR -->
+    <div id="aiChatTyping" class="hidden px-4 py-1.5 bg-slate-50 border-t border-slate-100 text-[11px] text-indigo-700 font-semibold flex items-center gap-2 shrink-0">
+      <span class="inline-flex gap-1">
+        <span class="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-bounce"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-bounce [animation-delay:0.15s]"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-bounce [animation-delay:0.3s]"></span>
+      </span>
+      <span>Trợ lý AI đang phân tích dữ liệu...</span>
+    </div>
+
+    <!-- SMART SUGGESTED QUESTIONS -->
+    <div id="aiChatSuggestions" class="px-3 py-2 bg-white border-t border-slate-100 flex items-center gap-1.5 overflow-x-auto shrink-0">
+      <!-- Chips populated dynamically by role/portal -->
+    </div>
+
+    <!-- CHAT INPUT & VOICE BAR -->
+    <form onsubmit="handleChatFormSubmit(event)" class="p-2.5 bg-white border-t border-slate-200 flex items-center gap-1.5 shrink-0">
+      <button type="button" id="aiChatMicBtn" onclick="toggleChatVoiceInput()" title="Nhập bằng giọng nói tiếng Việt"
+              class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-base transition shrink-0">
+        🎙️
+      </button>
+      <input type="text" id="aiChatInput" autocomplete="off"
+             placeholder="Hỏi trợ lý AI về điểm danh, chuyên cần..."
+             class="flex-1 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-navy-800" />
+      <button type="submit" id="aiChatSendBtn"
+              class="px-3.5 py-2 rounded-xl bg-navy-800 hover:bg-navy-900 text-white text-xs font-bold shadow-sm transition shrink-0">
+        Gửi
+      </button>
+    </form>
   </div>
 
   <!-- ===================================================================== -->
-  <!-- MODAL 2: CHANGE PIN (MANDATORY FIRST LOGIN OR VOLUNTARY)              -->
+  <!-- MODAL 1: CHANGE PIN (MANDATORY FIRST LOGIN OR VOLUNTARY)              -->
   <!-- ===================================================================== -->
   <div id="changePinModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
@@ -1009,7 +1128,7 @@
   </div>
 
   <!-- ===================================================================== -->
-  <!-- MODAL 3: LATE MINUTES PROMPT                                          -->
+  <!-- MODAL 2: LATE MINUTES PROMPT                                          -->
   <!-- ===================================================================== -->
   <div id="lateMinutesModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 text-center">
@@ -1032,18 +1151,20 @@
   <!-- ===================================================================== -->
   <script>
     const STORAGE_KEY_GAS_URL = "ngoquyen_attendance_gas_url_v1";
+    const DEFAULT_GAS_URL = ""; // Quản trị viên có thể điền sẵn URL /exec cố định tại đây hoặc nhập trong tab Quản trị
     const FACE_MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model";
 
     const APP_STATE = {
       gasUrl: "",
       initData: null,
       selectedLoginRole: "STUDENT",
+      activeWorkspaceTab: "LOGIN",
       loginClassStudents: [],
       currentUser: null, // { type: 'STUDENT'|'GVCN'|'GIAMTHI'|'ADMIN', name, role, className, assignedClass, assignedClasses, maHS, isAdmin, isSupervisor, isOfficer, url, pin }
       attendance: {
         className: "",
         students: [],
-        statusMap: {}, // maHS/name -> { status: 'PRESENT'|'VANG_CP'|'VANG_KP'|'TRE'|'BO_TIET'|'KHONG_DT', lateNote: '', method: '' }
+        statusMap: {},
         silentLogs: [],
         isEditMode: false,
         rowIndex: null,
@@ -1055,7 +1176,13 @@
       aiModelsLoaded: false,
       aiClassDescriptors: [],
       pendingLateStudentKey: null,
-      lastStatsRows: []
+      lastStatsRows: [],
+      chat: {
+        isOpen: false,
+        isBusy: false,
+        recognition: null,
+        isListening: false
+      }
     };
 
     /* ---------------------------------------------------------------------
@@ -1064,6 +1191,7 @@
     document.addEventListener("DOMContentLoaded", () => {
       initGasUrlFromEnvironment();
       setDefaultDates();
+      initChatboxWidget();
       loadInitialAppData();
     });
 
@@ -1073,8 +1201,10 @@
       if (urlParam && urlParam.startsWith("https://script.google.com/")) {
         localStorage.setItem(STORAGE_KEY_GAS_URL, urlParam.trim());
       }
-      APP_STATE.gasUrl = localStorage.getItem(STORAGE_KEY_GAS_URL) || "";
-      document.getElementById("gasUrlInput").value = APP_STATE.gasUrl;
+      APP_STATE.gasUrl = localStorage.getItem(STORAGE_KEY_GAS_URL) || DEFAULT_GAS_URL || "";
+
+      const gasInput = document.getElementById("gasUrlInput");
+      if (gasInput) gasInput.value = APP_STATE.gasUrl;
 
       // Sync AI station link with gasUrl if available
       const aiLink = document.getElementById("aiStationLink");
@@ -1086,12 +1216,22 @@
 
     function updateConnectionBadge() {
       const lbl = document.getElementById("connStatusLabel");
+      const dot = document.getElementById("connStatusDot");
+      const pill = document.getElementById("connStatusPill");
+      if (!lbl) return;
+
       if (isInsideGasIframe()) {
         lbl.textContent = "GAS Nội bộ";
+        if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
+        if (pill) pill.className = "inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-900 text-white text-xs font-bold shadow-sm";
       } else if (APP_STATE.gasUrl) {
         lbl.textContent = "Đã kết nối API";
+        if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
+        if (pill) pill.className = "inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800 text-white text-xs font-bold shadow-sm";
       } else {
         lbl.textContent = "Chưa gắn URL";
+        if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400";
+        if (pill) pill.className = "inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-800 text-white text-xs font-bold shadow-sm";
       }
     }
 
@@ -1110,8 +1250,7 @@
       }
 
       if (!APP_STATE.gasUrl) {
-        openServerConfigModal();
-        throw new Error("Chưa cấu hình đường dẫn Web App Google Apps Script!");
+        throw new Error("Hệ thống chưa kết nối máy chủ. Quản trị viên vui lòng thiết lập URL trong mục Quản trị!");
       }
 
       const maxRetries = 3;
@@ -1139,9 +1278,9 @@
 
     async function loadInitialAppData() {
       if (!isInsideGasIframe() && !APP_STATE.gasUrl) {
-        document.getElementById("headerGateBadge").textContent = "● Chưa kết nối API";
+        document.getElementById("headerGateBadge").textContent = "● Chờ kết nối máy chủ";
         document.getElementById("headerGateBadge").className = "font-semibold bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded";
-        openServerConfigModal();
+        selectLoginRole(APP_STATE.selectedLoginRole);
         return;
       }
 
@@ -1168,6 +1307,7 @@
 
         populateClassDropdowns(data.classes || []);
         selectLoginRole(APP_STATE.selectedLoginRole);
+        updateConnectionBadge();
       } catch (err) {
         showToast(err.message, "error");
       } finally {
@@ -1225,15 +1365,27 @@
       const studentForm = document.getElementById("studentLoginForm");
       const staffForm = document.getElementById("staffLoginForm");
       const roleLabel = document.getElementById("staffRoleBadgeDisplay");
+      const bootstrapBox = document.getElementById("adminFirstSetupUrlBox");
 
       if (roleKey === "STUDENT") {
         studentForm.classList.remove("hidden");
         staffForm.classList.add("hidden");
+        if (bootstrapBox) bootstrapBox.classList.add("hidden");
+        updateChatboxContext();
         return;
       }
 
       studentForm.classList.add("hidden");
       staffForm.classList.remove("hidden");
+
+      // Only show initial URL bootstrap input when Admin tab is clicked AND no gasUrl exists yet
+      if (bootstrapBox) {
+        if (roleKey === "ADMIN" && !isInsideGasIframe() && !APP_STATE.gasUrl) {
+          bootstrapBox.classList.remove("hidden");
+        } else {
+          bootstrapBox.classList.add("hidden");
+        }
+      }
 
       const roleTitles = {
         GVCN: "Giáo viên chủ nhiệm",
@@ -1254,6 +1406,23 @@
         filtered.map(item => `<option value="${escapeHtml(item.name)}">${escapeHtml(item.name)}</option>`).join("");
 
       document.getElementById("selectedStaffMeta").classList.add("hidden");
+      updateChatboxContext();
+    }
+
+    function applyBootstrapGasUrl() {
+      const val = (document.getElementById("bootstrapGasUrlInput").value || "").trim();
+      if (!val || !val.startsWith("https://script.google.com/")) {
+        showToast("URL Web App phải bắt đầu bằng https://script.google.com/...", "warning");
+        return;
+      }
+      APP_STATE.gasUrl = val;
+      localStorage.setItem(STORAGE_KEY_GAS_URL, val);
+      const adminInput = document.getElementById("gasUrlInput");
+      if (adminInput) adminInput.value = val;
+      const aiLink = document.getElementById("aiStationLink");
+      if (aiLink) aiLink.href = `ai.html?gasUrl=${encodeURIComponent(val)}`;
+      updateConnectionBadge();
+      loadInitialAppData();
     }
 
     function onLoginStaffSelect() {
@@ -1448,7 +1617,7 @@
         STUDENT: u.isOfficer ? "Cán sự lớp • Có quyền điểm danh & gửi đơn xin phép" : "Học sinh • Tra cứu chuyên cần & gửi đơn xin phép",
         GVCN: u.assignedClass ? `Giáo viên chủ nhiệm • Phụ trách lớp ${u.assignedClass}` : "Giáo viên chủ nhiệm • Chưa được gán lớp phụ trách",
         GIAMTHI: "Giám thị • Giám sát nề nếp & báo cáo toàn trường",
-        ADMIN: "Quản trị viên • Toàn quyền cấu hình & dữ liệu gốc"
+        ADMIN: "Quản trị viên • Toàn quyền cấu hình, API & dữ liệu gốc"
       };
       document.getElementById("userSubInfo").textContent = subMap[u.type] || "";
 
@@ -1462,6 +1631,7 @@
       }
 
       buildWorkspaceTabs();
+      updateChatboxContext();
 
       if (requirePinChange) {
         openChangePinModal(true);
@@ -1512,6 +1682,7 @@
     function switchWorkspaceTab(tabId) {
       stopQrScanner();
       stopAiScanner();
+      APP_STATE.activeWorkspaceTab = tabId;
 
       document.querySelectorAll(".ws-tab-btn").forEach(btn => {
         btn.className = "ws-tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 transition";
@@ -1541,17 +1712,21 @@
       if (tabId === "OFFICERS") initOfficersPanel();
       if (tabId === "MONITOR") loadSchoolMonitorStats();
       if (tabId === "ADMIN") initAdminPanel();
+
+      updateChatboxContext();
     }
 
     function logoutUser() {
       stopQrScanner();
       stopAiScanner();
       APP_STATE.currentUser = null;
+      APP_STATE.activeWorkspaceTab = "LOGIN";
       document.getElementById("loginStudentPin").value = "";
       document.getElementById("loginStaffPin").value = "";
       document.getElementById("workspaceView").classList.add("hidden");
       document.getElementById("btnLogout").classList.add("hidden");
       document.getElementById("loginView").classList.remove("hidden");
+      updateChatboxContext();
     }
 
     /* ---------------------------------------------------------------------
@@ -1648,6 +1823,7 @@
 
         updateAttendanceSummary();
         renderAttendanceStudentList();
+        updateChatboxContext();
       } catch (err) {
         showToast(err.message, "error");
       } finally {
@@ -1874,7 +2050,6 @@
           APP_STATE.aiModelsLoaded = true;
         }
 
-        // Collect 128D vectors from current class students
         const descriptors = [];
         APP_STATE.attendance.students.forEach((st, idx) => {
           if (Array.isArray(st.faceDescriptor) && st.faceDescriptor.length >= 64) {
@@ -1922,7 +2097,6 @@
               handleAutoCheckinMatch(best.maHS || best.name, "AI");
             }
           } else {
-            // Fallback server vector matching
             const srv = await callGasApi("recognizeStudentFaceAI", {
               className: APP_STATE.attendance.className,
               faceDescriptor: Array.from(queryVec)
@@ -1988,7 +2162,6 @@
       };
       APP_STATE.attendance.silentLogs.push(logEntry);
 
-      // Fire-and-forget silent check-in log
       callGasApi("logSilentAttendanceCheckin", logEntry).catch(() => {});
       showToast(`✓ [${method}] Đã điểm danh: ${st.name}`, "success");
     }
@@ -2393,18 +2566,20 @@
     }
 
     /* ---------------------------------------------------------------------
-     * 9. ADMIN PANEL (IMPORT EXCEL/CSV/PDF, STAFF, STUDENTS, CONFIG)
+     * 9. ADMIN PANEL (IMPORT EXCEL/CSV/PDF, STAFF, STUDENTS, CONFIG, API)
      * --------------------------------------------------------------------- */
     function initAdminPanel() {
       switchAdminSubTab("IMPORT");
       renderAdminStaffTable();
       loadAdminSystemConfig();
+      updateConnectionBadge();
     }
 
     function switchAdminSubTab(tabKey) {
-      ["IMPORT", "STAFF", "STUDENTS", "CONFIG"].forEach(k => {
+      ["IMPORT", "STAFF", "STUDENTS", "CONFIG", "API"].forEach(k => {
         const btn = document.getElementById(`adminTab_${k}`);
         const box = document.getElementById(`adminSub_${k}`);
+        if (!btn || !box) return;
         if (k === tabKey) {
           btn.className = "px-4 py-2 rounded-xl text-xs font-bold bg-navy-800 text-white shadow";
           box.classList.remove("hidden");
@@ -2413,6 +2588,11 @@
           box.classList.add("hidden");
         }
       });
+      if (tabKey === "API") {
+        const gasInput = document.getElementById("gasUrlInput");
+        if (gasInput) gasInput.value = APP_STATE.gasUrl || "";
+        updateConnectionBadge();
+      }
     }
 
     async function downloadSampleCsvTemplate() {
@@ -2457,7 +2637,6 @@
         const base64Data = arrayBufferToBase64(arrayBuffer);
         let parsedRows = null;
 
-        // Parse Excel / CSV directly on client using SheetJS for 100% accuracy
         if ((lowerName.endsWith(".xlsx") || lowerName.endsWith(".xls") || lowerName.endsWith(".csv")) && typeof XLSX !== "undefined") {
           const wb = XLSX.read(arrayBuffer, { type: "array" });
           const firstSheet = wb.Sheets[wb.SheetNames[0]];
@@ -2719,13 +2898,8 @@
     }
 
     /* ---------------------------------------------------------------------
-     * 10. MODALS, PIN CHANGE & UI UTILITIES
+     * 10. ADMIN API / GAS URL MANAGEMENT (IN-ADMIN PANEL ONLY)
      * --------------------------------------------------------------------- */
-    function openServerConfigModal() {
-      document.getElementById("gasUrlInput").value = APP_STATE.gasUrl || "";
-      openModal("serverConfigModal");
-    }
-
     function saveGasUrlConfig() {
       const val = document.getElementById("gasUrlInput").value.trim();
       if (val && !val.startsWith("https://script.google.com/")) {
@@ -2736,11 +2910,36 @@
       localStorage.setItem(STORAGE_KEY_GAS_URL, val);
       updateConnectionBadge();
       const aiLink = document.getElementById("aiStationLink");
-      if (aiLink && val) {
-        aiLink.href = `ai.html?gasUrl=${encodeURIComponent(val)}`;
+      if (aiLink) {
+        aiLink.href = val ? `ai.html?gasUrl=${encodeURIComponent(val)}` : "ai.html";
       }
-      closeModal("serverConfigModal");
+      showToast(val ? "Đã lưu cấu hình API và đồng bộ lại hệ thống!" : "Đã xóa cấu hình URL!", "success");
       loadInitialAppData();
+    }
+
+    async function testGasConnection() {
+      const val = document.getElementById("gasUrlInput").value.trim() || APP_STATE.gasUrl;
+      if (!isInsideGasIframe() && !val) {
+        showToast("Vui lòng dán URL Web App vào ô phía trên trước!", "warning");
+        return;
+      }
+      if (val && val !== APP_STATE.gasUrl) {
+        APP_STATE.gasUrl = val;
+        localStorage.setItem(STORAGE_KEY_GAS_URL, val);
+      }
+
+      const t0 = performance.now();
+      showLoader("Đang kiểm tra kết nối máy chủ GAS...");
+      try {
+        const res = await callGasApi("getAppInitData");
+        const ms = Math.round(performance.now() - t0);
+        updateConnectionBadge();
+        showToast(`✅ Kết nối API thành công (${ms} ms) • Ngày: ${res.dateStr || "--"} • Ca ${res.session || "--"}`, "success");
+      } catch (err) {
+        showToast(`❌ Lỗi kết nối API: ${err.message}`, "error");
+      } finally {
+        hideLoader();
+      }
     }
 
     function copyShareableLinkWithGas() {
@@ -2755,6 +2954,336 @@
       });
     }
 
+    function clearGasUrlConfig() {
+      if (!confirm("Xác nhận xóa URL Web App đã lưu trên trình duyệt này?")) return;
+      APP_STATE.gasUrl = "";
+      localStorage.removeItem(STORAGE_KEY_GAS_URL);
+      const gasInput = document.getElementById("gasUrlInput");
+      if (gasInput) gasInput.value = "";
+      updateConnectionBadge();
+      showToast("Đã xóa cấu hình URL trên trình duyệt.", "info");
+    }
+
+    /* ---------------------------------------------------------------------
+     * 11. AI CHATBOX WIDGET (PORTAL-AWARE + VOICE INPUT + BACKEND BRIDGE)
+     * --------------------------------------------------------------------- */
+    function initChatboxWidget() {
+      updateChatboxContext();
+      appendChatBubble(
+        "assistant",
+        "Xin chào! Mình là **Trợ lý AI Điểm danh THPT Ngô Quyền**. Mình có thể hỗ trợ tra cứu chuyên cần, hướng dẫn điểm danh QR/AI 128D, gửi hoặc duyệt đơn xin phép và thống kê theo từng phân quyền của bạn."
+      );
+    }
+
+    function toggleChatWidget() {
+      const win = document.getElementById("ai-chat-window");
+      if (!win) return;
+      APP_STATE.chat.isOpen = !APP_STATE.chat.isOpen;
+      if (APP_STATE.chat.isOpen) {
+        win.classList.remove("hidden");
+        win.classList.add("flex");
+        updateChatboxContext();
+        setTimeout(() => {
+          const inp = document.getElementById("aiChatInput");
+          if (inp) inp.focus();
+        }, 80);
+      } else {
+        win.classList.add("hidden");
+        win.classList.remove("flex");
+        stopChatVoiceInput();
+      }
+    }
+    window.toggleChat = toggleChatWidget;
+
+    function getChatPortalMetadata() {
+      const u = APP_STATE.currentUser;
+      const tabNames = {
+        LOGIN: "Cổng Đăng Nhập",
+        ATTENDANCE: "Cổng Điểm Danh",
+        LEAVE: "Cổng Đơn Xin Phép",
+        STATS: "Cổng Thống Kê Chuyên Cần",
+        OFFICERS: "Cổng Phân Công Cán Sự",
+        MONITOR: "Cổng Giám Sát Toàn Trường",
+        ADMIN: "Cổng Quản Trị Hệ Thống"
+      };
+
+      if (!u) {
+        const roleLabels = {
+          STUDENT: "Khách (Cổng Học sinh)",
+          GVCN: "Khách (Cổng GVCN)",
+          GIAMTHI: "Khách (Cổng Giám thị)",
+          ADMIN: "Khách (Cổng Quản trị)"
+        };
+        return {
+          roleKey: "GUEST",
+          roleText: roleLabels[APP_STATE.selectedLoginRole] || "Khách",
+          userName: "Người dùng chưa đăng nhập",
+          className: document.getElementById("loginStudentClass")?.value || "",
+          portalLabel: "Cổng Đăng Nhập"
+        };
+      }
+
+      const activeClass =
+        (APP_STATE.activeWorkspaceTab === "ATTENDANCE" && document.getElementById("attClassSelect")?.value) ||
+        (APP_STATE.activeWorkspaceTab === "STATS" && document.getElementById("statsClassSelect")?.value) ||
+        u.assignedClass ||
+        u.className ||
+        "";
+
+      const roleKey = u.type === "STUDENT" ? (u.isOfficer ? "STUDENT_OFFICER" : "STUDENT") : u.type;
+
+      return {
+        roleKey,
+        roleText: u.role || u.type,
+        userName: u.name,
+        className: activeClass,
+        portalLabel: tabNames[APP_STATE.activeWorkspaceTab] || "Không gian làm việc"
+      };
+    }
+
+    function updateChatboxContext() {
+      const meta = getChatPortalMetadata();
+      const badge = document.getElementById("aiChatContextBadge");
+      if (badge) {
+        const clsPart = meta.className ? ` • Lớp ${meta.className}` : "";
+        badge.textContent = `${meta.roleText}${clsPart} • ${meta.portalLabel}`;
+      }
+      renderChatSuggestions(meta.roleKey, meta.className);
+    }
+
+    function renderChatSuggestions(roleKey, className) {
+      const box = document.getElementById("aiChatSuggestions");
+      if (!box) return;
+
+      const clsLabel = className || "lớp";
+      const suggestionMap = {
+        GUEST: [
+          "Cách đăng nhập & đổi mã PIN lần đầu?",
+          "Khung giờ mở cổng điểm danh hôm nay?",
+          "Hướng dẫn gửi đơn xin nghỉ phép"
+        ],
+        STUDENT: [
+          "Xem lịch sử chuyên cần tháng này của em",
+          "Cách gửi đơn xin nghỉ phép trực tuyến?",
+          "Quy định tính đi trễ và vắng không phép"
+        ],
+        STUDENT_OFFICER: [
+          `Hướng dẫn điểm danh nhanh ${clsLabel} bằng QR/AI`,
+          "Cách cập nhật lại báo cáo điểm danh đã nộp?",
+          "Xem lịch sử chuyên cần tháng này của em"
+        ],
+        GVCN: [
+          `Thống kê chuyên cần ${clsLabel} tuần này`,
+          `Kiểm tra đơn xin nghỉ phép chờ duyệt của ${clsLabel}`,
+          "Cách phân công ban cán sự điểm danh lớp?"
+        ],
+        GIAMTHI: [
+          "Lớp nào chưa nộp báo cáo điểm danh ca này?",
+          "Tổng hợp tình hình vắng và vi phạm hôm nay",
+          "Hướng dẫn khóa sổ điểm danh cuối ngày"
+        ],
+        ADMIN: [
+          "Tiến độ nộp báo cáo toàn trường hôm nay",
+          "Cách nhập danh sách HS/GV từ Excel hoặc CSV?",
+          "Cách cấu hình URL API và khung giờ mở cổng?"
+        ]
+      };
+
+      const items = suggestionMap[roleKey] || suggestionMap.GUEST;
+      box.innerHTML = items.map(text => `
+        <button type="button" onclick="sendSuggestedChat('${escapeAttr(text)}')"
+                class="shrink-0 px-2.5 py-1 rounded-full bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 text-[11px] font-semibold transition">
+          ✨ ${escapeHtml(text)}
+        </button>
+      `).join("");
+    }
+
+    function sendSuggestedChat(promptText) {
+      const input = document.getElementById("aiChatInput");
+      if (!input) return;
+      input.value = promptText;
+      sendChatMessage();
+    }
+
+    function handleChatFormSubmit(e) {
+      e.preventDefault();
+      sendChatMessage();
+    }
+
+    async function sendChatMessage() {
+      if (APP_STATE.chat.isBusy) return;
+      const input = document.getElementById("aiChatInput");
+      const text = (input.value || "").trim();
+      if (!text) return;
+
+      input.value = "";
+      appendChatBubble("user", text);
+
+      if (!isInsideGasIframe() && !APP_STATE.gasUrl) {
+        appendChatBubble(
+          "assistant",
+          "⚠️ Hệ thống chưa kết nối máy chủ Google Apps Script nên Trợ lý AI chưa thể truy xuất dữ liệu. Quản trị viên vui lòng vào **Quản Trị Hệ Thống → Kết Nối API & Máy Chủ** để thiết lập URL."
+        );
+        return;
+      }
+
+      const meta = getChatPortalMetadata();
+      setChatBusyState(true);
+
+      try {
+        const res = await callChatBackendApi(text, meta);
+        let replyText = "";
+        if (typeof res === "string") {
+          replyText = res;
+        } else if (res && typeof res === "object") {
+          replyText = res.reply || res.answer || res.msg || res.text || JSON.stringify(res);
+        } else {
+          replyText = "Mình đã tiếp nhận yêu cầu nhưng chưa nhận được phản hồi chi tiết từ máy chủ.";
+        }
+        appendChatBubble("assistant", replyText);
+      } catch (err) {
+        appendChatBubble("assistant", `❌ Không thể kết nối Trợ lý AI: ${err.message}`);
+      } finally {
+        setChatBusyState(false);
+      }
+    }
+
+    async function callChatBackendApi(userMessage, meta) {
+      return await callGasApi(
+        "handleChatbotQuery",
+        userMessage,
+        meta.roleText,
+        meta.userName,
+        meta.className,
+        meta.portalLabel,
+        {}
+      );
+    }
+
+    function setChatBusyState(busy) {
+      APP_STATE.chat.isBusy = busy;
+      const typing = document.getElementById("aiChatTyping");
+      const sendBtn = document.getElementById("aiChatSendBtn");
+      if (typing) {
+        if (busy) typing.classList.remove("hidden");
+        else typing.classList.add("hidden");
+      }
+      if (sendBtn) sendBtn.disabled = busy;
+      scrollChatToBottom();
+    }
+
+    function appendChatBubble(sender, rawText) {
+      const container = document.getElementById("aiChatMessages");
+      if (!container) return;
+
+      const timeStr = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+      const formattedHtml = formatChatMarkdown(rawText);
+
+      const wrapper = document.createElement("div");
+      if (sender === "user") {
+        wrapper.className = "flex flex-col items-end";
+        wrapper.innerHTML = `
+          <div class="max-w-[85%] rounded-2xl rounded-br-sm bg-navy-800 text-white px-3.5 py-2.5 shadow-sm leading-relaxed">
+            ${formattedHtml}
+          </div>
+          <span class="text-[10px] text-slate-400 mt-1 px-1">${timeStr}</span>
+        `;
+      } else {
+        wrapper.className = "flex items-start gap-2";
+        wrapper.innerHTML = `
+          <div class="w-7 h-7 rounded-xl bg-indigo-100 text-indigo-800 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
+            🤖
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="max-w-[92%] rounded-2xl rounded-bl-sm bg-white border border-slate-200 text-slate-800 px-3.5 py-2.5 shadow-sm leading-relaxed">
+              ${formattedHtml}
+            </div>
+            <span class="text-[10px] text-slate-400 mt-1 px-1 block">${timeStr}</span>
+          </div>
+        `;
+      }
+
+      container.appendChild(wrapper);
+      scrollChatToBottom();
+    }
+
+    function formatChatMarkdown(text) {
+      let safe = escapeHtml(text);
+      safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+      safe = safe.replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 rounded bg-slate-100 text-indigo-700 font-mono text-[11px]">$1</code>');
+      safe = safe.replace(/\n/g, "<br />");
+      return safe;
+    }
+
+    function scrollChatToBottom() {
+      const container = document.getElementById("aiChatMessages");
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+
+    function clearChatHistory() {
+      const container = document.getElementById("aiChatMessages");
+      if (!container) return;
+      container.innerHTML = "";
+      appendChatBubble("assistant", "Đã làm mới cuộc trò chuyện. Bạn cần mình hỗ trợ gì tiếp theo?");
+    }
+
+    function toggleChatVoiceInput() {
+      if (APP_STATE.chat.isListening) {
+        stopChatVoiceInput();
+        return;
+      }
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        showToast("Trình duyệt chưa hỗ trợ nhận diện giọng nói.", "warning");
+        return;
+      }
+
+      const rec = new SpeechRec();
+      rec.lang = "vi-VN";
+      rec.interimResults = false;
+      rec.maxAlternatives = 1;
+
+      const micBtn = document.getElementById("aiChatMicBtn");
+      APP_STATE.chat.recognition = rec;
+      APP_STATE.chat.isListening = true;
+      if (micBtn) {
+        micBtn.className = "w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center text-base animate-pulse shrink-0";
+      }
+
+      rec.onresult = (event) => {
+        const transcript = event.results?.[0]?.[0]?.transcript || "";
+        const inp = document.getElementById("aiChatInput");
+        if (inp && transcript) {
+          inp.value = transcript;
+          sendChatMessage();
+        }
+      };
+      rec.onerror = () => {
+        stopChatVoiceInput();
+      };
+      rec.onend = () => {
+        stopChatVoiceInput();
+      };
+      rec.start();
+    }
+
+    function stopChatVoiceInput() {
+      if (APP_STATE.chat.recognition) {
+        try { APP_STATE.chat.recognition.stop(); } catch (e) {}
+        APP_STATE.chat.recognition = null;
+      }
+      APP_STATE.chat.isListening = false;
+      const micBtn = document.getElementById("aiChatMicBtn");
+      if (micBtn) {
+        micBtn.className = "w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-base transition shrink-0";
+      }
+    }
+
+    /* ---------------------------------------------------------------------
+     * 12. MODALS, PIN CHANGE & UI UTILITIES
+     * --------------------------------------------------------------------- */
     function openChangePinModal(isMandatory = false) {
       const u = APP_STATE.currentUser;
       document.getElementById("cpOldPin").value = isMandatory && u ? u.pin : "";

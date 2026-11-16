@@ -2,9 +2,14 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="theme-color" content="#1e3d59">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Cổng Điểm Danh & Trạm AI Trung Học Phổ Thông</title>
-  <link rel="icon" href="https://img.icons8.com/fluency/512/book.png" />
 
   <!-- Phông chữ & Tailwind CSS -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -193,19 +198,38 @@
         <!-- BIỂU MẪU ĐĂNG NHẬP HỌC SINH -->
         <form id="studentLoginForm" onsubmit="handleStudentLogin(event)" class="space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">1. Chọn Lớp Học</label>
-              <select id="loginStudentClass" onchange="onLoginClassChange()" required
-                      class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-navy-800">
-                <option value="">-- Chọn lớp --</option>
-              </select>
+            <div class="relative" id="loginStudentClassWrapper">
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">1. Lớp Học</label>
+              <div class="relative">
+                <input type="text" id="loginStudentClassInput" autocomplete="off"
+                       placeholder="Gõ tên lớp để tìm (VD: 10A01)..."
+                       onfocus="openSuggestMenu('CLASS')"
+                       oninput="filterSuggestMenu('CLASS')"
+                       class="w-full rounded-xl border border-slate-300 bg-white pl-3.5 pr-9 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-navy-800" />
+                <button type="button" onclick="clearSuggestInput('CLASS')" title="Xóa chọn lớp"
+                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-sm font-bold px-1">
+                  ✕
+                </button>
+              </div>
+              <input type="hidden" id="loginStudentClass" />
+              <div id="suggestMenu_CLASS" class="hidden absolute left-0 right-0 mt-1.5 max-h-56 overflow-y-auto rounded-2xl bg-white border border-slate-200 shadow-xl z-30 divide-y divide-slate-100"></div>
             </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">2. Chọn Họ và Tên</label>
-              <select id="loginStudentName" onchange="onLoginStudentSelect()" required
-                      class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-navy-800">
-                <option value="">-- Chọn lớp trước --</option>
-              </select>
+
+            <div class="relative" id="loginStudentNameWrapper">
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">2. Họ và Tên Học Sinh</label>
+              <div class="relative">
+                <input type="text" id="loginStudentNameInput" autocomplete="off"
+                       placeholder="Gõ tên hoặc mã học sinh..."
+                       onfocus="openSuggestMenu('STUDENT')"
+                       oninput="filterSuggestMenu('STUDENT')"
+                       class="w-full rounded-xl border border-slate-300 bg-white pl-3.5 pr-9 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-navy-800" />
+                <button type="button" onclick="clearSuggestInput('STUDENT')" title="Xóa chọn học sinh"
+                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-sm font-bold px-1">
+                  ✕
+                </button>
+              </div>
+              <input type="hidden" id="loginStudentName" />
+              <div id="suggestMenu_STUDENT" class="hidden absolute left-0 right-0 mt-1.5 max-h-60 overflow-y-auto rounded-2xl bg-white border border-slate-200 shadow-xl z-30 divide-y divide-slate-100"></div>
             </div>
           </div>
 
@@ -224,7 +248,7 @@
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">3. Mã PIN Cá Nhân</label>
             <div class="relative">
               <input type="password" id="loginStudentPin" inputmode="numeric" maxlength="12" required
-                     placeholder="Nhập mã PIN (Mặc định lần đầu: 123456)"
+                     placeholder="Nhập mã PIN cá nhân"
                      class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-navy-800" />
               <button type="button" onclick="togglePinVisibility('loginStudentPin')"
                       class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-700 font-semibold">
@@ -249,12 +273,21 @@
             </span>
           </div>
 
-          <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">1. Chọn Họ và Tên Tài Khoản</label>
-            <select id="loginStaffName" onchange="onLoginStaffSelect()" required
-                    class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-navy-800">
-              <option value="">-- Chọn họ và tên --</option>
-            </select>
+          <div class="relative" id="loginStaffNameWrapper">
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">1. Họ và Tên Tài Khoản</label>
+            <div class="relative">
+              <input type="text" id="loginStaffNameInput" autocomplete="off"
+                     placeholder="Gõ họ và tên để tìm gợi ý..."
+                     onfocus="openSuggestMenu('STAFF')"
+                     oninput="filterSuggestMenu('STAFF')"
+                     class="w-full rounded-xl border border-slate-300 bg-white pl-3.5 pr-9 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-navy-800" />
+              <button type="button" onclick="clearSuggestInput('STAFF')" title="Xóa chọn tài khoản"
+                      class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-sm font-bold px-1">
+                ✕
+              </button>
+            </div>
+            <input type="hidden" id="loginStaffName" />
+            <div id="suggestMenu_STAFF" class="hidden absolute left-0 right-0 mt-1.5 max-h-60 overflow-y-auto rounded-2xl bg-white border border-slate-200 shadow-xl z-30 divide-y divide-slate-100"></div>
           </div>
 
           <div id="selectedStaffMeta" class="hidden rounded-xl bg-slate-50 border border-slate-200 px-4 py-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
@@ -272,7 +305,7 @@
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">2. Mã PIN Bảo Mật</label>
             <div class="relative">
               <input type="password" id="loginStaffPin" inputmode="numeric" maxlength="16" required
-                     placeholder="Nhập mã PIN (Mặc định lần đầu: 123456)"
+                     placeholder="Nhập mã PIN bảo mật"
                      class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-navy-800" />
               <button type="button" onclick="togglePinVisibility('loginStaffPin')"
                       class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-700 font-semibold">
@@ -367,7 +400,7 @@
                 </label>
                 <select id="attSubjectSelect" onchange="onAttendanceSessionOrSubjectChange()"
                         class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800">
-                  <option value="">-- Chung / Đầu buổi --</option>
+                  <option value="">Chung / Đầu buổi</option>
                 </select>
               </div>
             </div>
@@ -377,7 +410,7 @@
           <div id="attTimeGateLockedBox" class="hidden mt-4 rounded-2xl bg-rose-50 border-2 border-rose-300 p-4 flex items-start gap-3 text-rose-900">
             <span class="text-2xl">🔒</span>
             <div class="text-xs sm:text-sm space-y-1">
-              <p class="font-extrabold text-rose-800">Cổng Điểm Danh Đang Khóa (Ngoài Khung Giờ Quy Định)</p>
+              <p class="font-extrabold text-rose-800">Cổng Điểm Danh Đang Khóa — Ngoài Khung Giờ Quy Định</p>
               <p id="attTimeGateLockedReason" class="text-rose-700">Hệ thống chỉ cho phép thực hiện điểm danh và nộp báo cáo trong khung giờ quy định.</p>
             </div>
           </div>
@@ -386,7 +419,7 @@
           <div id="editModeBanner" class="hidden mt-4 rounded-xl bg-amber-50 border border-amber-300 px-4 py-3 flex items-center justify-between gap-2 text-xs text-amber-900">
             <div class="flex items-center gap-2">
               <span class="text-base">✏️</span>
-              <span><strong>Chế độ Cập nhật (Chỉnh sửa):</strong> Lớp đã gửi báo cáo cho ca/môn này. Mọi thay đổi sẽ ghi đè cập nhật vào báo cáo hiện tại.</span>
+              <span><strong>Chế độ Cập nhật - Chỉnh sửa:</strong> Lớp đã gửi báo cáo cho ca/môn này. Mọi thay đổi sẽ ghi đè cập nhật vào báo cáo hiện tại.</span>
             </div>
           </div>
 
@@ -405,7 +438,7 @@
               <div id="statVangCP" class="font-mono font-extrabold text-lg text-blue-700">0</div>
             </div>
             <div class="rounded-xl bg-rose-50 border border-rose-200 p-2.5 text-center">
-              <div class="text-[11px] font-semibold text-rose-700">Vắng KP (Mặc định)</div>
+              <div class="text-[11px] font-semibold text-rose-700">Vắng KP • Mặc định</div>
               <div id="statVangKP" class="font-mono font-extrabold text-lg text-rose-700">0</div>
             </div>
             <div class="rounded-xl bg-amber-50 border border-amber-200 p-2.5 text-center">
@@ -456,7 +489,7 @@
               <select id="attFilterStatus" onchange="renderAttendanceStudentList()"
                       class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700">
                 <option value="ALL">Tất cả trạng thái</option>
-                <option value="VANG_KP">Vắng không phép (Chưa điểm danh)</option>
+                <option value="VANG_KP">Vắng không phép • Chưa điểm danh</option>
                 <option value="PRESENT">Có mặt</option>
                 <option value="ABSENT_OR_LATE">Vắng / Trễ / Vi phạm</option>
                 <option value="VANG_CP">Vắng có phép</option>
@@ -534,7 +567,7 @@
                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Buổi / Thời gian nghỉ</label>
                 <select id="leaveSessionInput"
                         class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-navy-800">
-                  <option value="Cả ngày">Cả ngày (Sáng & Chiều)</option>
+                  <option value="Cả ngày">Cả ngày • Sáng & Chiều</option>
                   <option value="Buổi Sáng">Buổi Sáng</option>
                   <option value="Buổi Chiều">Buổi Chiều</option>
                   <option value="Nghỉ 2 ngày">Nghỉ 2 ngày</option>
@@ -545,7 +578,7 @@
 
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Lý do xin nghỉ phép</label>
-              <textarea id="leaveReasonInput" rows="3" required placeholder="Ghi rõ lý do (ví dụ: Bị sốt, đi khám bệnh, việc gia đình...)"
+              <textarea id="leaveReasonInput" rows="3" required placeholder="Ghi rõ lý do, ví dụ: Bị sốt, đi khám bệnh, việc gia đình..."
                         class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-navy-800"></textarea>
             </div>
 
@@ -643,7 +676,7 @@
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div>
               <h3 class="font-extrabold text-lg text-slate-900">Phân Công Ban Cán Sự Điểm Danh Lớp</h3>
-              <p class="text-xs text-slate-500">Chỉ những học sinh giữ chức vụ cán sự (Lớp trưởng, Lớp phó, Bí thư, Tổ trưởng) mới có quyền gửi báo cáo điểm danh lớp</p>
+              <p class="text-xs text-slate-500">Chỉ những học sinh giữ chức vụ cán sự gồm Lớp trưởng, Lớp phó, Bí thư, Tổ trưởng mới có quyền gửi báo cáo điểm danh lớp</p>
             </div>
             <div class="flex items-center gap-2">
               <select id="officerClassSelect" onchange="loadClassOfficersList()"
@@ -719,7 +752,7 @@
         <div class="flex flex-wrap gap-2">
           <button type="button" onclick="switchAdminSubTab('IMPORT')" id="adminTab_IMPORT"
                   class="px-4 py-2 rounded-xl text-xs font-bold bg-navy-800 text-white shadow">
-            📥 Nhập Tệp Dữ Liệu (Excel / CSV / PDF)
+            📥 Nhập Tệp Dữ Liệu Excel / CSV / PDF
           </button>
           <button type="button" onclick="switchAdminSubTab('STAFF')" id="adminTab_STAFF"
                   class="px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200">
@@ -739,12 +772,12 @@
         <div id="adminSub_IMPORT" class="glass-card rounded-2xl p-5 sm:p-6 space-y-4">
           <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
             <div>
-              <h3 class="font-extrabold text-lg text-slate-900">Nhập Dữ Liệu Từ Tệp Tin (Chỉ Quyền Quản Trị)</h3>
-              <p class="text-xs text-slate-500">Hỗ trợ định dạng <strong>Excel (.xlsx, .xls)</strong>, <strong>CSV (.csv)</strong> và <strong>PDF (.pdf)</strong></p>
+              <h3 class="font-extrabold text-lg text-slate-900">Nhập Dữ Liệu Từ Tệp Tin • Chỉ Quyền Quản Trị</h3>
+              <p class="text-xs text-slate-500">Hỗ trợ định dạng <strong>Excel .xlsx, .xls</strong>, <strong>CSV .csv</strong> và <strong>PDF .pdf</strong></p>
             </div>
             <button type="button" onclick="downloadSampleCsvTemplate()"
                     class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition">
-              📥 Tải Tệp Mẫu Chuẩn (.CSV)
+              📥 Tải Tệp Mẫu Chuẩn .CSV
             </button>
           </div>
 
@@ -754,11 +787,11 @@
               <select id="adminImportTargetType"
                       class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-semibold">
                 <option value="DANH_SACH">Danh sách Học sinh / GVCN / Giám thị</option>
-                <option value="XIN_PHEP">Danh sách Đơn xin nghỉ phép (Tự động duyệt)</option>
+                <option value="XIN_PHEP">Danh sách Đơn xin nghỉ phép • Tự động duyệt</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">2. Chọn tệp tin (.xlsx, .xls, .csv, .pdf)</label>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">2. Chọn tệp tin .xlsx, .xls, .csv, .pdf</label>
               <input type="file" id="adminImportFileInput" accept=".xlsx,.xls,.csv,.pdf"
                      class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-medium file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-navy-800 file:text-white hover:file:bg-navy-900" />
             </div>
@@ -766,7 +799,7 @@
 
           <div class="rounded-xl bg-slate-50 border border-slate-200 p-3.5 text-xs text-slate-600 space-y-1">
             <p class="font-bold text-slate-800">Lưu ý cấu trúc cột chuẩn:</p>
-            <p>• <strong>Danh sách Học sinh / GVCN:</strong> <code>Lớp | Họ và tên | Ngày tháng năm sinh | Chức vụ | Mã học sinh</code> (Nếu chức vụ là <em>Giáo viên chủ nhiệm</em>, cột Lớp sẽ tự động gán vào bảng dữ liệu <code>GiamThi</code>).</p>
+            <p>• <strong>Danh sách Học sinh / GVCN:</strong> <code>Lớp | Họ và tên | Ngày tháng năm sinh | Chức vụ | Mã học sinh</code> — Nếu chức vụ là <em>Giáo viên chủ nhiệm</em>, cột Lớp sẽ tự động gán vào bảng dữ liệu <code>GiamThi</code>.</p>
             <p>• <strong>Danh sách Xin phép:</strong> <code>Họ và tên | Lớp | Ngày xin nghỉ | Buổi/Số ngày | Lý do</code>.</p>
           </div>
 
@@ -799,7 +832,7 @@
               </select>
             </div>
             <div id="newStaffClassWrapper">
-              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Lớp chủ nhiệm (cột Lớp)</label>
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Lớp chủ nhiệm • cột Lớp</label>
               <input type="text" id="newStaffClass" placeholder="VD: 12A01"
                      class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-mono uppercase" />
             </div>
@@ -817,7 +850,7 @@
                 <tr class="bg-slate-100 text-slate-700 text-xs uppercase">
                   <th class="py-2.5 px-3 rounded-tl-xl">Họ và tên</th>
                   <th class="py-2.5 px-3">Chức vụ</th>
-                  <th class="py-2.5 px-3">Lớp chủ nhiệm (Cột Lớp)</th>
+                  <th class="py-2.5 px-3">Lớp chủ nhiệm • Cột Lớp</th>
                   <th class="py-2.5 px-3">Trạng thái PIN</th>
                   <th class="py-2.5 px-3 rounded-tr-xl text-right">Thao tác</th>
                 </tr>
@@ -839,7 +872,7 @@
                          class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-mono uppercase" />
                 </div>
                 <div>
-                  <label class="block text-xs font-bold text-slate-600 mb-1">Mã học sinh (Tùy chọn)</label>
+                  <label class="block text-xs font-bold text-slate-600 mb-1">Mã học sinh • Tùy chọn</label>
                   <input type="text" id="addHsId" placeholder="Tự động nếu trống"
                          class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-mono" />
                 </div>
@@ -873,7 +906,7 @@
           </div>
 
           <div class="glass-card rounded-2xl p-5 space-y-4">
-            <h3 class="font-extrabold text-base text-slate-900">Khôi Phục Mã PIN Mặc Định (123456)</h3>
+            <h3 class="font-extrabold text-base text-slate-900">Khôi Phục Mã PIN Mặc Định 123456</h3>
             <div class="space-y-3">
               <div>
                 <label class="block text-xs font-bold text-slate-600 mb-1">Đối tượng khôi phục</label>
@@ -890,7 +923,7 @@
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-bold text-slate-600 mb-1">Họ và tên (hoặc nhập TẤT CẢ để đặt lại cả lớp)</label>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Họ và tên hoặc nhập TẤT CẢ để đặt lại cả lớp</label>
                 <input type="text" id="resetPinTargetName" placeholder="Nhập họ tên hoặc TẤT CẢ"
                        class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" />
               </div>
@@ -951,14 +984,14 @@
               </div>
 
               <div>
-                <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Mở cổng (DD/MM/YYYY - HH:MM:SS)</label>
+                <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Mở cổng DD/MM/YYYY - HH:MM:SS</label>
                 <input type="text" id="cfgQuickStart" oninput="applyQuickInputsToDraft()" onblur="normalizeQuickFieldOnBlur('Start')"
                        placeholder="VD: 16/11/2026 - 06:30:00"
                        class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs sm:text-sm font-mono font-bold text-slate-800" />
               </div>
 
               <div>
-                <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Đóng cổng (DD/MM/YYYY - HH:MM:SS)</label>
+                <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Đóng cổng DD/MM/YYYY - HH:MM:SS</label>
                 <input type="text" id="cfgQuickEnd" oninput="applyQuickInputsToDraft()" onblur="normalizeQuickFieldOnBlur('End')"
                        placeholder="VD: 16/11/2026 - 08:30:00"
                        class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs sm:text-sm font-mono font-bold text-slate-800" />
@@ -968,7 +1001,7 @@
             <div class="flex flex-wrap items-center justify-between gap-3">
               <label class="inline-flex items-center gap-2 text-xs font-bold text-rose-700 cursor-pointer">
                 <input type="checkbox" id="cfgQuickIsOff" onchange="toggleQuickSessionOff()" class="w-4 h-4 rounded text-rose-600" />
-                <span>Khóa / Nghỉ buổi này (tự động điền NGHỈ)</span>
+                <span>Khóa / Nghỉ buổi này — tự động điền NGHỈ</span>
               </label>
 
               <label class="inline-flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
@@ -979,7 +1012,7 @@
 
             <div>
               <label id="cfgQuickSubjectsLabel" class="block text-xs font-bold text-slate-700 mb-1">
-                Danh sách môn học (Thứ 2 - Buổi Sáng, cách nhau dấu phẩy):
+                Danh sách môn học Thứ 2 - Buổi Sáng, cách nhau dấu phẩy:
               </label>
               <textarea id="cfgQuickSubjects" rows="2" oninput="applyQuickInputsToDraft()"
                         placeholder="Toán, Lý, Hóa, Sinh, Văn, Anh..."
@@ -991,11 +1024,11 @@
               <div class="flex flex-wrap items-center gap-2">
                 <button type="button" onclick="syncConfigBySelectedDay()"
                         class="px-4 py-2 rounded-xl bg-navy-800 hover:bg-navy-900 text-white text-xs font-bold shadow-sm transition">
-                  📅 Đồng bộ theo thứ (<span id="lblSyncSelectedDay">Thứ 2</span>)
+                  📅 Đồng bộ theo thứ <span id="lblSyncSelectedDay">Thứ 2</span>
                 </button>
                 <button type="button" onclick="syncConfigToAllDays()"
                         class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition">
-                  🔁 Đồng bộ tất cả (giống <span id="lblSyncAllDay">Thứ 2</span>)
+                  🔁 Đồng bộ tất cả giống <span id="lblSyncAllDay">Thứ 2</span>
                 </button>
               </div>
 
@@ -1012,11 +1045,11 @@
               <thead>
                 <tr class="bg-slate-100 text-slate-700 uppercase">
                   <th class="py-2.5 px-3 rounded-tl-xl whitespace-nowrap">Thứ</th>
-                  <th class="py-2.5 px-3 whitespace-nowrap">Mở Sáng (DD/MM/YYYY - HH:MM:SS)</th>
-                  <th class="py-2.5 px-3 whitespace-nowrap">Đóng Sáng (DD/MM/YYYY - HH:MM:SS)</th>
-                  <th class="py-2.5 px-3 whitespace-nowrap">Mở Chiều (DD/MM/YYYY - HH:MM:SS)</th>
-                  <th class="py-2.5 px-3 whitespace-nowrap">Đóng Chiều (DD/MM/YYYY - HH:MM:SS)</th>
-                  <th class="py-2.5 px-3 rounded-tr-xl">Môn học (Sáng / Chiều)</th>
+                  <th class="py-2.5 px-3 whitespace-nowrap">Mở Sáng DD/MM/YYYY - HH:MM:SS</th>
+                  <th class="py-2.5 px-3 whitespace-nowrap">Đóng Sáng DD/MM/YYYY - HH:MM:SS</th>
+                  <th class="py-2.5 px-3 whitespace-nowrap">Mở Chiều DD/MM/YYYY - HH:MM:SS</th>
+                  <th class="py-2.5 px-3 whitespace-nowrap">Đóng Chiều DD/MM/YYYY - HH:MM:SS</th>
+                  <th class="py-2.5 px-3 rounded-tr-xl">Môn học Sáng / Chiều</th>
                 </tr>
               </thead>
               <tbody id="cfgScheduleTableBody" class="divide-y divide-slate-100"></tbody>
@@ -1049,10 +1082,14 @@
                 Cổng điểm danh
               </span>
             </div>
-            <p id="chatApiStatusSubtitle" class="text-[10px] text-emerald-300 mt-0.5">● Trực tuyến • Gemini 3.5 Flash Lite</p>
+            <p id="chatApiStatusSubtitle" class="text-[10px] text-emerald-300 mt-0.5">● Trực tuyến</p>
           </div>
         </div>
         <div class="flex items-center gap-1">
+          <button type="button" id="btnToggleChatTts" onclick="toggleChatVoiceReply()" title="Bật hoặc tắt đọc phản hồi bằng giọng nói"
+                  class="text-white/75 hover:text-white text-xs font-bold px-2 py-1 rounded-lg hover:bg-white/10 transition">
+            🔇
+          </button>
           <button type="button" onclick="resetChatConversation()" title="Làm mới cuộc trò chuyện"
                   class="text-white/75 hover:text-white text-xs font-bold px-2 py-1 rounded-lg hover:bg-white/10 transition">
             ↺
@@ -1091,12 +1128,25 @@
         </button>
       </div>
 
-      <!-- Ô nhập tin nhắn -->
-      <form onsubmit="handleChatBoxSubmit(event)" class="p-2.5 bg-white border-t border-slate-200 flex items-center gap-2">
-        <input type="text" id="chatInputField" placeholder="Nhập câu hỏi gửi Trợ lý AI..." required
-               class="flex-1 rounded-xl border border-slate-300 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+      <!-- Thanh trạng thái nhận diện giọng nói -->
+      <div id="chatVoiceStatusBar" class="hidden px-3 py-1.5 bg-rose-50 border-t border-rose-200 flex items-center justify-between text-[11px] text-rose-700 font-semibold">
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-rose-600 animate-ping"></span>
+          <span id="chatVoiceStatusText">Đang nghe giọng nói tiếng Việt...</span>
+        </div>
+        <button type="button" onclick="stopChatVoiceInput()" class="text-rose-800 underline font-bold">Dừng</button>
+      </div>
+
+      <!-- Ô nhập tin nhắn & Micro nhận diện giọng nói -->
+      <form onsubmit="handleChatBoxSubmit(event)" class="p-2.5 bg-white border-t border-slate-200 flex items-center gap-1.5">
+        <button type="button" id="btnVoiceChat" onclick="toggleChatVoiceInput()" title="Nhập câu hỏi bằng giọng nói"
+                class="w-9 h-9 shrink-0 rounded-xl bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 border border-slate-300 flex items-center justify-center text-sm transition">
+          🎤
+        </button>
+        <input type="text" id="chatInputField" placeholder="Nhập hoặc bấm micro để nói..." required
+               class="flex-1 min-w-0 rounded-xl border border-slate-300 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-600" />
         <button type="submit" id="btnSendChat"
-                class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition">
+                class="px-3.5 py-2 shrink-0 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition">
           Gửi
         </button>
       </form>
@@ -1124,7 +1174,7 @@
         <button id="btnCloseChangePin" onclick="closeModal('changePinModal')" class="text-slate-400 hover:text-slate-700 text-xl font-bold">×</button>
       </div>
       <p id="changePinNotice" class="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-3">
-        Vì lý do bảo mật, vui lòng đổi mã PIN mới (tối thiểu 4 ký tự và khác <strong>123456</strong>).
+        Vì lý do bảo mật, vui lòng đổi mã PIN mới — tối thiểu 4 ký tự và khác <strong>123456</strong>.
       </p>
       <form onsubmit="handleChangePinSubmit(event)" class="space-y-3">
         <div>
@@ -1352,7 +1402,7 @@
           body: JSON.stringify({ action, args })
         });
         if (!res.ok) {
-          throw new Error(`Lỗi kết nối máy chủ (Mã ${res.status})`);
+          throw new Error(`Lỗi kết nối máy chủ - Mã ${res.status}`);
         }
         const json = await res.json();
         if (json && json.status === "busy" && attempt < maxRetries) {
@@ -1380,7 +1430,7 @@
         const gateBadge = document.getElementById("headerGateBadge");
         const gateBanner = document.getElementById("gateAlertBanner");
         if (gate.allowed) {
-          gateBadge.textContent = `● Cổng đang mở (${gate.windowText})`;
+          gateBadge.textContent = `● Cổng đang mở • ${gate.windowText}`;
           gateBadge.className = "font-semibold bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded";
           gateBanner.classList.add("hidden");
         } else {
@@ -1401,13 +1451,166 @@
     }
 
     function populateClassDropdowns(classes) {
-      const ids = ["loginStudentClass", "attClassSelect", "statsClassSelect", "resetPinClassSelect"];
+      const ids = ["attClassSelect", "statsClassSelect", "resetPinClassSelect"];
       ids.forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
-        const firstOpt = id === "loginStudentClass" ? '<option value="">-- Chọn lớp --</option>' : "";
-        el.innerHTML = firstOpt + classes.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+        el.innerHTML = classes.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
       });
+    }
+
+    function normalizeSearchText(str) {
+      return String(str || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .trim();
+    }
+
+    function closeAllSuggestMenus() {
+      ["CLASS", "STUDENT", "STAFF"].forEach(k => {
+        const m = document.getElementById(`suggestMenu_${k}`);
+        if (m) m.classList.add("hidden");
+      });
+    }
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest("#loginStudentClassWrapper") &&
+          !e.target.closest("#loginStudentNameWrapper") &&
+          !e.target.closest("#loginStaffNameWrapper")) {
+        closeAllSuggestMenus();
+      }
+    });
+
+    function openSuggestMenu(type) {
+      closeAllSuggestMenus();
+      filterSuggestMenu(type);
+      const menu = document.getElementById(`suggestMenu_${type}`);
+      if (menu) menu.classList.remove("hidden");
+    }
+
+    function clearSuggestInput(type) {
+      if (type === "CLASS") {
+        document.getElementById("loginStudentClassInput").value = "";
+        document.getElementById("loginStudentClass").value = "";
+        document.getElementById("loginStudentNameInput").value = "";
+        document.getElementById("loginStudentName").value = "";
+        document.getElementById("selectedStudentMeta").classList.add("hidden");
+        APP_STATE.loginClassStudents = [];
+        openSuggestMenu("CLASS");
+        document.getElementById("loginStudentClassInput").focus();
+      } else if (type === "STUDENT") {
+        document.getElementById("loginStudentNameInput").value = "";
+        document.getElementById("loginStudentName").value = "";
+        document.getElementById("selectedStudentMeta").classList.add("hidden");
+        openSuggestMenu("STUDENT");
+        document.getElementById("loginStudentNameInput").focus();
+      } else if (type === "STAFF") {
+        document.getElementById("loginStaffNameInput").value = "";
+        document.getElementById("loginStaffName").value = "";
+        document.getElementById("selectedStaffMeta").classList.add("hidden");
+        openSuggestMenu("STAFF");
+        document.getElementById("loginStaffNameInput").focus();
+      }
+    }
+
+    function filterSuggestMenu(type) {
+      const menu = document.getElementById(`suggestMenu_${type}`);
+      if (!menu) return;
+      menu.classList.remove("hidden");
+
+      if (type === "CLASS") {
+        const q = normalizeSearchText(document.getElementById("loginStudentClassInput").value);
+        const classes = (APP_STATE.initData && APP_STATE.initData.classes) || [];
+        const matched = classes.filter(c => !q || normalizeSearchText(c).includes(q));
+        if (matched.length === 0) {
+          menu.innerHTML = '<div class="px-4 py-3 text-xs text-slate-400">Không tìm thấy lớp phù hợp</div>';
+          return;
+        }
+        menu.innerHTML = matched.map(c => `
+          <button type="button" onclick="pickSuggestClass('${escapeAttr(c)}')"
+                  class="w-full text-left px-4 py-2.5 text-sm font-bold text-slate-800 hover:bg-navy-800 hover:text-white transition flex items-center justify-between">
+            <span>Lớp ${escapeHtml(c)}</span>
+            <span class="text-[11px] font-mono opacity-70">${escapeHtml(c)}</span>
+          </button>
+        `).join("");
+      } else if (type === "STUDENT") {
+        const cls = document.getElementById("loginStudentClass").value;
+        if (!cls) {
+          menu.innerHTML = '<div class="px-4 py-3 text-xs text-amber-700 font-semibold">Vui lòng chọn lớp học ở ô số 1 trước</div>';
+          return;
+        }
+        const q = normalizeSearchText(document.getElementById("loginStudentNameInput").value);
+        const list = APP_STATE.loginClassStudents || [];
+        const matched = list.filter(s => !q || normalizeSearchText(s.name).includes(q) || normalizeSearchText(s.maHS).includes(q));
+        if (matched.length === 0) {
+          menu.innerHTML = '<div class="px-4 py-3 text-xs text-slate-400">Không tìm thấy học sinh phù hợp</div>';
+          return;
+        }
+        menu.innerHTML = matched.map(s => {
+          const val = s.maHS || s.name;
+          return `
+            <button type="button" onclick="pickSuggestStudent('${escapeAttr(val)}')"
+                    class="w-full text-left px-4 py-2.5 text-sm hover:bg-navy-800 hover:text-white transition flex items-center justify-between gap-2">
+              <div>
+                <div class="font-bold">${escapeHtml(s.name)}</div>
+                <div class="text-[11px] opacity-75">${escapeHtml(normalizeSchoolLabels(s.role || "Thành viên"))}</div>
+              </div>
+              <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-700">${escapeHtml(s.maHS || "")}</span>
+            </button>
+          `;
+        }).join("");
+      } else if (type === "STAFF") {
+        const q = normalizeSearchText(document.getElementById("loginStaffNameInput").value);
+        const list = APP_STATE.filteredStaffList || [];
+        const matched = list.filter(item =>
+          !q ||
+          normalizeSearchText(item.name).includes(q) ||
+          normalizeSearchText(item.assignedClass).includes(q)
+        );
+        if (matched.length === 0) {
+          menu.innerHTML = '<div class="px-4 py-3 text-xs text-slate-400">Không tìm thấy tài khoản phù hợp</div>';
+          return;
+        }
+        menu.innerHTML = matched.map(item => `
+          <button type="button" onclick="pickSuggestStaff('${escapeAttr(item.name)}')"
+                  class="w-full text-left px-4 py-2.5 text-sm hover:bg-navy-800 hover:text-white transition flex items-center justify-between gap-2">
+            <div>
+              <div class="font-bold">${escapeHtml(item.name)}</div>
+              <div class="text-[11px] opacity-75">${escapeHtml(normalizeSchoolLabels(item.role || ""))}</div>
+            </div>
+            ${item.assignedClass ? `<span class="text-[11px] font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">${escapeHtml(item.assignedClass)}</span>` : ""}
+          </button>
+        `).join("");
+      }
+    }
+
+    async function pickSuggestClass(cls) {
+      document.getElementById("loginStudentClassInput").value = cls;
+      document.getElementById("loginStudentClass").value = cls;
+      closeAllSuggestMenus();
+      await onLoginClassChange();
+      document.getElementById("loginStudentNameInput").focus();
+      openSuggestMenu("STUDENT");
+    }
+
+    function pickSuggestStudent(val) {
+      const st = (APP_STATE.loginClassStudents || []).find(s => (s.maHS || s.name) === val);
+      if (!st) return;
+      document.getElementById("loginStudentNameInput").value = st.name;
+      document.getElementById("loginStudentName").value = val;
+      closeAllSuggestMenus();
+      onLoginStudentSelect();
+      document.getElementById("loginStudentPin").focus();
+    }
+
+    function pickSuggestStaff(name) {
+      document.getElementById("loginStaffNameInput").value = name;
+      document.getElementById("loginStaffName").value = name;
+      closeAllSuggestMenus();
+      onLoginStaffSelect();
+      document.getElementById("loginStaffPin").focus();
     }
 
     /* ---------------------------------------------------------------------
@@ -1434,7 +1637,7 @@
           return {
             allowed: false,
             windowText: "NGHỈ / KHÓA",
-            reason: `${dayLabel} (Ca ${session}) được cấu hình nghỉ / khóa cổng điểm danh (NGHỈ).`
+            reason: `${dayLabel} - Ca ${session} được cấu hình nghỉ / khóa cổng điểm danh NGHỈ.`
           };
         }
 
@@ -1450,7 +1653,7 @@
             return {
               allowed: false,
               windowText: `${startFormatted} → ${endFormatted}`,
-              reason: `Hiện tại là ${nowDateTimeStr} (${dayLabel}). Khung giờ quy định điểm danh Ca ${session} là từ ${startFormatted} đến ${endFormatted}.`
+              reason: `Hiện tại là ${nowDateTimeStr} - ${dayLabel}. Khung giờ quy định điểm danh Ca ${session} là từ ${startFormatted} đến ${endFormatted}.`
             };
           }
           return {
@@ -1576,10 +1779,9 @@
         return !isAdminRoleText(item.role) && !isSupervisorRoleText(item.role);
       });
 
-      const selectEl = document.getElementById("loginStaffName");
-      selectEl.innerHTML = '<option value="">-- Chọn họ và tên --</option>' +
-        filtered.map(item => `<option value="${escapeHtml(item.name)}">${escapeHtml(item.name)}</option>`).join("");
-
+      APP_STATE.filteredStaffList = filtered;
+      document.getElementById("loginStaffNameInput").value = "";
+      document.getElementById("loginStaffName").value = "";
       document.getElementById("selectedStaffMeta").classList.add("hidden");
     }
 
@@ -1610,11 +1812,11 @@
 
     async function onLoginClassChange() {
       const cls = document.getElementById("loginStudentClass").value;
-      const nameSelect = document.getElementById("loginStudentName");
+      document.getElementById("loginStudentNameInput").value = "";
+      document.getElementById("loginStudentName").value = "";
       document.getElementById("selectedStudentMeta").classList.add("hidden");
 
       if (!cls) {
-        nameSelect.innerHTML = '<option value="">-- Chọn lớp trước --</option>';
         APP_STATE.loginClassStudents = [];
         return;
       }
@@ -1623,8 +1825,6 @@
       try {
         const res = await callGasApi("getClassDataRawStudents", cls);
         APP_STATE.loginClassStudents = (res && res.students) || [];
-        nameSelect.innerHTML = '<option value="">-- Chọn họ và tên --</option>' +
-          APP_STATE.loginClassStudents.map(s => `<option value="${escapeHtml(s.maHS || s.name)}">${escapeHtml(s.name)}</option>`).join("");
       } catch (err) {
         showToast(err.message, "error");
       } finally {
@@ -1653,13 +1853,37 @@
 
     async function handleStudentLogin(e) {
       e.preventDefault();
-      const className = document.getElementById("loginStudentClass").value;
-      const studentKey = document.getElementById("loginStudentName").value;
+      let className = document.getElementById("loginStudentClass").value;
+      if (!className) {
+        const typedCls = normalizeSearchText(document.getElementById("loginStudentClassInput").value);
+        const foundCls = ((APP_STATE.initData && APP_STATE.initData.classes) || []).find(c => normalizeSearchText(c) === typedCls);
+        if (foundCls) {
+          className = foundCls;
+          document.getElementById("loginStudentClass").value = foundCls;
+          await onLoginClassChange();
+        }
+      }
+      if (!className) {
+        showToast("Vui lòng chọn lớp học từ danh sách gợi ý!", "warning");
+        document.getElementById("loginStudentClassInput").focus();
+        return;
+      }
+
+      let studentKey = document.getElementById("loginStudentName").value;
+      if (!studentKey) {
+        const typedStu = normalizeSearchText(document.getElementById("loginStudentNameInput").value);
+        const foundStu = (APP_STATE.loginClassStudents || []).find(s => normalizeSearchText(s.name) === typedStu || normalizeSearchText(s.maHS) === typedStu);
+        if (foundStu) {
+          studentKey = foundStu.maHS || foundStu.name;
+          document.getElementById("loginStudentName").value = studentKey;
+        }
+      }
       const pin = document.getElementById("loginStudentPin").value.trim();
 
       const st = APP_STATE.loginClassStudents.find(s => (s.maHS || s.name) === studentKey);
       if (!st) {
-        showToast("Vui lòng chọn học sinh!", "warning");
+        showToast("Vui lòng chọn học sinh từ danh sách gợi ý!", "warning");
+        document.getElementById("loginStudentNameInput").focus();
         return;
       }
 
@@ -1705,11 +1929,20 @@
 
     async function handleStaffLogin(e) {
       e.preventDefault();
-      const name = document.getElementById("loginStaffName").value;
+      let name = document.getElementById("loginStaffName").value;
+      if (!name) {
+        const typedStaff = normalizeSearchText(document.getElementById("loginStaffNameInput").value);
+        const foundStaff = (APP_STATE.filteredStaffList || []).find(item => normalizeSearchText(item.name) === typedStaff);
+        if (foundStaff) {
+          name = foundStaff.name;
+          document.getElementById("loginStaffName").value = name;
+        }
+      }
       const pin = document.getElementById("loginStaffPin").value.trim();
 
       if (!name) {
-        showToast("Vui lòng chọn tài khoản!", "warning");
+        showToast("Vui lòng chọn tài khoản từ danh sách gợi ý!", "warning");
+        document.getElementById("loginStaffNameInput").focus();
         return;
       }
 
@@ -1721,8 +1954,8 @@
           return;
         }
 
-        const isAdmin = Boolean(res.isAdmin || isAdminRoleText(res.role));
         const isSup = isSupervisorRoleText(res.role);
+        const isAdmin = !isSup && Boolean(res.isAdmin || isAdminRoleText(res.role));
         const type = isAdmin ? "ADMIN" : (isSup ? "GIAMTHI" : "GVCN");
 
         APP_STATE.currentUser = {
@@ -1779,11 +2012,14 @@
       document.getElementById("userSubInfo").textContent = subMap[u.type] || "";
 
       const sheetBtn = document.getElementById("btnOpenGoogleSheet");
-      if (u.isAdmin && u.url) {
-        sheetBtn.href = u.url;
-        sheetBtn.classList.remove("hidden");
-      } else {
-        sheetBtn.classList.add("hidden");
+      if (sheetBtn) {
+        if (u.type === "ADMIN" && u.isAdmin && !u.isSupervisor && u.url) {
+          sheetBtn.href = u.url;
+          sheetBtn.classList.remove("hidden");
+        } else {
+          sheetBtn.href = "#";
+          sheetBtn.classList.add("hidden");
+        }
       }
 
       buildWorkspaceTabs();
@@ -1869,6 +2105,8 @@
     }
 
     function logoutUser() {
+      stopChatVoiceInput();
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
       stopQrScanner();
       stopAiScanner();
       APP_STATE.currentUser = null;
@@ -1912,7 +2150,7 @@
       else reqMark.classList.add("hidden");
 
       populateAttendanceSubjects();
-      document.getElementById("footerReporterLabel").textContent = `${u.name} (${normalizeSchoolLabels(u.role)})`;
+      document.getElementById("footerReporterLabel").textContent = `${u.name} - ${normalizeSchoolLabels(u.role)}`;
       refreshAttendanceTimeGateUI();
       loadAttendanceClassSheet();
     }
@@ -1934,7 +2172,7 @@
       const subjects = rawStr ? rawStr.split(",").map(s => s.trim()).filter(Boolean) : (init.subjectList || []);
 
       const sbjSelect = document.getElementById("attSubjectSelect");
-      sbjSelect.innerHTML = '<option value="">-- Chung / Đầu buổi --</option>' +
+      sbjSelect.innerHTML = '<option value="">Chung / Đầu buổi</option>' +
         subjects.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
     }
 
@@ -1977,7 +2215,7 @@
         const submitBtnText = document.getElementById("btnSubmitAttendanceText");
         if (APP_STATE.attendance.isEditMode) {
           editBanner.classList.remove("hidden");
-          submitBtnText.textContent = "Cập Nhật Báo Cáo (Chế Độ Sửa)";
+          submitBtnText.textContent = "Cập Nhật Báo Cáo • Chế Độ Sửa";
         } else {
           editBanner.classList.add("hidden");
           submitBtnText.textContent = "Gửi Báo Cáo Điểm Danh";
@@ -2034,7 +2272,7 @@
           ? `<span class="ml-1.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">✓ Quét ${cur.method}</span>`
           : "";
 
-        const lateLabel = cur.status === "TRE" && cur.lateNote ? ` (${cur.lateNote})` : "";
+        const lateLabel = cur.status === "TRE" && cur.lateNote ? ` - ${cur.lateNote}` : "";
 
         return `
           <div class="p-3 sm:px-4 flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 hover:bg-slate-50/80 transition">
@@ -2202,6 +2440,7 @@
 
     /* --- QUÉT MÃ QR THẺ HỌC SINH --- */
     function startQrScanner() {
+      stopChatVoiceInput();
       const gate = refreshAttendanceTimeGateUI();
       if (!gate.allowed) {
         document.getElementById("qrScanFeedback").textContent = "⛔ Ngoài khung giờ điểm danh quy định!";
@@ -2236,6 +2475,7 @@
 
     /* --- NHẬN DIỆN KHUÔN MẶT AI 128D --- */
     async function startAiScanner() {
+      stopChatVoiceInput();
       const gate = refreshAttendanceTimeGateUI();
       const feedback = document.getElementById("aiScanFeedback");
       if (!gate.allowed) {
@@ -2305,7 +2545,7 @@
               }
             }
             if (best && minDist <= 0.54) {
-              feedback.textContent = `✓ Đã quét mặt: ${best.name} → CÓ MẶT (Sai số: ${minDist.toFixed(3)})`;
+              feedback.textContent = `✓ Đã quét mặt: ${best.name} → CÓ MẶT • Sai số: ${minDist.toFixed(3)}`;
               handleAutoCheckinMatch(best.maHS || best.name, "AI");
             }
           } else {
@@ -2371,7 +2611,7 @@
       const bannerId = method === "QR" ? "qrLastMatchBanner" : "aiLastMatchBanner";
       const bannerEl = document.getElementById(bannerId);
       if (bannerEl) {
-        bannerEl.textContent = `✓ [${method}] ${st.name} (${st.maHS || className}) — CÓ MẶT lúc ${timeNowStr}`;
+        bannerEl.textContent = `✓ [${method}] ${st.name} - ${st.maHS || className} — CÓ MẶT lúc ${timeNowStr}`;
         bannerEl.classList.remove("hidden");
       }
 
@@ -2395,7 +2635,7 @@
     async function submitAttendanceReport() {
       const gate = refreshAttendanceTimeGateUI();
       if (!gate.allowed) {
-        showToast(`⛔ Chỉ được điểm danh trong khung giờ quy định (${gate.windowText})!`, "error");
+        showToast(`⛔ Chỉ được điểm danh trong khung giờ quy định ${gate.windowText}!`, "error");
         return;
       }
 
@@ -2527,7 +2767,7 @@
               <div class="flex flex-wrap items-center gap-2">
                 <span class="font-extrabold text-sm text-slate-900">${escapeHtml(item.name)}</span>
                 <span class="font-mono text-xs font-bold px-2 py-0.5 rounded bg-navy-800 text-white">${escapeHtml(item.className)}</span>
-                <span class="text-xs text-slate-500">Ngày nghỉ: <strong>${escapeHtml(item.date)}</strong> (${escapeHtml(item.session)})</span>
+                <span class="text-xs text-slate-500">Ngày nghỉ: <strong>${escapeHtml(item.date)}</strong> - ${escapeHtml(item.session)}</span>
               </div>
               <p class="text-xs text-slate-600">Lý do: ${escapeHtml(item.reason)}</p>
               <p class="text-[11px] text-slate-400">Gửi lúc: ${escapeHtml(item.timestamp)}</p>
@@ -2596,7 +2836,7 @@
       } else {
         clsWrap.classList.remove("hidden");
         clsSelect.innerHTML = allClasses.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
-        document.getElementById("statsPanelTitle").textContent = "Thống Kê Vi Phạm & Vắng Theo Lớp (Toàn Trường)";
+        document.getElementById("statsPanelTitle").textContent = "Thống Kê Vi Phạm & Vắng Theo Lớp • Toàn Trường";
         document.getElementById("statsPanelSubtitle").textContent = "Chọn lớp và khoảng ngày cần trích xuất báo cáo";
       }
 
@@ -3156,7 +3396,7 @@
 
       const sessionLabel = sessionKey === "Sang" ? "Buổi Sáng" : "Buổi Chiều";
       document.getElementById("cfgQuickSubjectsLabel").textContent =
-        `Danh sách môn học (${dayObj.label} - ${sessionLabel}, cách nhau dấu phẩy):`;
+        `Danh sách môn học ${dayObj.label} - ${sessionLabel}, cách nhau dấu phẩy:`;
       document.getElementById("lblSyncSelectedDay").textContent = dayObj.label;
       document.getElementById("lblSyncAllDay").textContent = dayObj.label;
     }
@@ -3248,7 +3488,7 @@
 
       renderConfigScheduleTable("ALL");
       const scopeText = includeSunday ? "Thứ 2 → Chủ Nhật" : "Thứ 2 → Thứ 7";
-      showToast(`✓ Đã đồng bộ tất cả (${scopeText}) theo định dạng DD/MM/YYYY - HH:MM:SS giống ${sourceObj.label}!`, "success");
+      showToast(`✓ Đã đồng bộ tất cả - ${scopeText} theo định dạng DD/MM/YYYY - HH:MM:SS giống ${sourceObj.label}!`, "success");
     }
 
     function resetAdminConfigToDefault() {
@@ -3443,6 +3683,160 @@
       }
     }
 
+    const CHAT_VOICE_STATE = {
+      recognition: null,
+      isListening: false,
+      ttsEnabled: false,
+      finalTranscript: ""
+    };
+
+    function toggleChatVoiceReply() {
+      CHAT_VOICE_STATE.ttsEnabled = !CHAT_VOICE_STATE.ttsEnabled;
+      const btn = document.getElementById("btnToggleChatTts");
+      if (btn) {
+        btn.textContent = CHAT_VOICE_STATE.ttsEnabled ? "🔊" : "🔇";
+        btn.classList.toggle("bg-white/20", CHAT_VOICE_STATE.ttsEnabled);
+      }
+      if (!CHAT_VOICE_STATE.ttsEnabled && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+      showToast(
+        CHAT_VOICE_STATE.ttsEnabled ? "Đã bật đọc câu trả lời Trợ lý AI" : "Đã tắt đọc giọng nói Trợ lý AI",
+        "info"
+      );
+    }
+
+    function speakChatBotReply(rawText) {
+      if (!CHAT_VOICE_STATE.ttsEnabled || !("speechSynthesis" in window)) return;
+      try {
+        window.speechSynthesis.cancel();
+        const plain = normalizeSchoolLabels(rawText)
+          .replace(/[*#_`~>•✓✕⛔⚠️🎉📊📝🔐🛡️👑📋✅🎖️]/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+        if (!plain) return;
+        const utter = new SpeechSynthesisUtterance(plain);
+        utter.lang = "vi-VN";
+        utter.rate = 1.02;
+        window.speechSynthesis.speak(utter);
+      } catch (_) {}
+    }
+
+    function updateChatVoiceUi(listening, statusMsg = "") {
+      CHAT_VOICE_STATE.isListening = listening;
+      const btn = document.getElementById("btnVoiceChat");
+      const bar = document.getElementById("chatVoiceStatusBar");
+      const txt = document.getElementById("chatVoiceStatusText");
+
+      if (btn) {
+        if (listening) {
+          btn.className = "w-9 h-9 shrink-0 rounded-xl bg-rose-600 text-white border border-rose-700 flex items-center justify-center text-sm shadow animate-pulse";
+          btn.textContent = "⏹️";
+        } else {
+          btn.className = "w-9 h-9 shrink-0 rounded-xl bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 border border-slate-300 flex items-center justify-center text-sm transition";
+          btn.textContent = "🎤";
+        }
+      }
+
+      if (bar) {
+        if (listening) {
+          bar.classList.remove("hidden");
+          if (txt && statusMsg) txt.textContent = statusMsg;
+        } else {
+          bar.classList.add("hidden");
+        }
+      }
+    }
+
+    function stopChatVoiceInput() {
+      if (CHAT_VOICE_STATE.recognition && CHAT_VOICE_STATE.isListening) {
+        try {
+          CHAT_VOICE_STATE.recognition.stop();
+        } catch (_) {}
+      }
+      updateChatVoiceUi(false);
+    }
+
+    function toggleChatVoiceInput() {
+      if (CHAT_VOICE_STATE.isListening) {
+        stopChatVoiceInput();
+        return;
+      }
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        showToast("Trình duyệt chưa hỗ trợ nhận diện giọng nói. Bạn vui lòng dùng Chrome hoặc Edge!", "warning");
+        return;
+      }
+
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+
+      const input = document.getElementById("chatInputField");
+      const baseText = input ? input.value.trim() : "";
+      CHAT_VOICE_STATE.finalTranscript = baseText ? baseText + " " : "";
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = "vi-VN";
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+      CHAT_VOICE_STATE.recognition = recognition;
+
+      recognition.onstart = () => {
+        updateChatVoiceUi(true, "Đang nghe giọng nói tiếng Việt...");
+      };
+
+      recognition.onresult = (event) => {
+        let interim = "";
+        let finalized = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalized += transcript;
+          } else {
+            interim += transcript;
+          }
+        }
+        if (finalized) {
+          CHAT_VOICE_STATE.finalTranscript += finalized;
+        }
+        if (input) {
+          input.value = (CHAT_VOICE_STATE.finalTranscript + interim).trim();
+        }
+      };
+
+      recognition.onerror = (event) => {
+        updateChatVoiceUi(false);
+        const errMap = {
+          "not-allowed": "Vui lòng cấp quyền truy cập Micro cho trình duyệt!",
+          "no-speech": "Không nghe thấy giọng nói, bạn thử nói lại nhé!",
+          "audio-capture": "Không tìm thấy thiết bị Micro trên máy!",
+          "network": "Lỗi mạng khi nhận diện giọng nói!"
+        };
+        if (event.error !== "aborted") {
+          showToast(errMap[event.error] || "Không nhận diện được giọng nói, vui lòng thử lại!", "warning");
+        }
+      };
+
+      recognition.onend = () => {
+        const wasListening = CHAT_VOICE_STATE.isListening;
+        updateChatVoiceUi(false);
+        const spokenText = input ? input.value.trim() : "";
+        if (wasListening && spokenText) {
+          handleChatBoxSubmit(new Event("submit"));
+        }
+      };
+
+      try {
+        recognition.start();
+      } catch (err) {
+        updateChatVoiceUi(false);
+        showToast("Không thể bật Micro lúc này!", "error");
+      }
+    }
+
     function toggleChat(forceState) {
       const win = document.getElementById("chatBoxWindow");
       if (!win) return;
@@ -3453,11 +3847,14 @@
         const input = document.getElementById("chatInputField");
         if (input) setTimeout(() => input.focus(), 120);
       } else {
+        stopChatVoiceInput();
         win.classList.add("hidden");
       }
     }
 
     function resetChatConversation() {
+      stopChatVoiceInput();
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
       const container = document.getElementById("chatMessagesContainer");
       const ctx = getCurrentChatPortalContext();
       if (!container) return;
@@ -3549,7 +3946,7 @@
         });
 
         if (!res.ok) {
-          throw new Error(`Lỗi kết nối máy chủ trợ lý (Mã ${res.status})`);
+          throw new Error(`Lỗi kết nối máy chủ trợ lý - Mã ${res.status}`);
         }
 
         const data = await res.json();
@@ -3577,6 +3974,7 @@
 
     async function handleChatBoxSubmit(e) {
       e.preventDefault();
+      stopChatVoiceInput();
       const input = document.getElementById("chatInputField");
       const text = input.value.trim();
       if (!text) return;
@@ -3593,6 +3991,7 @@
         const reply = await sendMessageToChatBoxBackend(text);
         if (typingEl) typingEl.remove();
         appendChatBubble(reply, "bot");
+        speakChatBotReply(reply);
       } catch (err) {
         if (typingEl) typingEl.remove();
         appendChatBubble("⚠️ " + err.message, "bot");

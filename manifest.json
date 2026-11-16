@@ -1,0 +1,16 @@
+{
+  "name": "Cổng Điểm Danh & Trạm AI Trung Học Phổ Thông",
+  "short_name": "Điểm Danh AI",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f0f4f8",
+  "theme_color": "#1e3d59",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

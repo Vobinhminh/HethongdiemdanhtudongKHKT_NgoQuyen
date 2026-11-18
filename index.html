@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Cổng Điểm Danh & Trạm AI Trung Học Phổ Thông</title>
   <script>
-      const APP_VERSION = "1.2.0"; // Cập nhật số này mỗi khi sửa file
+      const APP_VERSION = "1.2.1"; // Cập nhật số này mỗi khi sửa file
 
       async function checkAppUpdate() {
         try {
@@ -2311,7 +2311,8 @@
       const sessionEl = document.getElementById("attSessionSelect");
       const session = sessionEl ? sessionEl.value : ((APP_STATE.initData && APP_STATE.initData.session) || "Sáng");
       const gate = evaluateAttendanceTimeGate(session);
-      const canWrite = gate.allowed && DIST_CONCURRENCY.slotGranted;
+      const isHardLocked = Boolean(APP_STATE.attendance && APP_STATE.attendance.isHardLocked);
+      const canWrite = gate.allowed && DIST_CONCURRENCY.slotGranted && !isHardLocked;
 
       const badge = document.getElementById("attTimeWindowBadge");
       const lockBox = document.getElementById("attTimeGateLockedBox");
@@ -2331,7 +2332,10 @@
       }
 
       if (lockBox && lockReason) {
-        if (gate.allowed) {
+        if (isHardLocked) {
+          lockBox.classList.remove("hidden");
+          lockReason.textContent = "Sổ điểm danh ngày hôm nay đã được Giám thị / Quản trị viên KHÓA SỔ. Không thể chỉnh sửa thêm.";
+        } else if (gate.allowed) {
           lockBox.classList.add("hidden");
         } else {
           lockBox.classList.remove("hidden");
@@ -2871,12 +2875,60 @@
           };
         });
 
+        const isEditMode = Boolean(res && res.status === "LOCKED");
+        const isHardLocked = Boolean(res && res.isHardLocked);
+        const existingReport = (res && res.existingReport) || null;
+
+        if (isEditMode && existingReport) {
+          const normName = (s) => String(s || "").trim().toLowerCase();
+          const vcpSet = new Set((existingReport.vangCoPhep || []).map(normName));
+          const vkpSet = new Set((existingReport.vangKhongPhep || []).map(normName));
+          const btSet = new Set((existingReport.boTietNames || []).map(normName));
+          const kdtSet = new Set((existingReport.khongDTNames || []).map(normName));
+          const treMap = new Map();
+          (existingReport.treNames || []).forEach(entry => {
+            const raw = String(entry || "").trim();
+            const m = raw.match(/^(.+?)\s+(?:trễ|\()\s*(.+?)\)?$/i);
+            if (m) {
+              treMap.set(normName(m[1]), m[2].trim());
+            } else {
+              treMap.set(normName(raw), "");
+            }
+          });
+
+          students.forEach((st, idx) => {
+            const key = st.maHS || `${st.name}_${idx}`;
+            const sNorm = normName(st.name);
+            let stCode = "PRESENT";
+            let lateNote = "";
+            if (vcpSet.has(sNorm)) stCode = "VANG_CP";
+            else if (vkpSet.has(sNorm)) stCode = "VANG_KP";
+            else if (treMap.has(sNorm)) {
+              stCode = "TRE";
+              lateNote = treMap.get(sNorm) || "";
+            } else if (btSet.has(sNorm)) stCode = "BO_TIET";
+            else if (kdtSet.has(sNorm)) stCode = "KHONG_DT";
+
+            statusMap[key] = {
+              status: stCode,
+              lateNote,
+              method: "Báo cáo đã nộp",
+              updatedAt: 0,
+              lamport: 1,
+              sourceNodeId: "",
+              sourceUser: existingReport.reporterName || "",
+              eventId: `${dateStr}_${session}_${className}_${key}`
+            };
+          });
+        }
+
         APP_STATE.attendance = {
           className,
           students,
           statusMap,
           silentLogs: [],
-          isEditMode: res && res.status === "LOCKED",
+          isEditMode,
+          isHardLocked,
           rowIndex: (res && res.rowIndex) || null,
           subMode: APP_STATE.attendance.subMode || "LIST"
         };
@@ -3023,6 +3075,12 @@
       const session = document.getElementById("attSessionSelect").value;
       const dateStr = (APP_STATE.initData && APP_STATE.initData.dateStr) || formatDateVN(new Date());
 
+      if (APP_STATE.attendance.isHardLocked) {
+        showToast("🔒 Sổ điểm danh hôm nay đã khóa sổ, không thể chỉnh sửa!", "error");
+        return;
+      }
+
+      const eventId = `${dateStr}_${session}_${APP_STATE.attendance.className}_${key}`;
       APP_STATE.attendance.statusMap[key] = {
         status,
         lateNote,
@@ -3031,8 +3089,20 @@
         lamport: clock,
         sourceNodeId: DIST_CONCURRENCY.nodeId,
         sourceUser: u.name,
-        eventId: `${dateStr}_${session}_${APP_STATE.attendance.className}_${key}`
+        eventId
       };
+
+      if (status !== "PRESENT") {
+        APP_STATE.attendance.silentLogs = (APP_STATE.attendance.silentLogs || []).filter(
+          item => item && item.eventId !== eventId
+        );
+        const scopeKey = getDistributedScopeKey(APP_STATE.attendance.className, session, dateStr);
+        const local = readLocalClusterState(scopeKey);
+        local.records[key] = { ...APP_STATE.attendance.statusMap[key] };
+        local.logs = (local.logs || []).filter(item => item && item.eventId !== eventId);
+        local.lamport = clock;
+        writeLocalClusterState(scopeKey, local);
+      }
 
       updateAttendanceSummary();
       renderAttendanceStudentList();
@@ -3649,6 +3719,18 @@
           else if (cur.status === "KHONG_DT") khongDTNames.push(st.name);
         });
 
+        const activePresentEventIds = new Set();
+        APP_STATE.attendance.students.forEach((st, idx) => {
+          const key = st.maHS || `${st.name}_${idx}`;
+          const cur = APP_STATE.attendance.statusMap[key];
+          if (cur && cur.status === "PRESENT") {
+            activePresentEventIds.add(cur.eventId || `${dateStr}_${session}_${className}_${key}`);
+          }
+        });
+        const filteredSilentLogs = (APP_STATE.attendance.silentLogs || []).filter(
+          item => item && activePresentEventIds.has(item.eventId || `${item.dateStr || dateStr}_${item.session || session}_${item.className || className}_${item.maHS || item.name}`)
+        );
+
         const payload = {
           className,
           session,
@@ -3660,7 +3742,7 @@
           treNames,
           boTietNames,
           khongDTNames,
-          silentAttendanceLogs: APP_STATE.attendance.silentLogs,
+          silentAttendanceLogs: filteredSilentLogs,
           isEditMode: APP_STATE.attendance.isEditMode,
           rowIndex: APP_STATE.attendance.rowIndex,
           concurrencyMeta: {
@@ -4718,21 +4800,21 @@
         .replace(/https?:\/\/[^\s]+/gi, " ")
         .replace(/[*#_`~>•✓✕⛔⚠️🎉📊📝🔐🛡️👑📋✅🎖️🔄📥📤🚀🕒🔒⏰🎓👩‍🏫📷🤖💾📨🔍]/g, " ")
         // Việt hóa 100% các thuật ngữ/ký hiệu để giọng đọc thuần Việt, rõ nghĩa
-        .replace(/AI\s*128D/gi, "trí tuệ nhân tạo nhận diện khuôn mặt")
-        .replace(/AI/gi, "trí tuệ nhân tạo")
-        .replace(/QR/gi, "mã quy rờ")
-        .replace(/PIN/gi, "mã pin")
-        .replace(/GVCN/gi, "Giáo viên chủ nhiệm")
-        .replace(/BGH/gi, "Ban giám hiệu")
-        .replace(/HS/gi, "học sinh")
-        .replace(/Vắng\s*KP/gi, "Vắng không phép")
-        .replace(/Vắng\s*CP/gi, "Vắng có phép")
-        .replace(/Không\s*ĐT\/ĐP/gi, "Không đồng phục")
-        .replace(/CSV/gi, "tệp dữ liệu C S V")
-        .replace(/XLSX/gi, "tệp bảng tính Excel")
-        .replace(/PDF/gi, "tệp P D F")
-        .replace(/Concurrency\s*Control/gi, "kiểm soát xử lý đồng thời")
-        .replace(/DD\/MM\/YYYY\s*-\s*HH:MM:SS/gi, "ngày tháng năm và giờ phút giây")
+        .replace(/\bAI\s*128D\b/gi, "trí tuệ nhân tạo nhận diện khuôn mặt")
+        .replace(/\bAI\b/gi, "trí tuệ nhân tạo")
+        .replace(/\bQR\b/gi, "mã quy rờ")
+        .replace(/\bPIN\b/gi, "mã pin")
+        .replace(/\bGVCN\b/gi, "Giáo viên chủ nhiệm")
+        .replace(/\bBGH\b/gi, "Ban giám hiệu")
+        .replace(/\bHS\b/gi, "học sinh")
+        .replace(/(^|[^\p{L}\p{N}_])Vắng\s*KP(?=$|[^\p{L}\p{N}_])/giu, "$1Vắng không phép")
+        .replace(/(^|[^\p{L}\p{N}_])Vắng\s*CP(?=$|[^\p{L}\p{N}_])/giu, "$1Vắng có phép")
+        .replace(/(^|[^\p{L}\p{N}_])Không\s*ĐT\/ĐP(?=$|[^\p{L}\p{N}_])/giu, "$1Không đồng phục")
+        .replace(/\bCSV\b/gi, "tệp dữ liệu C S V")
+        .replace(/\bXLSX\b/gi, "tệp bảng tính Excel")
+        .replace(/\bPDF\b/gi, "tệp P D F")
+        .replace(/\bConcurrency\s*Control\b/gi, "kiểm soát xử lý đồng thời")
+        .replace(/\bDD\/MM\/YYYY\s*-\s*HH:MM:SS\b/gi, "ngày tháng năm và giờ phút giây")
         .replace(/(\d+)\s*\/\s*(\d+)/g, "$1 trên $2")
         .replace(/[|]/g, ", ")
         .replace(/\s+/g, " ")
@@ -4743,8 +4825,7 @@
     function splitVietnameseSentencesForSpeech(text) {
       if (!text) return [];
       const rawParts = text
-        .split(/(?<=[.!?。;
-])\s+/)
+        .split(/(?<=[.!?。;\n])\s+/)
         .map(s => s.trim())
         .filter(Boolean);
 

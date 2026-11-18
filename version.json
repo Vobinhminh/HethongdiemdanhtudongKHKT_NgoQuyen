@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.1.2",
   "build": "20261116-01",
   "forceUpdate": true,
   "changelog": "Tối ưu nhận diện Face AI 128D, chống trùng lặp điểm danh và đồng bộ giờ server."

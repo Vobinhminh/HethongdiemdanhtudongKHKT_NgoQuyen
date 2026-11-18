@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Cổng Điểm Danh & Trạm AI Trung Học Phổ Thông</title>
   <script>
-      const APP_VERSION = "1.1.0"; // Cập nhật số này mỗi khi sửa file
+      const APP_VERSION = "1.2.0"; // Cập nhật số này mỗi khi sửa file
 
       async function checkAppUpdate() {
         try {
@@ -145,8 +145,11 @@
   <header class="bg-gradient-to-r from-navy-900 via-navy-800 to-slate-800 text-white shadow-lg sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-amber-400/20 border border-amber-300/40 flex items-center justify-center text-2xl shadow-inner">
-          🏫
+        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white/10 border border-amber-300/40 flex items-center justify-center overflow-hidden shadow-inner shrink-0">
+          <img src="icon-192.png" alt="Logo Cổng Điểm Danh"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+               class="w-full h-full object-cover" />
+          <span style="display:none;" class="w-full h-full items-center justify-center text-2xl">🏫</span>
         </div>
         <div>
           <h1 class="font-extrabold text-base sm:text-lg tracking-tight leading-tight">
@@ -438,6 +441,57 @@
                         class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800">
                   <option value="">Chung / Đầu buổi</option>
                 </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- THANH KIẾN TRÚC HỆ THỐNG PHÂN TÁN & XỬ LÝ ĐỒNG THỜI (CONCURRENCY CONTROL - TỐI ĐA 2 NGUỒN / LỚP) -->
+          <div id="distributedConcurrencyBar" class="mt-4 rounded-2xl bg-gradient-to-r from-slate-900 via-navy-900 to-indigo-950 text-white p-3.5 sm:p-4 border border-indigo-400/30 shadow-md space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 text-xs font-extrabold text-cyan-300">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>Kiến trúc phân tán &amp; Concurrency Control</span>
+                </span>
+                <span id="concurrencySlotBadge" class="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">
+                  Nguồn 1/2 • Đang kết nối...
+                </span>
+                <span id="concurrencyClockBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-slate-300">
+                  CRDT • L0
+                </span>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <span id="concurrencyLastSyncLabel" class="text-[11px] text-slate-300 font-mono hidden sm:inline">
+                  Đồng bộ: --:--:--
+                </span>
+                <button type="button" onclick="manualSyncDistributedClass()"
+                        class="px-2.5 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-white text-[11px] font-bold border border-white/20 transition">
+                  🔄 Đồng bộ 2 nguồn
+                </button>
+              </div>
+            </div>
+
+            <div id="concurrencyNodesGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+              <div class="rounded-xl bg-white/10 border border-white/15 px-3 py-2 text-slate-200">
+                Đang khởi tạo định danh nút phân tán...
+              </div>
+            </div>
+          </div>
+
+          <!-- CẢNH BÁO VƯỢT NGƯỠNG XỬ LÝ ĐỒNG THỜI (KHI LỚP ĐÃ ĐỦ 2 NGUỒN DỮ LIỆU) -->
+          <div id="concurrencyOverflowBox" class="hidden mt-4 rounded-2xl bg-rose-50 border-2 border-rose-400 p-4 flex items-start gap-3 text-rose-950 shadow-sm">
+            <span class="text-2xl">⛔</span>
+            <div class="flex-1 text-xs sm:text-sm space-y-1.5">
+              <p class="font-extrabold text-rose-800">Vượt Ngưỡng Xử Lý Đồng Thời — Tối Đa 1 Lớp 2 Nguồn Dữ Liệu Cùng Lúc</p>
+              <p id="concurrencyOverflowReason" class="text-rose-700">
+                Lớp này hiện đã có đủ 2 nguồn dữ liệu đang điểm danh đồng thời. Thiết bị thứ 3 được khóa thao tác ghi để bảo vệ tính toàn vẹn dữ liệu.
+              </p>
+              <div class="pt-1">
+                <button type="button" onclick="retryAcquireClassSlot()"
+                        class="px-3 py-1.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold shadow-sm transition">
+                  🔄 Kiểm tra khe trống &amp; Kết nối lại
+                </button>
               </div>
             </div>
           </div>
@@ -1122,9 +1176,14 @@
           </div>
         </div>
         <div class="flex items-center gap-1">
-          <button type="button" id="btnToggleChatTts" onclick="toggleChatVoiceReply()" title="Bật hoặc tắt đọc phản hồi bằng giọng nói"
-                  class="text-white/75 hover:text-white text-xs font-bold px-2 py-1 rounded-lg hover:bg-white/10 transition">
-            🔇
+          <button type="button" id="btnToggleChatTts"
+                  onclick="handleChatTtsButtonClick(event)"
+                  onpointerdown="startChatTtsLongPress(event)"
+                  onpointerup="cancelChatTtsLongPress()"
+                  onpointerleave="cancelChatTtsLongPress()"
+                  title="Đọc 100% tiếng Việt giọng ấm áp (Bấm bật/tắt • Nhấn giữ để nghe lại)"
+                  class="text-white text-xs font-bold px-2 py-1 rounded-lg bg-white/20 hover:bg-white/30 transition select-none">
+            🔊
           </button>
           <button type="button" onclick="resetChatConversation()" title="Làm mới cuộc trò chuyện"
                   class="text-white/75 hover:text-white text-xs font-bold px-2 py-1 rounded-lg hover:bg-white/10 transition">
@@ -1711,10 +1770,530 @@
       return { allowed: true, windowText: "Đang mở", reason: "" };
     }
 
+    /* ---------------------------------------------------------------------
+     * KIẾN TRÚC HỆ THỐNG PHÂN TÁN & XỬ LÝ ĐỒNG THỜI (CONCURRENCY CONTROL)
+     * Giới hạn tối đa: 1 lớp tối đa 2 nguồn dữ liệu hoạt động cùng lúc
+     * Cơ chế: Distributed Lease + Lamport Clock + CRDT State Merge + Idempotency
+     * --------------------------------------------------------------------- */
+    const MAX_CONCURRENT_SOURCES_PER_CLASS = 2;
+    const CONCURRENCY_LEASE_TTL_MS = 45000;
+    const CONCURRENCY_HEARTBEAT_MS = 12000;
+    const CONCURRENCY_SYNC_MS = 6000;
+
+    function getOrCreateDistributedNodeId() {
+      try {
+        let nid = sessionStorage.getItem("DIST_NODE_ID");
+        if (!nid) {
+          const rand = Math.random().toString(36).substring(2, 8).toUpperCase();
+          nid = `NODE-${rand}`;
+          sessionStorage.setItem("DIST_NODE_ID", nid);
+        }
+        return nid;
+      } catch (_) {
+        return "NODE-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+      }
+    }
+
+    const DIST_CONCURRENCY = {
+      nodeId: getOrCreateDistributedNodeId(),
+      lamportClock: 1,
+      slotGranted: true,
+      slotIndex: 1,
+      activeNodes: [],
+      overflowReason: "",
+      serverSupportsConcurrencyApi: true,
+      heartbeatTimer: null,
+      syncTimer: null,
+      channel: null,
+      currentScopeKey: "",
+      lastSyncTimeStr: ""
+    };
+
+    function tickLamportClock(remoteClock = 0) {
+      const r = Number(remoteClock) || 0;
+      DIST_CONCURRENCY.lamportClock = Math.max(DIST_CONCURRENCY.lamportClock, r) + 1;
+      const badge = document.getElementById("concurrencyClockBadge");
+      if (badge) {
+        badge.textContent = `CRDT • L${DIST_CONCURRENCY.lamportClock}`;
+      }
+      return DIST_CONCURRENCY.lamportClock;
+    }
+
+    function getStatusPriorityRank(status, method) {
+      if (status === "PRESENT") return 4;
+      if (status === "VANG_CP" || status === "TRE" || status === "BO_TIET" || status === "KHONG_DT") return 3;
+      if (status === "VANG_KP" && method && method !== "Mặc định") return 2;
+      return 1; // Mặc định VANG_KP chưa điểm danh
+    }
+
+    function getDistributedScopeKey(className, session, dateStr) {
+      return `DIST_ATT_${dateStr}_${session}_${className}`;
+    }
+
+    function readLocalClusterState(scopeKey) {
+      try {
+        const raw = localStorage.getItem(scopeKey);
+        if (!raw) return { nodes: {}, records: {}, logs: [], lamport: 1 };
+        const parsed = JSON.parse(raw);
+        return {
+          nodes: parsed.nodes || {},
+          records: parsed.records || {},
+          logs: Array.isArray(parsed.logs) ? parsed.logs : [],
+          lamport: Number(parsed.lamport) || 1
+        };
+      } catch (_) {
+        return { nodes: {}, records: {}, logs: [], lamport: 1 };
+      }
+    }
+
+    function writeLocalClusterState(scopeKey, stateObj) {
+      try {
+        localStorage.setItem(scopeKey, JSON.stringify(stateObj));
+        if (DIST_CONCURRENCY.channel) {
+          DIST_CONCURRENCY.channel.postMessage({ type: "CLUSTER_SYNC", scopeKey });
+        }
+      } catch (_) {}
+    }
+
+    function pruneExpiredNodes(nodesMap, nowMs = Date.now()) {
+      const cleaned = {};
+      Object.keys(nodesMap || {}).forEach(nid => {
+        const item = nodesMap[nid];
+        if (item && nowMs - (Number(item.lastHeartbeat) || 0) <= CONCURRENCY_LEASE_TTL_MS) {
+          cleaned[nid] = item;
+        }
+      });
+      return cleaned;
+    }
+
+    function initDistributedBroadcastChannel() {
+      if (DIST_CONCURRENCY.channel || typeof BroadcastChannel === "undefined") return;
+      try {
+        const ch = new BroadcastChannel("THPT_ATTENDANCE_DISTRIBUTED_BUS");
+        ch.onmessage = (ev) => {
+          const msg = ev.data || {};
+          if (msg.type === "CLUSTER_SYNC" && msg.scopeKey && msg.scopeKey === DIST_CONCURRENCY.currentScopeKey) {
+            syncDistributedAttendanceState(false);
+          }
+        };
+        DIST_CONCURRENCY.channel = ch;
+      } catch (_) {}
+    }
+
+    function stopDistributedClassTimers() {
+      if (DIST_CONCURRENCY.heartbeatTimer) {
+        clearInterval(DIST_CONCURRENCY.heartbeatTimer);
+        DIST_CONCURRENCY.heartbeatTimer = null;
+      }
+      if (DIST_CONCURRENCY.syncTimer) {
+        clearInterval(DIST_CONCURRENCY.syncTimer);
+        DIST_CONCURRENCY.syncTimer = null;
+      }
+    }
+
+    async function releaseClassConcurrencySlot(prevScopeKey = null) {
+      stopDistributedClassTimers();
+      const scopeKey = prevScopeKey || DIST_CONCURRENCY.currentScopeKey;
+      if (!scopeKey) return;
+
+      // Xóa lease cục bộ
+      const local = readLocalClusterState(scopeKey);
+      if (local.nodes && local.nodes[DIST_CONCURRENCY.nodeId]) {
+        delete local.nodes[DIST_CONCURRENCY.nodeId];
+        writeLocalClusterState(scopeKey, local);
+      }
+
+      // Gửi tín hiệu giải phóng lease lên server (không chặn UI)
+      const parts = scopeKey.replace("DIST_ATT_", "").split("_");
+      if (parts.length >= 3 && DIST_CONCURRENCY.serverSupportsConcurrencyApi) {
+        const dateStr = parts[0];
+        const session = parts[1];
+        const className = parts.slice(2).join("_");
+        callGasApi("releaseClassAttendanceNode", {
+          className,
+          session,
+          dateStr,
+          nodeId: DIST_CONCURRENCY.nodeId
+        }).catch(() => {});
+      }
+    }
+
+    async function acquireClassConcurrencySlot(className, session, dateStr) {
+      initDistributedBroadcastChannel();
+      const scopeKey = getDistributedScopeKey(className, session, dateStr);
+      if (DIST_CONCURRENCY.currentScopeKey && DIST_CONCURRENCY.currentScopeKey !== scopeKey) {
+        await releaseClassConcurrencySlot(DIST_CONCURRENCY.currentScopeKey);
+      }
+      DIST_CONCURRENCY.currentScopeKey = scopeKey;
+
+      const u = APP_STATE.currentUser || { name: "Ẩn danh", role: "Cán bộ" };
+      const nowMs = Date.now();
+      const clock = tickLamportClock();
+
+      // 1. Điều phối tầng Cluster cục bộ (đa tab / đa cửa sổ)
+      const local = readLocalClusterState(scopeKey);
+      local.nodes = pruneExpiredNodes(local.nodes, nowMs);
+
+      const existingNodeIds = Object.keys(local.nodes);
+      const isAlreadyRegisteredLocal = Boolean(local.nodes[DIST_CONCURRENCY.nodeId]);
+
+      if (!isAlreadyRegisteredLocal && existingNodeIds.length >= MAX_CONCURRENT_SOURCES_PER_CLASS) {
+        const activeList = existingNodeIds.map((id, i) => ({
+          ...local.nodes[id],
+          nodeId: id,
+          slotIndex: i + 1
+        }));
+        DIST_CONCURRENCY.slotGranted = false;
+        DIST_CONCURRENCY.slotIndex = 0;
+        DIST_CONCURRENCY.activeNodes = activeList;
+        DIST_CONCURRENCY.overflowReason =
+          `Lớp ${className} (Ca ${session}) hiện đã đạt tối đa ${MAX_CONCURRENT_SOURCES_PER_CLASS} nguồn dữ liệu vào cùng lúc: ` +
+          activeList.map((n, idx) => `Nguồn ${idx + 1}: ${n.userName} (${n.userRole})`).join(" và ") + ".";
+        renderDistributedConcurrencyUI();
+        refreshAttendanceTimeGateUI();
+        return false;
+      }
+
+      const assignedSlot = isAlreadyRegisteredLocal
+        ? (local.nodes[DIST_CONCURRENCY.nodeId].slotIndex || (existingNodeIds.indexOf(DIST_CONCURRENCY.nodeId) + 1))
+        : (existingNodeIds.length + 1);
+
+      local.nodes[DIST_CONCURRENCY.nodeId] = {
+        nodeId: DIST_CONCURRENCY.nodeId,
+        slotIndex: assignedSlot,
+        userName: u.name,
+        userRole: normalizeSchoolLabels(u.role),
+        subMode: APP_STATE.attendance.subMode || "LIST",
+        lastHeartbeat: nowMs,
+        lamport: clock
+      };
+      local.lamport = clock;
+      writeLocalClusterState(scopeKey, local);
+
+      let finalNodes = Object.values(local.nodes).sort((a, b) => (a.slotIndex || 1) - (b.slotIndex || 1));
+      let granted = true;
+      let overflowMsg = "";
+
+      // 2. Điều phối tầng Server phân tán (Google Apps Script) nếu backend đã hỗ trợ
+      if (DIST_CONCURRENCY.serverSupportsConcurrencyApi) {
+        try {
+          const srvRes = await callGasApi("registerClassAttendanceNode", {
+            className,
+            session,
+            dateStr,
+            nodeId: DIST_CONCURRENCY.nodeId,
+            userName: u.name,
+            userRole: normalizeSchoolLabels(u.role),
+            subMode: APP_STATE.attendance.subMode || "LIST",
+            lamportClock: clock,
+            maxSources: MAX_CONCURRENT_SOURCES_PER_CLASS
+          });
+          if (srvRes && typeof srvRes === "object") {
+            if (srvRes.allowed === false) {
+              granted = false;
+              overflowMsg = srvRes.reason || `Lớp ${className} đã đủ ${MAX_CONCURRENT_SOURCES_PER_CLASS} nguồn dữ liệu hoạt động cùng lúc!`;
+              // Xóa lease cục bộ vì server từ chối
+              const rollback = readLocalClusterState(scopeKey);
+              delete rollback.nodes[DIST_CONCURRENCY.nodeId];
+              writeLocalClusterState(scopeKey, rollback);
+            }
+            if (Array.isArray(srvRes.activeNodes) && srvRes.activeNodes.length > 0) {
+              finalNodes = srvRes.activeNodes;
+            }
+            if (srvRes.lamportClock) tickLamportClock(srvRes.lamportClock);
+          }
+        } catch (err) {
+          const errStr = String(err.message || err);
+          if (errStr.includes("not found") || errStr.includes("không tồn tại") || errStr.includes("Hàm")) {
+            DIST_CONCURRENCY.serverSupportsConcurrencyApi = false;
+          }
+        }
+      }
+
+      DIST_CONCURRENCY.slotGranted = granted;
+      DIST_CONCURRENCY.activeNodes = finalNodes.slice(0, MAX_CONCURRENT_SOURCES_PER_CLASS);
+      const myEntry = DIST_CONCURRENCY.activeNodes.find(n => n.nodeId === DIST_CONCURRENCY.nodeId);
+      DIST_CONCURRENCY.slotIndex = granted ? (myEntry ? myEntry.slotIndex : assignedSlot) : 0;
+      DIST_CONCURRENCY.overflowReason = overflowMsg;
+
+      renderDistributedConcurrencyUI();
+      refreshAttendanceTimeGateUI();
+
+      // Khởi động Heartbeat giữ lease & Sync CRDT định kỳ
+      stopDistributedClassTimers();
+      DIST_CONCURRENCY.heartbeatTimer = setInterval(() => {
+        if (!document.getElementById("panelAttendance").classList.contains("hidden")) {
+          renewClassConcurrencyHeartbeat();
+        }
+      }, CONCURRENCY_HEARTBEAT_MS);
+
+      DIST_CONCURRENCY.syncTimer = setInterval(() => {
+        if (!document.getElementById("panelAttendance").classList.contains("hidden")) {
+          syncDistributedAttendanceState(false);
+        }
+      }, CONCURRENCY_SYNC_MS);
+
+      return granted;
+    }
+
+    async function renewClassConcurrencyHeartbeat() {
+      const { className, subMode } = APP_STATE.attendance;
+      if (!className || !DIST_CONCURRENCY.slotGranted) return;
+      const session = document.getElementById("attSessionSelect").value;
+      const dateStr = (APP_STATE.initData && APP_STATE.initData.dateStr) || formatDateVN(new Date());
+      const scopeKey = getDistributedScopeKey(className, session, dateStr);
+      const u = APP_STATE.currentUser || { name: "Ẩn danh", role: "Cán bộ" };
+      const nowMs = Date.now();
+
+      const local = readLocalClusterState(scopeKey);
+      local.nodes = pruneExpiredNodes(local.nodes, nowMs);
+      if (local.nodes[DIST_CONCURRENCY.nodeId]) {
+        local.nodes[DIST_CONCURRENCY.nodeId].lastHeartbeat = nowMs;
+        local.nodes[DIST_CONCURRENCY.nodeId].subMode = subMode || "LIST";
+        writeLocalClusterState(scopeKey, local);
+        DIST_CONCURRENCY.activeNodes = Object.values(local.nodes).slice(0, MAX_CONCURRENT_SOURCES_PER_CLASS);
+        renderDistributedConcurrencyUI();
+      }
+
+      if (DIST_CONCURRENCY.serverSupportsConcurrencyApi) {
+        try {
+          const srv = await callGasApi("registerClassAttendanceNode", {
+            className,
+            session,
+            dateStr,
+            nodeId: DIST_CONCURRENCY.nodeId,
+            userName: u.name,
+            userRole: normalizeSchoolLabels(u.role),
+            subMode: subMode || "LIST",
+            lamportClock: DIST_CONCURRENCY.lamportClock,
+            maxSources: MAX_CONCURRENT_SOURCES_PER_CLASS
+          });
+          if (srv && Array.isArray(srv.activeNodes) && srv.activeNodes.length > 0) {
+            DIST_CONCURRENCY.activeNodes = srv.activeNodes.slice(0, MAX_CONCURRENT_SOURCES_PER_CLASS);
+            renderDistributedConcurrencyUI();
+          }
+        } catch (_) {}
+      }
+    }
+
+    function mergeStatusRecordsCRDT(localMap, remoteRecords) {
+      let changedCount = 0;
+      Object.keys(remoteRecords || {}).forEach(key => {
+        const rem = remoteRecords[key];
+        const loc = localMap[key];
+        if (!rem || !loc) return;
+
+        const locRank = getStatusPriorityRank(loc.status, loc.method);
+        const remRank = getStatusPriorityRank(rem.status, rem.method);
+        const locLamport = Number(loc.lamport) || 0;
+        const remLamport = Number(rem.lamport) || 0;
+        const locTime = Number(loc.updatedAt) || 0;
+        const remTime = Number(rem.updatedAt) || 0;
+
+        let shouldTakeRemote = false;
+        if (remRank > locRank) {
+          // Ưu tiên trạng thái đã được xác nhận (Ví dụ: Nguồn 1 quét Có mặt ghi đè Mặc định Vắng KP của Nguồn 2)
+          shouldTakeRemote = true;
+        } else if (remRank === locRank && remRank > 1) {
+          // Cả 2 nguồn đều chủ động chỉnh sửa -> Áp dụng Last-Write-Wins theo Lamport Clock & Timestamp
+          if (remLamport > locLamport || (remLamport === locLamport && remTime > locTime)) {
+            shouldTakeRemote = true;
+          }
+        }
+
+        if (shouldTakeRemote && (loc.status !== rem.status || loc.lateNote !== rem.lateNote || loc.method !== rem.method)) {
+          localMap[key] = {
+            status: rem.status,
+            lateNote: rem.lateNote || "",
+            method: rem.method || "Đồng bộ",
+            updatedAt: remTime,
+            lamport: remLamport,
+            sourceNodeId: rem.sourceNodeId || "",
+            sourceUser: rem.sourceUser || "",
+            eventId: rem.eventId || ""
+          };
+          tickLamportClock(remLamport);
+          changedCount++;
+        }
+      });
+      return changedCount;
+    }
+
+    async function syncDistributedAttendanceState(showFeedback = false) {
+      const { className, statusMap, silentLogs, subMode } = APP_STATE.attendance;
+      if (!className) return;
+
+      const session = document.getElementById("attSessionSelect").value;
+      const dateStr = (APP_STATE.initData && APP_STATE.initData.dateStr) || formatDateVN(new Date());
+      const scopeKey = getDistributedScopeKey(className, session, dateStr);
+      const nowMs = Date.now();
+
+      // 1. Đọc & hợp nhất từ Cluster cục bộ
+      const local = readLocalClusterState(scopeKey);
+      local.nodes = pruneExpiredNodes(local.nodes, nowMs);
+      let mergedChanges = mergeStatusRecordsCRDT(statusMap, local.records);
+
+      // Gộp ngược trạng thái mới nhất của node hiện tại vào local cluster
+      Object.keys(statusMap).forEach(k => {
+        const cur = statusMap[k];
+        if (!cur) return;
+        const prev = local.records[k];
+        if (!prev || getStatusPriorityRank(cur.status, cur.method) > getStatusPriorityRank(prev.status, prev.method) || (Number(cur.lamport) || 0) > (Number(prev.lamport) || 0)) {
+          local.records[k] = { ...cur };
+        }
+      });
+
+      // Khử trùng lặp nhật ký quét theo eventId / maHS
+      const seenEventIds = new Set(local.logs.map(l => l.eventId || `${l.maHS}_${l.name}`));
+      silentLogs.forEach(l => {
+        const eid = l.eventId || `${l.maHS}_${l.name}`;
+        if (!seenEventIds.has(eid)) {
+          seenEventIds.add(eid);
+          local.logs.push(l);
+        }
+      });
+      local.lamport = DIST_CONCURRENCY.lamportClock;
+      writeLocalClusterState(scopeKey, local);
+
+      // 2. Đồng bộ 2 chiều với Server GAS (nếu backend hỗ trợ)
+      if (DIST_CONCURRENCY.serverSupportsConcurrencyApi) {
+        try {
+          const srv = await callGasApi("syncClassAttendanceState", {
+            className,
+            session,
+            dateStr,
+            nodeId: DIST_CONCURRENCY.nodeId,
+            lamportClock: DIST_CONCURRENCY.lamportClock,
+            records: local.records,
+            logs: local.logs
+          });
+          if (srv && typeof srv === "object") {
+            if (srv.records) {
+              mergedChanges += mergeStatusRecordsCRDT(statusMap, srv.records);
+            }
+            if (Array.isArray(srv.activeNodes) && srv.activeNodes.length > 0) {
+              DIST_CONCURRENCY.activeNodes = srv.activeNodes.slice(0, MAX_CONCURRENT_SOURCES_PER_CLASS);
+            }
+            if (srv.lamportClock) tickLamportClock(srv.lamportClock);
+          }
+        } catch (err) {
+          const errStr = String(err.message || err);
+          if (errStr.includes("not found") || errStr.includes("không tồn tại") || errStr.includes("Hàm")) {
+            DIST_CONCURRENCY.serverSupportsConcurrencyApi = false;
+          }
+        }
+      }
+
+      DIST_CONCURRENCY.lastSyncTimeStr = formatTimeVN(new Date());
+      renderDistributedConcurrencyUI();
+
+      if (mergedChanges > 0) {
+        updateAttendanceSummary();
+        if (subMode === "LIST") {
+          renderAttendanceStudentList();
+        }
+        if (showFeedback) {
+          showToast(`🔄 Đã đồng bộ thêm ${mergedChanges} cập nhật từ nguồn song song!`, "success");
+        }
+      } else if (showFeedback) {
+        showToast("✓ Dữ liệu giữa các nguồn của lớp đã đồng bộ hoàn toàn!", "info");
+      }
+    }
+
+    async function manualSyncDistributedClass() {
+      await syncDistributedAttendanceState(true);
+    }
+
+    async function retryAcquireClassSlot() {
+      const className = document.getElementById("attClassSelect").value;
+      const session = document.getElementById("attSessionSelect").value;
+      const dateStr = (APP_STATE.initData && APP_STATE.initData.dateStr) || formatDateVN(new Date());
+      if (!className) return;
+      showLoader("Đang kiểm tra khe nguồn dữ liệu lớp...");
+      try {
+        const ok = await acquireClassConcurrencySlot(className, session, dateStr);
+        if (ok) {
+          showToast(`✓ Đã kết nối thành công vào Nguồn ${DIST_CONCURRENCY.slotIndex}/${MAX_CONCURRENT_SOURCES_PER_CLASS} của lớp ${className}!`, "success");
+          await syncDistributedAttendanceState(false);
+        } else {
+          showToast(`⛔ Lớp ${className} vẫn đang đủ 2/2 nguồn dữ liệu hoạt động!`, "warning");
+        }
+      } finally {
+        hideLoader();
+      }
+    }
+
+    function renderDistributedConcurrencyUI() {
+      const slotBadge = document.getElementById("concurrencySlotBadge");
+      const syncLabel = document.getElementById("concurrencyLastSyncLabel");
+      const nodesGrid = document.getElementById("concurrencyNodesGrid");
+      const overflowBox = document.getElementById("concurrencyOverflowBox");
+      const overflowReason = document.getElementById("concurrencyOverflowReason");
+
+      const activeCount = DIST_CONCURRENCY.activeNodes.length;
+      if (syncLabel && DIST_CONCURRENCY.lastSyncTimeStr) {
+        syncLabel.textContent = `Đồng bộ: ${DIST_CONCURRENCY.lastSyncTimeStr}`;
+      }
+
+      if (slotBadge) {
+        if (!DIST_CONCURRENCY.slotGranted) {
+          slotBadge.textContent = `⛔ Quá tải ${MAX_CONCURRENT_SOURCES_PER_CLASS}/${MAX_CONCURRENT_SOURCES_PER_CLASS} nguồn • Chế độ Chỉ Xem`;
+          slotBadge.className = "text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-rose-500/30 text-rose-200 border border-rose-400/50";
+        } else {
+          slotBadge.textContent = `Đang hoạt động: ${Math.max(1, activeCount)}/${MAX_CONCURRENT_SOURCES_PER_CLASS} nguồn • Thiết bị này: Nguồn #${DIST_CONCURRENCY.slotIndex}`;
+          slotBadge.className = "text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40";
+        }
+      }
+
+      if (overflowBox && overflowReason) {
+        if (!DIST_CONCURRENCY.slotGranted) {
+          overflowBox.classList.remove("hidden");
+          overflowReason.textContent = DIST_CONCURRENCY.overflowReason;
+        } else {
+          overflowBox.classList.add("hidden");
+        }
+      }
+
+      if (nodesGrid) {
+        const subModeLabels = { LIST: "Danh sách lớp", QR: "Quét thẻ QR", AI: "Nhận diện AI 128D" };
+        const slotsHtml = [0, 1].map(idx => {
+          const node = DIST_CONCURRENCY.activeNodes[idx];
+          if (!node) {
+            return `
+              <div class="rounded-xl bg-white/5 border border-dashed border-white/20 px-3 py-2 flex items-center justify-between text-slate-400">
+                <span>Khe nguồn #${idx + 1}: <em>Trống (Sẵn sàng tiếp nhận)</em></span>
+                <span class="font-mono text-[10px]">0/1</span>
+              </div>
+            `;
+          }
+          const isMe = node.nodeId === DIST_CONCURRENCY.nodeId;
+          const modeLabel = subModeLabels[node.subMode] || node.subMode || "Danh sách";
+          return `
+            <div class="rounded-xl ${isMe ? 'bg-emerald-500/15 border-emerald-400/40' : 'bg-white/10 border-white/20'} border px-3 py-2 flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <div class="font-bold text-white truncate">
+                  Nguồn #${idx + 1}: ${escapeHtml(node.userName || "Cán bộ")}
+                  ${isMe ? '<span class="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-emerald-500 text-slate-950 font-extrabold">Thiết bị này</span>' : ''}
+                </div>
+                <div class="text-[10px] text-slate-300 truncate">
+                  ${escapeHtml(node.userRole || "")} • Chế độ: <strong class="text-cyan-200">${escapeHtml(modeLabel)}</strong>
+                </div>
+              </div>
+              <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-black/30 text-cyan-300 shrink-0">
+                ${escapeHtml(node.nodeId || "")}
+              </span>
+            </div>
+          `;
+        }).join("");
+        nodesGrid.innerHTML = slotsHtml;
+      }
+    }
+
     function refreshAttendanceTimeGateUI() {
       const sessionEl = document.getElementById("attSessionSelect");
       const session = sessionEl ? sessionEl.value : ((APP_STATE.initData && APP_STATE.initData.session) || "Sáng");
       const gate = evaluateAttendanceTimeGate(session);
+      const canWrite = gate.allowed && DIST_CONCURRENCY.slotGranted;
 
       const badge = document.getElementById("attTimeWindowBadge");
       const lockBox = document.getElementById("attTimeGateLockedBox");
@@ -1739,16 +2318,19 @@
         } else {
           lockBox.classList.remove("hidden");
           lockReason.textContent = normalizeSchoolLabels(gate.reason);
-          stopQrScanner();
-          stopAiScanner();
         }
       }
 
-      if (submitBtn) submitBtn.disabled = !gate.allowed;
-      if (btnAllPresent) btnAllPresent.disabled = !gate.allowed;
-      if (btnAllVangKP) btnAllVangKP.disabled = !gate.allowed;
+      if (!canWrite) {
+        stopQrScanner();
+        stopAiScanner();
+      }
 
-      return gate;
+      if (submitBtn) submitBtn.disabled = !canWrite;
+      if (btnAllPresent) btnAllPresent.disabled = !canWrite;
+      if (btnAllVangKP) btnAllVangKP.disabled = !canWrite;
+
+      return { ...gate, canWrite };
     }
 
     /* ---------------------------------------------------------------------
@@ -2110,6 +2692,9 @@
     function switchWorkspaceTab(tabId) {
       stopQrScanner();
       stopAiScanner();
+      if (tabId !== "ATTENDANCE") {
+        releaseClassConcurrencySlot();
+      }
 
       document.querySelectorAll(".ws-tab-btn").forEach(btn => {
         btn.className = "ws-tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 transition";
@@ -2141,6 +2726,7 @@
     }
 
     function logoutUser() {
+      releaseClassConcurrencySlot();
       stopChatVoiceInput();
       if ("speechSynthesis" in window) window.speechSynthesis.cancel();
       stopQrScanner();
@@ -2153,6 +2739,10 @@
       document.getElementById("loginView").classList.remove("hidden");
       syncChatPortalContext(false);
     }
+
+    window.addEventListener("beforeunload", () => {
+      releaseClassConcurrencySlot();
+    });
 
     /* ---------------------------------------------------------------------
      * 4. CHỨC NĂNG ĐIỂM DANH LỚP (MẶC ĐỊNH = VẮNG KP, QUÉT QR/AI = CÓ MẶT)
@@ -2226,15 +2816,28 @@
 
       if (!className) return;
 
-      showLoader(`Đang tải danh sách lớp ${className}...`);
+      showLoader(`Đang tải & đồng bộ phân tán lớp ${className}...`);
       try {
+        // Bước 1: Đăng ký khe nguồn phân tán (tối đa 2 nguồn / lớp cùng lúc)
+        const granted = await acquireClassConcurrencySlot(className, session, dateStr);
+
+        // Bước 2: Tải danh sách học sinh gốc của lớp
         const res = await callGasApi("getClassData", className, session, dateStr, subject);
         const students = (res && res.students) || [];
         const statusMap = {};
 
         students.forEach((st, idx) => {
           const key = st.maHS || `${st.name}_${idx}`;
-          statusMap[key] = { status: "VANG_KP", lateNote: "", method: "Mặc định" };
+          statusMap[key] = {
+            status: "VANG_KP",
+            lateNote: "",
+            method: "Mặc định",
+            updatedAt: 0,
+            lamport: 0,
+            sourceNodeId: "",
+            sourceUser: "",
+            eventId: `${dateStr}_${session}_${className}_${key}`
+          };
         });
 
         APP_STATE.attendance = {
@@ -2246,6 +2849,9 @@
           rowIndex: (res && res.rowIndex) || null,
           subMode: APP_STATE.attendance.subMode || "LIST"
         };
+
+        // Bước 3: Hợp nhất trạng thái CRDT từ nguồn song song (nếu lớp đang có 2 nguồn cùng làm việc)
+        await syncDistributedAttendanceState(false);
 
         const editBanner = document.getElementById("editModeBanner");
         const submitBtnText = document.getElementById("btnSubmitAttendanceText");
@@ -2259,6 +2865,10 @@
 
         updateAttendanceSummary();
         renderAttendanceStudentList();
+
+        if (!granted) {
+          showToast(`⛔ Lớp ${className} đã đủ 2 nguồn dữ liệu hoạt động đồng thời!`, "error");
+        }
       } catch (err) {
         showToast(err.message, "error");
       } finally {
@@ -2304,8 +2914,12 @@
             : "bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium";
         };
 
+        const isRemoteSource = cur.sourceNodeId && cur.sourceNodeId !== DIST_CONCURRENCY.nodeId && cur.status !== "VANG_KP";
         const methodBadge = (cur.method === "QR" || cur.method === "AI")
           ? `<span class="ml-1.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">✓ Quét ${cur.method}</span>`
+          : "";
+        const syncBadge = isRemoteSource
+          ? `<span class="ml-1 text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-100 text-cyan-800" title="Đồng bộ từ ${escapeAttr(cur.sourceUser || 'Nguồn song song')}">⇄ Nguồn song song</span>`
           : "";
 
         const lateLabel = cur.status === "TRE" && cur.lateNote ? ` - ${cur.lateNote}` : "";
@@ -2320,6 +2934,7 @@
                 <div class="font-bold text-sm text-slate-900 flex flex-wrap items-center">
                   <span>${escapeHtml(st.name)}</span>
                   ${methodBadge}
+                  ${syncBadge}
                 </div>
                 <div class="text-[11px] text-slate-500 flex items-center gap-2">
                   <span class="font-mono">${escapeHtml(st.maHS || "Chưa có mã")}</span>
@@ -2363,18 +2978,42 @@
 
     function setStudentStatus(key, status, method = "Thủ công", lateNote = "") {
       const gate = refreshAttendanceTimeGateUI();
+      if (!DIST_CONCURRENCY.slotGranted) {
+        showToast("⛔ Thiết bị đang ở chế độ Chỉ Xem do lớp đã đủ 2 nguồn dữ liệu!", "error");
+        return;
+      }
       if (!gate.allowed) {
         showToast("⛔ Ngoài khung giờ điểm danh quy định! Không thể thay đổi trạng thái.", "error");
         return;
       }
       if (!APP_STATE.attendance.statusMap[key]) return;
-      APP_STATE.attendance.statusMap[key] = { status, lateNote, method };
+      const u = APP_STATE.currentUser || { name: "Cán bộ" };
+      const clock = tickLamportClock();
+      const session = document.getElementById("attSessionSelect").value;
+      const dateStr = (APP_STATE.initData && APP_STATE.initData.dateStr) || formatDateVN(new Date());
+
+      APP_STATE.attendance.statusMap[key] = {
+        status,
+        lateNote,
+        method,
+        updatedAt: Date.now(),
+        lamport: clock,
+        sourceNodeId: DIST_CONCURRENCY.nodeId,
+        sourceUser: u.name,
+        eventId: `${dateStr}_${session}_${APP_STATE.attendance.className}_${key}`
+      };
+
       updateAttendanceSummary();
       renderAttendanceStudentList();
+      syncDistributedAttendanceState(false);
     }
 
     function promptLateStatus(key) {
       const gate = refreshAttendanceTimeGateUI();
+      if (!DIST_CONCURRENCY.slotGranted) {
+        showToast("⛔ Lớp đã đủ 2 nguồn dữ liệu hoạt động đồng thời!", "error");
+        return;
+      }
       if (!gate.allowed) {
         showToast("⛔ Ngoài khung giờ điểm danh quy định!", "error");
         return;
@@ -2396,30 +3035,67 @@
 
     function markAllPresent() {
       const gate = refreshAttendanceTimeGateUI();
+      if (!DIST_CONCURRENCY.slotGranted) {
+        showToast("⛔ Lớp đã đủ 2 nguồn dữ liệu hoạt động đồng thời!", "error");
+        return;
+      }
       if (!gate.allowed) {
         showToast("⛔ Ngoài khung giờ điểm danh quy định!", "error");
         return;
       }
+      const u = APP_STATE.currentUser || { name: "Cán bộ" };
+      const clock = tickLamportClock();
+      const nowMs = Date.now();
+      const session = document.getElementById("attSessionSelect").value;
+      const dateStr = (APP_STATE.initData && APP_STATE.initData.dateStr) || formatDateVN(new Date());
       const { students, statusMap } = APP_STATE.attendance;
+
       students.forEach((st, idx) => {
         const key = st.maHS || `${st.name}_${idx}`;
-        statusMap[key] = { status: "PRESENT", lateNote: "", method: "Thủ công" };
+        statusMap[key] = {
+          status: "PRESENT",
+          lateNote: "",
+          method: "Thủ công",
+          updatedAt: nowMs,
+          lamport: clock,
+          sourceNodeId: DIST_CONCURRENCY.nodeId,
+          sourceUser: u.name,
+          eventId: `${dateStr}_${session}_${APP_STATE.attendance.className}_${key}`
+        };
       });
       updateAttendanceSummary();
       renderAttendanceStudentList();
+      syncDistributedAttendanceState(false);
       showToast("Đã đặt toàn bộ lớp trạng thái Có mặt", "success");
     }
 
     function markAllVangKP() {
       const gate = refreshAttendanceTimeGateUI();
+      if (!DIST_CONCURRENCY.slotGranted) {
+        showToast("⛔ Lớp đã đủ 2 nguồn dữ liệu hoạt động đồng thời!", "error");
+        return;
+      }
       if (!gate.allowed) {
         showToast("⛔ Ngoài khung giờ điểm danh quy định!", "error");
         return;
       }
-      const { students, statusMap } = APP_STATE.attendance;
+      const { students, statusMap, className } = APP_STATE.attendance;
+      const session = document.getElementById("attSessionSelect").value;
+      const dateStr = (APP_STATE.initData && APP_STATE.initData.dateStr) || formatDateVN(new Date());
+      const clock = tickLamportClock();
+
       students.forEach((st, idx) => {
         const key = st.maHS || `${st.name}_${idx}`;
-        statusMap[key] = { status: "VANG_KP", lateNote: "", method: "Mặc định" };
+        statusMap[key] = {
+          status: "VANG_KP",
+          lateNote: "",
+          method: "Mặc định",
+          updatedAt: Date.now(),
+          lamport: clock,
+          sourceNodeId: DIST_CONCURRENCY.nodeId,
+          sourceUser: "",
+          eventId: `${dateStr}_${session}_${className}_${key}`
+        };
       });
       updateAttendanceSummary();
       renderAttendanceStudentList();
@@ -2521,6 +3197,10 @@
     async function switchAttendanceSubMode(mode) {
       if (mode === "QR" || mode === "AI") {
         const gate = refreshAttendanceTimeGateUI();
+        if (!DIST_CONCURRENCY.slotGranted) {
+          showToast("⛔ Lớp đã đủ 2 nguồn dữ liệu hoạt động đồng thời! Không thể mở thêm trạm quét.", "error");
+          return;
+        }
         if (!gate.allowed) {
           showToast("⛔ Cổng điểm danh đang khóa ngoài khung giờ quy định!", "error");
           return;
@@ -2528,6 +3208,8 @@
       }
 
       APP_STATE.attendance.subMode = mode;
+      renewClassConcurrencyHeartbeat();
+
       ["LIST", "QR", "AI"].forEach(m => {
         const btn = document.getElementById(`subModeBtn_${m}`);
         const box = document.getElementById(`attSubMode_${m}`);
@@ -2556,8 +3238,8 @@
     async function startQrScanner() {
       stopChatVoiceInput();
       const gate = refreshAttendanceTimeGateUI();
-      if (!gate.allowed) {
-        document.getElementById("qrScanFeedback").textContent = "⛔ Ngoài khung giờ điểm danh quy định!";
+      if (!gate.canWrite) {
+        document.getElementById("qrScanFeedback").textContent = "⛔ Cổng đang khóa hoặc vượt giới hạn 2 nguồn/lớp!";
         return;
       }
       if (typeof Html5Qrcode === "undefined") {
@@ -2601,8 +3283,8 @@
 
       const gate = refreshAttendanceTimeGateUI();
       const feedback = document.getElementById("aiScanFeedback");
-      if (!gate.allowed) {
-        feedback.textContent = "⛔ Ngoài khung giờ điểm danh quy định!";
+      if (!gate.canWrite) {
+        feedback.textContent = "⛔ Cổng đang khóa hoặc vượt giới hạn 2 nguồn/lớp!";
         return;
       }
 
@@ -2656,7 +3338,7 @@
 
         const runDetectionLoop = async () => {
           if (!aiLoopActive || !APP_STATE.aiStream) return;
-          if (document.hidden || video.paused || video.ended || !refreshAttendanceTimeGateUI().allowed) {
+          if (document.hidden || video.paused || video.ended || !refreshAttendanceTimeGateUI().canWrite) {
             APP_STATE.aiInterval = setTimeout(runDetectionLoop, 600);
             return;
           }
@@ -2678,11 +3360,10 @@
             if (det && aiLoopActive) {
               const resized = faceapi.resizeResults(det, displaySize);
               const box = resized.detection.box;
-              // Tính tọa độ X sau khi lật gương video
               const mirroredX = displaySize.width - box.x - box.width;
 
               let labelText = "Đang nhận diện...";
-              let boxColor = "#f59e0b"; // Vàng hổ phách khi đang quét
+              let boxColor = "#f59e0b";
 
               if (APP_STATE.aiClassDescriptors.length > 0) {
                 let best = null;
@@ -2698,7 +3379,7 @@
                 if (best && minDist <= 0.50) {
                   const curStatus = APP_STATE.attendance.statusMap[best.key];
                   if (curStatus && curStatus.status === "PRESENT") {
-                    boxColor = "#06b6d4"; // Xanh cyan: đã điểm danh rồi
+                    boxColor = "#06b6d4";
                     labelText = `✓ Đã có mặt: ${best.name}`;
                     feedback.textContent = `✓ ${best.name} đã được ghi nhận Có mặt trước đó.`;
                   } else {
@@ -2709,7 +3390,7 @@
                     }
 
                     if (aiLastCandidate.hits >= 2) {
-                      boxColor = "#10b981"; // Xanh lá: chốt điểm danh
+                      boxColor = "#10b981";
                       labelText = `✓ ${best.name} (${((1 - minDist) * 100).toFixed(0)}%)`;
                       feedback.textContent = `✓ Đã quét mặt: ${best.name} → CÓ MẶT • Sai số: ${minDist.toFixed(3)}`;
                       handleAutoCheckinMatch(best.maHS || best.name, "AI");
@@ -2735,7 +3416,6 @@
                 }
               }
 
-              // Vẽ khung nhận diện & nhãn tên lên canvas
               ctx.strokeStyle = boxColor;
               ctx.lineWidth = 3;
               ctx.strokeRect(mirroredX, box.y, box.width, box.height);
@@ -2784,6 +3464,10 @@
     const recentCheckinCooldown = {};
     function handleAutoCheckinMatch(codeOrName, method) {
       const gate = refreshAttendanceTimeGateUI();
+      if (!DIST_CONCURRENCY.slotGranted) {
+        showToast("⛔ Vượt giới hạn 2 nguồn/lớp! Không ghi nhận lượt quét.", "error");
+        return;
+      }
       if (!gate.allowed) {
         showToast("⛔ Ngoài khung giờ điểm danh quy định! Không ghi nhận lượt quét.", "error");
         return;
@@ -2809,17 +3493,34 @@
 
       const st = students[idx];
       const key = String(st.maHS || `${st.name}_${idx}`);
+      const session = document.getElementById("attSessionSelect").value;
+      const dateStr = (APP_STATE.initData && APP_STATE.initData.dateStr) || formatDateVN(new Date());
+      const eventId = `${dateStr}_${session}_${className}_${key}`;
 
-      // Nếu học sinh đã Có mặt rồi thì chỉ báo nhẹ, không ghi log trùng
+      // Khử trùng lặp Idempotency: Nếu đã Có mặt từ thiết bị này hoặc từ nguồn song song còn lại
       if (statusMap[key] && statusMap[key].status === "PRESENT") {
         playCheckinBeep(true);
+        if (statusMap[key].sourceNodeId && statusMap[key].sourceNodeId !== DIST_CONCURRENCY.nodeId) {
+          showToast(`ℹ️ ${st.name} đã được đồng bộ Có mặt từ nguồn song song!`, "info");
+        }
         return;
       }
 
-      statusMap[key] = { status: "PRESENT", lateNote: "", method };
+      const u = APP_STATE.currentUser || { name: "Cán bộ" };
+      const clock = tickLamportClock();
+
+      statusMap[key] = {
+        status: "PRESENT",
+        lateNote: "",
+        method,
+        updatedAt: now,
+        lamport: clock,
+        sourceNodeId: DIST_CONCURRENCY.nodeId,
+        sourceUser: u.name,
+        eventId
+      };
       updateAttendanceSummary();
 
-      // Chỉ vẽ lại danh sách dài khi đang đứng ở tab LIST để giữ mượt luồng camera
       if (subMode === "LIST") {
         renderAttendanceStudentList();
       }
@@ -2830,29 +3531,36 @@
       const bannerId = method === "QR" ? "qrLastMatchBanner" : "aiLastMatchBanner";
       const bannerEl = document.getElementById(bannerId);
       if (bannerEl) {
-        bannerEl.textContent = `✓ [${method}] ${st.name} - ${st.maHS || className} — CÓ MẶT lúc ${timeNowStr}`;
+        bannerEl.textContent = `✓ [${method} • Nguồn #${DIST_CONCURRENCY.slotIndex}] ${st.name} - ${st.maHS || className} — CÓ MẶT lúc ${timeNowStr}`;
         bannerEl.classList.remove("hidden");
       }
 
-      const session = document.getElementById("attSessionSelect").value;
-      const dateStr = (APP_STATE.initData && APP_STATE.initData.dateStr) || formatDateVN(new Date());
       const logEntry = {
+        eventId,
         timestamp: timeNowStr,
         dateStr,
         session,
         className,
         maHS: String(st.maHS || ""),
         name: st.name,
-        method
+        method,
+        nodeId: DIST_CONCURRENCY.nodeId,
+        slotIndex: DIST_CONCURRENCY.slotIndex,
+        lamportClock: clock
       };
       APP_STATE.attendance.silentLogs.push(logEntry);
       enqueueSilentAttendanceLog(logEntry);
+      syncDistributedAttendanceState(false);
 
-      showToast(`✓ [Quét ${method}] ${st.name} → CÓ MẶT`, "success");
+      showToast(`✓ [Quét ${method} • Nguồn #${DIST_CONCURRENCY.slotIndex}] ${st.name} → CÓ MẶT`, "success");
     }
-    
+
     async function submitAttendanceReport() {
       const gate = refreshAttendanceTimeGateUI();
+      if (!DIST_CONCURRENCY.slotGranted) {
+        showToast("⛔ Lớp này đã đủ 2 nguồn dữ liệu hoạt động đồng thời! Không thể gửi báo cáo từ nguồn thứ 3.", "error");
+        return;
+      }
       if (!gate.allowed) {
         showToast(`⛔ Chỉ được điểm danh trong khung giờ quy định ${gate.windowText}!`, "error");
         return;
@@ -2873,43 +3581,53 @@
         return;
       }
 
-      const vangCoPhep = [];
-      const vangKhongPhep = [];
-      const treNames = [];
-      const boTietNames = [];
-      const khongDTNames = [];
-
-      APP_STATE.attendance.students.forEach((st, idx) => {
-        const key = st.maHS || `${st.name}_${idx}`;
-        const cur = APP_STATE.attendance.statusMap[key] || { status: "VANG_KP", lateNote: "" };
-        if (cur.status === "VANG_CP") vangCoPhep.push(st.name);
-        else if (cur.status === "VANG_KP") vangKhongPhep.push(st.name);
-        else if (cur.status === "TRE") {
-          treNames.push(cur.lateNote ? `${st.name} trễ ${cur.lateNote}` : st.name);
-        } else if (cur.status === "BO_TIET") boTietNames.push(st.name);
-        else if (cur.status === "KHONG_DT") khongDTNames.push(st.name);
-      });
-
-      const payload = {
-        className,
-        session,
-        subject,
-        reporterName: u.name,
-        reporterRole: u.role,
-        vangCoPhep,
-        vangKhongPhep,
-        treNames,
-        boTietNames,
-        khongDTNames,
-        silentAttendanceLogs: APP_STATE.attendance.silentLogs,
-        isEditMode: APP_STATE.attendance.isEditMode,
-        rowIndex: APP_STATE.attendance.rowIndex
-      };
-
-      showLoader("Đang gửi báo cáo lên Google Bảng Tính...");
+      showLoader("Đang đồng bộ 2 nguồn dữ liệu & gửi báo cáo...");
       try {
+        // Hợp nhất lần cuối toàn bộ trạng thái CRDT giữa 2 nguồn song song trước khi chốt báo cáo
+        await syncDistributedAttendanceState(false);
+
+        const vangCoPhep = [];
+        const vangKhongPhep = [];
+        const treNames = [];
+        const boTietNames = [];
+        const khongDTNames = [];
+
+        APP_STATE.attendance.students.forEach((st, idx) => {
+          const key = st.maHS || `${st.name}_${idx}`;
+          const cur = APP_STATE.attendance.statusMap[key] || { status: "VANG_KP", lateNote: "" };
+          if (cur.status === "VANG_CP") vangCoPhep.push(st.name);
+          else if (cur.status === "VANG_KP") vangKhongPhep.push(st.name);
+          else if (cur.status === "TRE") {
+            treNames.push(cur.lateNote ? `${st.name} trễ ${cur.lateNote}` : st.name);
+          } else if (cur.status === "BO_TIET") boTietNames.push(st.name);
+          else if (cur.status === "KHONG_DT") khongDTNames.push(st.name);
+        });
+
+        const payload = {
+          className,
+          session,
+          subject,
+          reporterName: u.name,
+          reporterRole: u.role,
+          vangCoPhep,
+          vangKhongPhep,
+          treNames,
+          boTietNames,
+          khongDTNames,
+          silentAttendanceLogs: APP_STATE.attendance.silentLogs,
+          isEditMode: APP_STATE.attendance.isEditMode,
+          rowIndex: APP_STATE.attendance.rowIndex,
+          concurrencyMeta: {
+            nodeId: DIST_CONCURRENCY.nodeId,
+            slotIndex: DIST_CONCURRENCY.slotIndex,
+            maxSourcesPerClass: MAX_CONCURRENT_SOURCES_PER_CLASS,
+            activeSourcesCount: DIST_CONCURRENCY.activeNodes.length,
+            lamportClock: DIST_CONCURRENCY.lamportClock
+          }
+        };
+
         const msg = await callGasApi("saveAttendance", payload);
-        showToast(typeof msg === "string" ? msg : "Đã ghi nhận báo cáo thành công!", "success");
+        showToast(typeof msg === "string" ? msg : "Đã đồng bộ & ghi nhận báo cáo thành công!", "success");
         await loadAttendanceClassSheet();
       } catch (err) {
         showToast(err.message, "error");
@@ -3905,39 +4623,214 @@
     const CHAT_VOICE_STATE = {
       recognition: null,
       isListening: false,
-      ttsEnabled: false,
-      finalTranscript: ""
+      ttsEnabled: true,
+      finalTranscript: "",
+      selectedVoice: null,
+      lastBotReplyText: "Xin chào! Mình là Trợ lý trí tuệ nhân tạo Điểm Danh Trung học phổ thông. Bạn cần hướng dẫn sử dụng cổng điểm danh, xin nghỉ phép hay tra cứu chuyên cần?",
+      longPressTimer: null,
+      longPressTriggered: false,
+      speakQueueToken: 0
     };
+
+    function selectWarmVietnameseVoice() {
+      if (!("speechSynthesis" in window)) return null;
+      const voices = window.speechSynthesis.getVoices() || [];
+      if (voices.length === 0) return null;
+
+      const viVoices = voices.filter(v => {
+        const lang = String(v.lang || "").toLowerCase();
+        const name = String(v.name || "").toLowerCase();
+        return lang.includes("vi") || name.includes("vietnam") || name.includes("tiếng việt") || name.includes("hoaimy") || name.includes("linh");
+      });
+
+      if (viVoices.length === 0) return null;
+
+      // Ưu tiên giọng nữ/giọng ấm áp tự nhiên tiếng Việt
+      const preferredKeywords = ["hoaimy", "natural", "google tiếng việt", "linh", "lan", "mai", "female", "nữ", "vi-vn"];
+      for (const kw of preferredKeywords) {
+        const found = viVoices.find(v => String(v.name || "").toLowerCase().includes(kw) || String(v.lang || "").toLowerCase().includes(kw));
+        if (found) {
+          CHAT_VOICE_STATE.selectedVoice = found;
+          return found;
+        }
+      }
+      CHAT_VOICE_STATE.selectedVoice = viVoices[0];
+      return viVoices[0];
+    }
+
+    if ("speechSynthesis" in window) {
+      selectWarmVietnameseVoice();
+      window.speechSynthesis.onvoiceschanged = () => {
+        selectWarmVietnameseVoice();
+      };
+    }
+
+    function normalizeTextFor100PercentVietnamese(rawText) {
+      let text = normalizeSchoolLabels(rawText || "");
+      text = text
+        // Xóa URL và định dạng markdown / emoji
+        .replace(/https?:\/\/[^\s]+/gi, " ")
+        .replace(/[*#_`~>•✓✕⛔⚠️🎉📊📝🔐🛡️👑📋✅🎖️🔄📥📤🚀🕒🔒⏰🎓👩‍🏫📷🤖💾📨🔍]/g, " ")
+        // Việt hóa 100% các thuật ngữ/ký hiệu để giọng đọc thuần Việt, rõ nghĩa
+        .replace(/AI\s*128D/gi, "trí tuệ nhân tạo nhận diện khuôn mặt")
+        .replace(/AI/gi, "trí tuệ nhân tạo")
+        .replace(/QR/gi, "mã quy rờ")
+        .replace(/PIN/gi, "mã pin")
+        .replace(/GVCN/gi, "Giáo viên chủ nhiệm")
+        .replace(/BGH/gi, "Ban giám hiệu")
+        .replace(/HS/gi, "học sinh")
+        .replace(/Vắng\s*KP/gi, "Vắng không phép")
+        .replace(/Vắng\s*CP/gi, "Vắng có phép")
+        .replace(/Không\s*ĐT\/ĐP/gi, "Không đồng phục")
+        .replace(/CSV/gi, "tệp dữ liệu C S V")
+        .replace(/XLSX/gi, "tệp bảng tính Excel")
+        .replace(/PDF/gi, "tệp P D F")
+        .replace(/Concurrency\s*Control/gi, "kiểm soát xử lý đồng thời")
+        .replace(/DD\/MM\/YYYY\s*-\s*HH:MM:SS/gi, "ngày tháng năm và giờ phút giây")
+        .replace(/(\d+)\s*\/\s*(\d+)/g, "$1 trên $2")
+        .replace(/[|]/g, ", ")
+        .replace(/\s+/g, " ")
+        .trim();
+      return text;
+    }
+
+    function splitVietnameseSentencesForSpeech(text) {
+      if (!text) return [];
+      const rawParts = text
+        .split(/(?<=[.!?。;
+])\s+/)
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      const chunks = [];
+      rawParts.forEach(part => {
+        if (part.length <= 165) {
+          chunks.push(part);
+        } else {
+          // Cắt mềm theo dấu phẩy nếu câu quá dài để tránh trình duyệt tự ngắt giọng
+          const subParts = part.split(/,\s+/);
+          let buf = "";
+          subParts.forEach(sp => {
+            if ((buf + ", " + sp).length > 165 && buf) {
+              chunks.push(buf.trim());
+              buf = sp;
+            } else {
+              buf = buf ? `${buf}, ${sp}` : sp;
+            }
+          });
+          if (buf.trim()) chunks.push(buf.trim());
+        }
+      });
+      return chunks;
+    }
+
+    function updateChatTtsButtonVisual() {
+      const btn = document.getElementById("btnToggleChatTts");
+      if (!btn) return;
+      if (CHAT_VOICE_STATE.ttsEnabled) {
+        btn.textContent = "🔊";
+        btn.classList.add("bg-white/20");
+      } else {
+        btn.textContent = "🔇";
+        btn.classList.remove("bg-white/20");
+      }
+    }
+
+    function startChatTtsLongPress(e) {
+      CHAT_VOICE_STATE.longPressTriggered = false;
+      if (CHAT_VOICE_STATE.longPressTimer) clearTimeout(CHAT_VOICE_STATE.longPressTimer);
+      CHAT_VOICE_STATE.longPressTimer = setTimeout(() => {
+        CHAT_VOICE_STATE.longPressTriggered = true;
+        CHAT_VOICE_STATE.ttsEnabled = true;
+        updateChatTtsButtonVisual();
+        speakChatBotReply(CHAT_VOICE_STATE.lastBotReplyText, true);
+        showToast("🔊 Đang đọc lại nội dung bằng giọng tiếng Việt ấm áp", "info");
+      }, 450);
+    }
+
+    function cancelChatTtsLongPress() {
+      if (CHAT_VOICE_STATE.longPressTimer) {
+        clearTimeout(CHAT_VOICE_STATE.longPressTimer);
+        CHAT_VOICE_STATE.longPressTimer = null;
+      }
+    }
+
+    function handleChatTtsButtonClick(e) {
+      if (CHAT_VOICE_STATE.longPressTriggered) {
+        CHAT_VOICE_STATE.longPressTriggered = false;
+        return;
+      }
+      toggleChatVoiceReply();
+    }
 
     function toggleChatVoiceReply() {
       CHAT_VOICE_STATE.ttsEnabled = !CHAT_VOICE_STATE.ttsEnabled;
-      const btn = document.getElementById("btnToggleChatTts");
-      if (btn) {
-        btn.textContent = CHAT_VOICE_STATE.ttsEnabled ? "🔊" : "🔇";
-        btn.classList.toggle("bg-white/20", CHAT_VOICE_STATE.ttsEnabled);
+      updateChatTtsButtonVisual();
+
+      if (!CHAT_VOICE_STATE.ttsEnabled) {
+        CHAT_VOICE_STATE.speakQueueToken++;
+        if ("speechSynthesis" in window) {
+          window.speechSynthesis.cancel();
+        }
+        showToast("Đã tắt đọc giọng nói Trợ lý AI", "info");
+      } else {
+        showToast("🔊 Đã bật đọc 100% tiếng Việt (giọng ấm áp, tốc độ vừa phải)", "success");
+        if (CHAT_VOICE_STATE.lastBotReplyText) {
+          speakChatBotReply(CHAT_VOICE_STATE.lastBotReplyText, true);
+        }
       }
-      if (!CHAT_VOICE_STATE.ttsEnabled && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
-      showToast(
-        CHAT_VOICE_STATE.ttsEnabled ? "Đã bật đọc câu trả lời Trợ lý AI" : "Đã tắt đọc giọng nói Trợ lý AI",
-        "info"
-      );
     }
 
-    function speakChatBotReply(rawText) {
-      if (!CHAT_VOICE_STATE.ttsEnabled || !("speechSynthesis" in window)) return;
+    function speakChatBotReply(rawText, forceSpeak = false) {
+      if (rawText && String(rawText).trim()) {
+        CHAT_VOICE_STATE.lastBotReplyText = String(rawText).trim();
+      }
+      if ((!CHAT_VOICE_STATE.ttsEnabled && !forceSpeak) || !("speechSynthesis" in window)) return;
+
       try {
+        CHAT_VOICE_STATE.speakQueueToken++;
+        const currentToken = CHAT_VOICE_STATE.speakQueueToken;
         window.speechSynthesis.cancel();
-        const plain = normalizeSchoolLabels(rawText)
-          .replace(/[*#_`~>•✓✕⛔⚠️🎉📊📝🔐🛡️👑📋✅🎖️]/g, " ")
-          .replace(/\s+/g, " ")
-          .trim();
-        if (!plain) return;
-        const utter = new SpeechSynthesisUtterance(plain);
-        utter.lang = "vi-VN";
-        utter.rate = 1.02;
-        window.speechSynthesis.speak(utter);
+
+        const vietnamesePlain = normalizeTextFor100PercentVietnamese(CHAT_VOICE_STATE.lastBotReplyText);
+        if (!vietnamesePlain) return;
+
+        const sentences = splitVietnameseSentencesForSpeech(vietnamesePlain);
+        const warmVoice = CHAT_VOICE_STATE.selectedVoice || selectWarmVietnameseVoice();
+
+        let idx = 0;
+        const speakNextSentence = () => {
+          if (currentToken !== CHAT_VOICE_STATE.speakQueueToken) return;
+          if (!CHAT_VOICE_STATE.ttsEnabled && !forceSpeak) return;
+          if (idx >= sentences.length) return;
+
+          const utter = new SpeechSynthesisUtterance(sentences[idx]);
+          utter.lang = "vi-VN";
+          if (warmVoice) {
+            utter.voice = warmVoice;
+          }
+          // Tốc độ vừa phải (0.90) và cao độ trầm ấm (0.96) để nghe truyền cảm, dễ chịu
+          utter.rate = 0.90;
+          utter.pitch = 0.96;
+          utter.volume = 1.0;
+
+          utter.onend = () => {
+            idx++;
+            if (idx < sentences.length && currentToken === CHAT_VOICE_STATE.speakQueueToken) {
+              setTimeout(speakNextSentence, 140);
+            }
+          };
+          utter.onerror = () => {
+            idx++;
+            if (idx < sentences.length && currentToken === CHAT_VOICE_STATE.speakQueueToken) {
+              setTimeout(speakNextSentence, 100);
+            }
+          };
+
+          window.speechSynthesis.speak(utter);
+        };
+
+        speakNextSentence();
       } catch (_) {}
     }
 

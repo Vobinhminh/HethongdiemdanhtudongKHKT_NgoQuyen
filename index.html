@@ -7,6 +7,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
   <meta name="theme-color" content="#1e3d59">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Cổng Điểm Danh & Trạm AI Trung Học Phổ Thông</title>
@@ -1567,6 +1568,7 @@
         populateClassDropdowns(data.classes || []);
         selectLoginRole(APP_STATE.selectedLoginRole);
         refreshAttendanceTimeGateUI();
+        setTimeout(preloadAiModelsInBackground, 1500);
       } catch (err) {
         showToast(err.message, "error");
       } finally {
@@ -2961,10 +2963,10 @@
       stopAiScanner();
       if (tabId !== "ATTENDANCE") {
         releaseClassConcurrencySlot();
-      DIST_CONCURRENCY.lowBatteryLocked = false;
-      DIST_CONCURRENCY.lowBatteryLockReason = "";
-      const bBox = document.getElementById("batteryHandoverLockedBox");
-      if (bBox) bBox.classList.add("hidden");
+        DIST_CONCURRENCY.lowBatteryLocked = false;
+        DIST_CONCURRENCY.lowBatteryLockReason = "";
+        const bBox = document.getElementById("batteryHandoverLockedBox");
+        if (bBox) bBox.classList.add("hidden");
       }
 
       document.querySelectorAll(".ws-tab-btn").forEach(btn => {
@@ -3105,7 +3107,6 @@
       const className = document.getElementById("attClassSelect").value;
       const session = document.getElementById("attSessionSelect").value;
       const subject = document.getElementById("attSubjectSelect").value;
-      const dateStr = (APP_STATE.initData && APP_STATE.initData.dateStr) || formatDateVN(new Date());
       const dateStr = (APP_STATE.initData && APP_STATE.initData.dateStr) || formatDateVN(new Date());
 
       if (!className) return;
@@ -3988,6 +3989,7 @@
           else if (cur.status === "KHONG_DT") khongDTNames.push(st.name);
         });
 
+        const dateStr = (APP_STATE.initData && APP_STATE.initData.dateStr) || formatDateVN(new Date());
         const activePresentEventIds = new Set();
         APP_STATE.attendance.students.forEach((st, idx) => {
           const key = st.maHS || `${st.name}_${idx}`;
@@ -5174,61 +5176,61 @@
         .replace(/https?:\/\/[^\s]+/gi, " đường dẫn trang web ")
         .replace(/[*#_`~>•✓✕⛔⚠️🎉📊📝🔐🛡️👑📋✅🎖️🔄📥📤🚀🕒🔒⏰🎓👩‍🏫📷🤖💾📨🔍]/g, " ")
         // Việt hóa 100% toàn bộ từ khóa/thuật ngữ tiếng Anh & ký hiệu chuyên môn
-        .replace(/AI\s*128D/gi, "trí tuệ nhân tạo nhận diện khuôn mặt")
-        .replace(/AI\s*Studio/gi, "phòng chụp trí tuệ nhân tạo")
-        .replace(/AI/gi, "trí tuệ nhân tạo")
-        .replace(/QR\s*code/gi, "mã quy rờ")
-        .replace(/QR/gi, "mã quy rờ")
-        .replace(/PIN/gi, "mã pin")
-        .replace(/GVCN/gi, "Giáo viên chủ nhiệm")
-        .replace(/BGH/gi, "Ban giám hiệu")
-        .replace(/THPT/gi, "Trung học phổ thông")
-        .replace(/HS/gi, "học sinh")
-        .replace(/GV/gi, "giáo viên")
-        .replace(/GT/gi, "giám thị")
+        .replace(/\bAI\s*128D\b/gi, "trí tuệ nhân tạo nhận diện khuôn mặt")
+        .replace(/\bAI\s*Studio\b/gi, "phòng chụp trí tuệ nhân tạo")
+        .replace(/\bAI\b/gi, "trí tuệ nhân tạo")
+        .replace(/\bQR\s*code\b/gi, "mã quy rờ")
+        .replace(/\bQR\b/gi, "mã quy rờ")
+        .replace(/\bPIN\b/gi, "mã pin")
+        .replace(/\bGVCN\b/gi, "Giáo viên chủ nhiệm")
+        .replace(/\bBGH\b/gi, "Ban giám hiệu")
+        .replace(/\bTHPT\b/gi, "Trung học phổ thông")
+        .replace(/\bHS\b/gi, "học sinh")
+        .replace(/\bGV\b/gi, "giáo viên")
+        .replace(/\bGT\b/gi, "giám thị")
         .replace(/(^|[^\p{L}\p{N}_])Vắng\s*KP(?=$|[^\p{L}\p{N}_])/giu, "$1Vắng không phép")
         .replace(/(^|[^\p{L}\p{N}_])Vắng\s*CP(?=$|[^\p{L}\p{N}_])/giu, "$1Vắng có phép")
         .replace(/(^|[^\p{L}\p{N}_])Không\s*ĐT\/ĐP(?=$|[^\p{L}\p{N}_])/giu, "$1Không đồng phục")
-        .replace(/CSV/gi, "tệp dữ liệu xê ét vê")
-        .replace(/XLSX/gi, "tệp bảng tính ích xeo")
-        .replace(/XLS/gi, "tệp bảng tính ích xeo")
-        .replace(/Excel/gi, "bảng tính ích xeo")
-        .replace(/PDF/gi, "tệp pê đê ép")
-        .replace(/Google\s*Sheets?/gi, "bảng tính Gu gồ")
-        .replace(/Google\s*Apps\s*Script/gi, "hệ thống máy chủ Gu gồ")
-        .replace(/Google/gi, "Gu gồ")
-        .replace(/Chrome/gi, "trình duyệt Crôm")
-        .replace(/Edge/gi, "trình duyệt Ét")
-        .replace(/Admin/gi, "quản trị viên")
-        .replace(/Online/gi, "trực tuyến")
-        .replace(/Offline/gi, "ngoại tuyến")
-        .replace(/Camera/gi, "máy ảnh")
-        .replace(/Micro/gi, "mi cờ rô")
-        .replace(/Reset/gi, "đặt lại")
-        .replace(/Update/gi, "cập nhật")
-        .replace(/Login/gi, "đăng nhập")
-        .replace(/Logout/gi, "đăng xuất")
-        .replace(/App/gi, "ứng dụng")
-        .replace(/Web/gi, "trang web")
-        .replace(/Link/gi, "liên kết")
-        .replace(/File/gi, "tệp tin")
-        .replace(/Tab/gi, "thẻ chức năng")
-        .replace(/Icon/gi, "biểu tượng")
-        .replace(/Button/gi, "nút bấm")
-        .replace(/Data/gi, "dữ liệu")
-        .replace(/System/gi, "hệ thống")
-        .replace(/Server/gi, "máy chủ")
-        .replace(/Error/gi, "lỗi")
-        .replace(/OK/gi, "đồng ý")
-        .replace(/Concurrency\s*Control/gi, "kiểm soát xử lý đồng thời")
-        .replace(/DD\/MM\/YYYY\s*-\s*HH:MM:SS/gi, "ngày tháng năm và giờ phút giây")
+        .replace(/\bCSV\b/gi, "tệp dữ liệu xê ét vê")
+        .replace(/\bXLSX\b/gi, "tệp bảng tính ích xeo")
+        .replace(/\bXLS\b/gi, "tệp bảng tính ích xeo")
+        .replace(/\bExcel\b/gi, "bảng tính ích xeo")
+        .replace(/\bPDF\b/gi, "tệp pê đê ép")
+        .replace(/\bGoogle\s*Sheets?\b/gi, "bảng tính Gu gồ")
+        .replace(/\bGoogle\s*Apps\s*Script\b/gi, "hệ thống máy chủ Gu gồ")
+        .replace(/\bGoogle\b/gi, "Gu gồ")
+        .replace(/\bChrome\b/gi, "trình duyệt Crôm")
+        .replace(/\bEdge\b/gi, "trình duyệt Ét")
+        .replace(/\bAdmin\b/gi, "quản trị viên")
+        .replace(/\bOnline\b/gi, "trực tuyến")
+        .replace(/\bOffline\b/gi, "ngoại tuyến")
+        .replace(/\bCamera\b/gi, "máy ảnh")
+        .replace(/\bMicro\b/gi, "mi cờ rô")
+        .replace(/\bReset\b/gi, "đặt lại")
+        .replace(/\bUpdate\b/gi, "cập nhật")
+        .replace(/\bLogin\b/gi, "đăng nhập")
+        .replace(/\bLogout\b/gi, "đăng xuất")
+        .replace(/\bApp\b/gi, "ứng dụng")
+        .replace(/\bWeb\b/gi, "trang web")
+        .replace(/\bLink\b/gi, "liên kết")
+        .replace(/\bFile\b/gi, "tệp tin")
+        .replace(/\bTab\b/gi, "thẻ chức năng")
+        .replace(/\bIcon\b/gi, "biểu tượng")
+        .replace(/\bButton\b/gi, "nút bấm")
+        .replace(/\bData\b/gi, "dữ liệu")
+        .replace(/\bSystem\b/gi, "hệ thống")
+        .replace(/\bServer\b/gi, "máy chủ")
+        .replace(/\bError\b/gi, "lỗi")
+        .replace(/\bOK\b/gi, "đồng ý")
+        .replace(/\bConcurrency\s*Control\b/gi, "kiểm soát xử lý đồng thời")
+        .replace(/\bDD\/MM\/YYYY\s*-\s*HH:MM:SS\b/gi, "ngày tháng năm và giờ phút giây")
         // Đọc mã lớp kiểu 10A01, 12A1 sang phát âm tiếng Việt tự nhiên
-        .replace(/(\d{2})([A-Za-z])(\d{1,2})/g, (_, khoi, chu, stt) => {
+        .replace(/\b(\d{2})([A-Za-z])(\d{1,2})\b/g, (_, khoi, chu, stt) => {
           const docChu = { a: "a", b: "bê", c: "xê", d: "đê" }[chu.toLowerCase()] || chu.toLowerCase();
           return `${khoi} ${docChu} ${parseInt(stt, 10)}`;
         })
         // Đọc giờ HH:MM:SS hoặc HH:MM sang tiếng Việt tự nhiên
-        .replace(/(\d{1,2}):(\d{2})(?::(\d{2}))?/g, (_, h, m, s) => {
+        .replace(/\b(\d{1,2}):(\d{2})(?::(\d{2}))?\b/g, (_, h, m, s) => {
           const minNum = parseInt(m, 10);
           const secNum = s ? parseInt(s, 10) : 0;
           let out = `${parseInt(h, 10)} giờ`;
@@ -5240,7 +5242,7 @@
         .replace(/%/g, " phần trăm ")
         .replace(/&/g, " và ")
         .replace(/[|]/g, ", ")
-        .replace(/[A-Za-zÀ-ỹ0-9_-]+/g, (tok) => spellUnknownEnglishTokenInVietnamese(tok))
+        .replace(/\b[A-Za-zÀ-ỹ0-9_-]+\b/g, (tok) => spellUnknownEnglishTokenInVietnamese(tok))
         .replace(/\s+/g, " ")
         .trim();
       return text;
@@ -5280,9 +5282,11 @@
       if (!btn) return;
       if (CHAT_VOICE_STATE.ttsEnabled) {
         btn.textContent = "🔊";
+        btn.title = "Đang bật đọc giọng nói (Bấm để tắt • Nhấn giữ để nghe lại)";
         btn.classList.add("bg-white/20");
       } else {
         btn.textContent = "🔇";
+        btn.title = "Đang tắt đọc giọng nói (Bấm để bật • Nhấn giữ để nghe lại)";
         btn.classList.remove("bg-white/20");
       }
     }

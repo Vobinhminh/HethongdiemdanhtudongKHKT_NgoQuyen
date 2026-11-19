@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Cổng Điểm Danh & Trạm AI Trung Học Phổ Thông</title>
   <script>
-      const APP_VERSION = "1.2.5"; // Cập nhật số này mỗi khi sửa file
+      const APP_VERSION = "1.2.6"; // Cập nhật số này mỗi khi sửa file
 
       async function checkAppUpdate() {
         try {
@@ -1207,9 +1207,9 @@
                   onpointerdown="startChatTtsLongPress(event)"
                   onpointerup="cancelChatTtsLongPress()"
                   onpointerleave="cancelChatTtsLongPress()"
-                  title="Đọc 100% tiếng Việt giọng ấm áp, tốc độ nhanh vừa (Bấm bật/tắt • Nhấn giữ để nghe lại)"
-                  class="text-white text-xs font-bold px-2 py-1 rounded-lg bg-white/20 hover:bg-white/30 transition select-none">
-            🔊
+                  title="Đang tắt đọc giọng nói (Bấm để bật • Nhấn giữ để nghe lại)"
+                  class="text-white text-xs font-bold px-2 py-1 rounded-lg hover:bg-white/30 transition select-none">
+            🔇
           </button>
           <button type="button" onclick="resetChatConversation()" title="Làm mới cuộc trò chuyện"
                   class="text-white/75 hover:text-white text-xs font-bold px-2 py-1 rounded-lg hover:bg-white/10 transition">
@@ -1484,6 +1484,7 @@
       });
       initGasUrlFromEnvironment();
       setDefaultDates();
+      updateChatTtsButtonVisual();
       updateLiveSystemClocks();
       setInterval(updateLiveSystemClocks, 1000);
       loadInitialAppData();
@@ -3001,7 +3002,7 @@
     function logoutUser() {
       releaseClassConcurrencySlot();
       stopChatVoiceInput();
-      stopAllSpeechPlayback();
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
       stopQrScanner();
       stopAiScanner();
       APP_STATE.currentUser = null;
@@ -5022,15 +5023,14 @@
     const CHAT_VOICE_STATE = {
       recognition: null,
       isListening: false,
-      ttsEnabled: true,
+      ttsEnabled: false,
       finalTranscript: "",
       selectedVoice: null,
       lastBotReplyText: "Xin chào! Mình là Trợ lý trí tuệ nhân tạo Điểm Danh Trung học phổ thông. Bạn cần hướng dẫn sử dụng cổng điểm danh, xin nghỉ phép hay tra cứu chuyên cần?",
       longPressTimer: null,
       longPressTriggered: false,
       speakQueueToken: 0,
-      audioUnlocked: false,
-      currentAudio: null
+      audioUnlocked: false
     };
 
     function isVietnameseVoice(v) {
@@ -5062,6 +5062,7 @@
         return null;
       }
 
+      // Ưu tiên giọng nữ ấm áp tự nhiên 100% tiếng Việt (Hoài My, Google Tiếng Việt, Linh, Lan, Mai...)
       const preferredKeywords = [
         "hoaimy",
         "hoài my",
@@ -5090,7 +5091,7 @@
       return viVoices[0];
     }
 
-    function ensureVietnameseVoicesReady(timeoutMs = 1500) {
+    function ensureVietnameseVoicesReady(timeoutMs = 900) {
       return new Promise((resolve) => {
         if (!("speechSynthesis" in window)) return resolve(null);
         const existing = selectWarmVietnameseVoice();
@@ -5100,17 +5101,8 @@
         const finish = () => {
           if (settled) return;
           settled = true;
-          clearInterval(poller);
           resolve(selectWarmVietnameseVoice());
         };
-
-        const poller = setInterval(() => {
-          const v = selectWarmVietnameseVoice();
-          if (v) {
-            clearTimeout(timer);
-            finish();
-          }
-        }, 120);
 
         const timer = setTimeout(finish, timeoutMs);
         const prevHandler = window.speechSynthesis.onvoiceschanged;
@@ -5132,18 +5124,17 @@
       };
     }
 
+    // Mở khóa bộ tổng hợp giọng nói ngay lần chạm đầu tiên trên điện thoại/máy tính
     function unlockVietnameseSpeechEngine() {
-      if (CHAT_VOICE_STATE.audioUnlocked) return;
+      if (CHAT_VOICE_STATE.audioUnlocked || !("speechSynthesis" in window)) return;
       CHAT_VOICE_STATE.audioUnlocked = true;
-      if ("speechSynthesis" in window) {
-        selectWarmVietnameseVoice();
-        try {
-          const primer = new SpeechSynthesisUtterance("");
-          primer.lang = "vi-VN";
-          primer.volume = 0;
-          window.speechSynthesis.speak(primer);
-        } catch (_) {}
-      }
+      selectWarmVietnameseVoice();
+      try {
+        const primer = new SpeechSynthesisUtterance("");
+        primer.lang = "vi-VN";
+        primer.volume = 0;
+        window.speechSynthesis.speak(primer);
+      } catch (_) {}
     }
     document.addEventListener("pointerdown", unlockVietnameseSpeechEngine, { once: true });
 
@@ -5154,9 +5145,11 @@
         o: "o", p: "pê", q: "quy", r: "rờ", s: "ét", t: "tê", u: "u",
         v: "vê", w: "vê kép", x: "ích", y: "i", z: "dét"
       };
+      // Nếu từ chứa ký tự tiếng Việt có dấu thì giữ nguyên 100%
       if (/[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/i.test(token)) {
         return token;
       }
+      // Giữ nguyên các từ tiếng Việt không dấu thông dụng
       const commonViNoAccent = new Set([
         "xin", "chao", "minh", "la", "tro", "ly", "diem", "danh", "lop", "hoc", "sinh",
         "giao", "vien", "chu", "nhiem", "giam", "thi", "quan", "tri", "phep", "nghi",
@@ -5170,6 +5163,7 @@
       const lower = token.toLowerCase();
       if (commonViNoAccent.has(lower)) return token;
 
+      // Chữ viết tắt toàn chữ hoa (2-5 ký tự) đọc theo bảng chữ cái tiếng Việt
       if (/^[A-Z]{2,5}$/.test(token)) {
         return token.toLowerCase().split("").map(ch => viLetterMap[ch] || ch).join(" ");
       }
@@ -5179,61 +5173,65 @@
     function normalizeTextFor100PercentVietnamese(rawText) {
       let text = normalizeSchoolLabels(rawText || "");
       text = text
+        // Xóa URL, mã code inline và định dạng markdown / emoji
         .replace(/https?:\/\/[^\s]+/gi, " đường dẫn trang web ")
         .replace(/[*#_`~>•✓✕⛔⚠️🎉📊📝🔐🛡️👑📋✅🎖️🔄📥📤🚀🕒🔒⏰🎓👩‍🏫📷🤖💾📨🔍]/g, " ")
-        .replace(/AI\s*128D/gi, "trí tuệ nhân tạo nhận diện khuôn mặt")
-        .replace(/AI\s*Studio/gi, "phòng chụp trí tuệ nhân tạo")
-        .replace(/AI/gi, "trí tuệ nhân tạo")
-        .replace(/QR\s*code/gi, "mã quy rờ")
-        .replace(/QR/gi, "mã quy rờ")
-        .replace(/PIN/gi, "mã pin")
-        .replace(/GVCN/gi, "Giáo viên chủ nhiệm")
-        .replace(/BGH/gi, "Ban giám hiệu")
-        .replace(/THPT/gi, "Trung học phổ thông")
-        .replace(/HS/gi, "học sinh")
-        .replace(/GV/gi, "giáo viên")
-        .replace(/GT/gi, "giám thị")
+        // Việt hóa 100% toàn bộ từ khóa/thuật ngữ tiếng Anh & ký hiệu chuyên môn
+        .replace(/\bAI\s*128D\b/gi, "trí tuệ nhân tạo nhận diện khuôn mặt")
+        .replace(/\bAI\s*Studio\b/gi, "phòng chụp trí tuệ nhân tạo")
+        .replace(/\bAI\b/gi, "trí tuệ nhân tạo")
+        .replace(/\bQR\s*code\b/gi, "mã quy rờ")
+        .replace(/\bQR\b/gi, "mã quy rờ")
+        .replace(/\bPIN\b/gi, "mã pin")
+        .replace(/\bGVCN\b/gi, "Giáo viên chủ nhiệm")
+        .replace(/\bBGH\b/gi, "Ban giám hiệu")
+        .replace(/\bTHPT\b/gi, "Trung học phổ thông")
+        .replace(/\bHS\b/gi, "học sinh")
+        .replace(/\bGV\b/gi, "giáo viên")
+        .replace(/\bGT\b/gi, "giám thị")
         .replace(/(^|[^\p{L}\p{N}_])Vắng\s*KP(?=$|[^\p{L}\p{N}_])/giu, "$1Vắng không phép")
         .replace(/(^|[^\p{L}\p{N}_])Vắng\s*CP(?=$|[^\p{L}\p{N}_])/giu, "$1Vắng có phép")
         .replace(/(^|[^\p{L}\p{N}_])Không\s*ĐT\/ĐP(?=$|[^\p{L}\p{N}_])/giu, "$1Không đồng phục")
-        .replace(/CSV/gi, "tệp dữ liệu xê ét vê")
-        .replace(/XLSX/gi, "tệp bảng tính ích xeo")
-        .replace(/XLS/gi, "tệp bảng tính ích xeo")
-        .replace(/Excel/gi, "bảng tính ích xeo")
-        .replace(/PDF/gi, "tệp pê đê ép")
-        .replace(/Google\s*Sheets?/gi, "bảng tính Gu gồ")
-        .replace(/Google\s*Apps\s*Script/gi, "hệ thống máy chủ Gu gồ")
-        .replace(/Google/gi, "Gu gồ")
-        .replace(/Chrome/gi, "trình duyệt Crôm")
-        .replace(/Edge/gi, "trình duyệt Ét")
-        .replace(/Admin/gi, "quản trị viên")
-        .replace(/Online/gi, "trực tuyến")
-        .replace(/Offline/gi, "ngoại tuyến")
-        .replace(/Camera/gi, "máy ảnh")
-        .replace(/Micro/gi, "mi cờ rô")
-        .replace(/Reset/gi, "đặt lại")
-        .replace(/Update/gi, "cập nhật")
-        .replace(/Login/gi, "đăng nhập")
-        .replace(/Logout/gi, "đăng xuất")
-        .replace(/App/gi, "ứng dụng")
-        .replace(/Web/gi, "trang web")
-        .replace(/Link/gi, "liên kết")
-        .replace(/File/gi, "tệp tin")
-        .replace(/Tab/gi, "thẻ chức năng")
-        .replace(/Icon/gi, "biểu tượng")
-        .replace(/Button/gi, "nút bấm")
-        .replace(/Data/gi, "dữ liệu")
-        .replace(/System/gi, "hệ thống")
-        .replace(/Server/gi, "máy chủ")
-        .replace(/Error/gi, "lỗi")
-        .replace(/OK/gi, "đồng ý")
-        .replace(/Concurrency\s*Control/gi, "kiểm soát xử lý đồng thời")
-        .replace(/DD\/MM\/YYYY\s*-\s*HH:MM:SS/gi, "ngày tháng năm và giờ phút giây")
-        .replace(/(\d{2})([A-Za-z])(\d{1,2})/g, (_, khoi, chu, stt) => {
+        .replace(/\bCSV\b/gi, "tệp dữ liệu xê ét vê")
+        .replace(/\bXLSX\b/gi, "tệp bảng tính ích xeo")
+        .replace(/\bXLS\b/gi, "tệp bảng tính ích xeo")
+        .replace(/\bExcel\b/gi, "bảng tính ích xeo")
+        .replace(/\bPDF\b/gi, "tệp pê đê ép")
+        .replace(/\bGoogle\s*Sheets?\b/gi, "bảng tính Gu gồ")
+        .replace(/\bGoogle\s*Apps\s*Script\b/gi, "hệ thống máy chủ Gu gồ")
+        .replace(/\bGoogle\b/gi, "Gu gồ")
+        .replace(/\bChrome\b/gi, "trình duyệt Crôm")
+        .replace(/\bEdge\b/gi, "trình duyệt Ét")
+        .replace(/\bAdmin\b/gi, "quản trị viên")
+        .replace(/\bOnline\b/gi, "trực tuyến")
+        .replace(/\bOffline\b/gi, "ngoại tuyến")
+        .replace(/\bCamera\b/gi, "máy ảnh")
+        .replace(/\bMicro\b/gi, "mi cờ rô")
+        .replace(/\bReset\b/gi, "đặt lại")
+        .replace(/\bUpdate\b/gi, "cập nhật")
+        .replace(/\bLogin\b/gi, "đăng nhập")
+        .replace(/\bLogout\b/gi, "đăng xuất")
+        .replace(/\bApp\b/gi, "ứng dụng")
+        .replace(/\bWeb\b/gi, "trang web")
+        .replace(/\bLink\b/gi, "liên kết")
+        .replace(/\bFile\b/gi, "tệp tin")
+        .replace(/\bTab\b/gi, "thẻ chức năng")
+        .replace(/\bIcon\b/gi, "biểu tượng")
+        .replace(/\bButton\b/gi, "nút bấm")
+        .replace(/\bData\b/gi, "dữ liệu")
+        .replace(/\bSystem\b/gi, "hệ thống")
+        .replace(/\bServer\b/gi, "máy chủ")
+        .replace(/\bError\b/gi, "lỗi")
+        .replace(/\bOK\b/gi, "đồng ý")
+        .replace(/\bConcurrency\s*Control\b/gi, "kiểm soát xử lý đồng thời")
+        .replace(/\bDD\/MM\/YYYY\s*-\s*HH:MM:SS\b/gi, "ngày tháng năm và giờ phút giây")
+        // Đọc mã lớp kiểu 10A01, 12A1 sang phát âm tiếng Việt tự nhiên
+        .replace(/\b(\d{2})([A-Za-z])(\d{1,2})\b/g, (_, khoi, chu, stt) => {
           const docChu = { a: "a", b: "bê", c: "xê", d: "đê" }[chu.toLowerCase()] || chu.toLowerCase();
           return `${khoi} ${docChu} ${parseInt(stt, 10)}`;
         })
-        .replace(/(\d{1,2}):(\d{2})(?::(\d{2}))?/g, (_, h, m, s) => {
+        // Đọc giờ HH:MM:SS hoặc HH:MM sang tiếng Việt tự nhiên
+        .replace(/\b(\d{1,2}):(\d{2})(?::(\d{2}))?\b/g, (_, h, m, s) => {
           const minNum = parseInt(m, 10);
           const secNum = s ? parseInt(s, 10) : 0;
           let out = `${parseInt(h, 10)} giờ`;
@@ -5245,29 +5243,29 @@
         .replace(/%/g, " phần trăm ")
         .replace(/&/g, " và ")
         .replace(/[|]/g, ", ")
-        .replace(/[A-Za-zÀ-ỹ0-9_-]+/g, (tok) => spellUnknownEnglishTokenInVietnamese(tok))
+        .replace(/\b[A-Za-zÀ-ỹ0-9_-]+\b/g, (tok) => spellUnknownEnglishTokenInVietnamese(tok))
         .replace(/\s+/g, " ")
         .trim();
       return text;
     }
 
-    function splitVietnameseSentencesForSpeech(text, maxLen = 145) {
+    function splitVietnameseSentencesForSpeech(text) {
       if (!text) return [];
       const rawParts = text
-        .split(/(?<=[.!?。;
-])\s+/)
+        .split(/(?<=[.!?。;\n])\s+/)
         .map(s => s.trim())
         .filter(Boolean);
 
       const chunks = [];
       rawParts.forEach(part => {
-        if (part.length <= maxLen) {
+        if (part.length <= 150) {
           chunks.push(part);
         } else {
+          // Cắt mềm theo dấu phẩy nếu câu quá dài để giữ nhịp thở tự nhiên, không bị ngắt quãng
           const subParts = part.split(/,\s+/);
           let buf = "";
           subParts.forEach(sp => {
-            if ((buf + ", " + sp).length > maxLen && buf) {
+            if ((buf + ", " + sp).length > 150 && buf) {
               chunks.push(buf.trim());
               buf = sp;
             } else {
@@ -5280,69 +5278,12 @@
       return chunks;
     }
 
-    function stopAllSpeechPlayback() {
-      CHAT_VOICE_STATE.speakQueueToken++;
-      if ("speechSynthesis" in window) {
-        try { window.speechSynthesis.cancel(); } catch (_) {}
-      }
-      if (CHAT_VOICE_STATE.currentAudio) {
-        try {
-          CHAT_VOICE_STATE.currentAudio.pause();
-          CHAT_VOICE_STATE.currentAudio.src = "";
-        } catch (_) {}
-        CHAT_VOICE_STATE.currentAudio = null;
-      }
-    }
-
-    function playVietnameseFallbackAudioQueue(sentences, token, forceSpeak = false) {
-      let idx = 0;
-      const playNext = () => {
-        if (token !== CHAT_VOICE_STATE.speakQueueToken) return;
-        if (!CHAT_VOICE_STATE.ttsEnabled && !forceSpeak) return;
-        if (idx >= sentences.length) return;
-
-        const chunk = encodeURIComponent(sentences[idx]);
-        const ttsUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=${chunk}`;
-        const audio = new Audio(ttsUrl);
-        audio.playbackRate = 1.06;
-        CHAT_VOICE_STATE.currentAudio = audio;
-
-        audio.onended = () => {
-          idx++;
-          if (idx < sentences.length && token === CHAT_VOICE_STATE.speakQueueToken) {
-            setTimeout(playNext, 80);
-          }
-        };
-        audio.onerror = () => {
-          // Dự phòng cuối nếu bị chặn mạng TTS: dùng speechSynthesis lang="vi-VN"
-          if ("speechSynthesis" in window && token === CHAT_VOICE_STATE.speakQueueToken) {
-            const utter = new SpeechSynthesisUtterance(sentences[idx]);
-            utter.lang = "vi-VN";
-            utter.rate = 1.06;
-            utter.pitch = 0.96;
-            utter.onend = () => {
-              idx++;
-              if (idx < sentences.length && token === CHAT_VOICE_STATE.speakQueueToken) {
-                setTimeout(playNext, 80);
-              }
-            };
-            window.speechSynthesis.speak(utter);
-          }
-        };
-
-        audio.play().catch(() => {
-          if (audio.onerror) audio.onerror();
-        });
-      };
-      playNext();
-    }
-
     function updateChatTtsButtonVisual() {
       const btn = document.getElementById("btnToggleChatTts");
       if (!btn) return;
       if (CHAT_VOICE_STATE.ttsEnabled) {
         btn.textContent = "🔊";
-        btn.title = "Đang bật đọc giọng nói tiếng Việt (Bấm để tắt • Nhấn giữ để nghe lại)";
+        btn.title = "Đang bật đọc giọng nói (Bấm để tắt • Nhấn giữ để nghe lại)";
         btn.classList.add("bg-white/20");
       } else {
         btn.textContent = "🔇";
@@ -5359,7 +5300,7 @@
         CHAT_VOICE_STATE.ttsEnabled = true;
         updateChatTtsButtonVisual();
         speakChatBotReply(CHAT_VOICE_STATE.lastBotReplyText, true);
-        showToast("🔊 Đang đọc lại nội dung bằng giọng tiếng Việt", "info");
+        showToast("🔊 Đang đọc lại nội dung bằng giọng tiếng Việt ấm áp", "info");
       }, 450);
     }
 
@@ -5383,10 +5324,13 @@
       updateChatTtsButtonVisual();
 
       if (!CHAT_VOICE_STATE.ttsEnabled) {
-        stopAllSpeechPlayback();
+        CHAT_VOICE_STATE.speakQueueToken++;
+        if ("speechSynthesis" in window) {
+          window.speechSynthesis.cancel();
+        }
         showToast("Đã tắt đọc giọng nói Trợ lý trí tuệ nhân tạo", "info");
       } else {
-        showToast("🔊 Đã bật đọc 100% tiếng Việt", "success");
+        showToast("🔊 Đã bật đọc 100% tiếng Việt (giọng ấm áp, tốc độ nhanh vừa)", "success");
         if (CHAT_VOICE_STATE.lastBotReplyText) {
           speakChatBotReply(CHAT_VOICE_STATE.lastBotReplyText, true);
         }
@@ -5397,28 +5341,30 @@
       if (rawText && String(rawText).trim()) {
         CHAT_VOICE_STATE.lastBotReplyText = String(rawText).trim();
       }
-      if (!CHAT_VOICE_STATE.ttsEnabled && !forceSpeak) return;
+      if ((!CHAT_VOICE_STATE.ttsEnabled && !forceSpeak) || !("speechSynthesis" in window)) return;
 
       try {
-        stopAllSpeechPlayback();
+        CHAT_VOICE_STATE.speakQueueToken++;
         const currentToken = CHAT_VOICE_STATE.speakQueueToken;
+        window.speechSynthesis.cancel();
 
         const vietnamesePlain = normalizeTextFor100PercentVietnamese(CHAT_VOICE_STATE.lastBotReplyText);
         if (!vietnamesePlain) return;
 
-        const warmVoice = ("speechSynthesis" in window)
-          ? (CHAT_VOICE_STATE.selectedVoice || await ensureVietnameseVoicesReady(1500))
-          : null;
+        // Đảm bảo nạp xong danh sách giọng đọc tiếng Việt; nếu thiết bị không có giọng tiếng Việt thì tự tắt để tránh đọc giọng tiếng Anh
+        const warmVoice = CHAT_VOICE_STATE.selectedVoice || await ensureVietnameseVoicesReady(1200);
         if (currentToken !== CHAT_VOICE_STATE.speakQueueToken) return;
 
-        // Nếu trình duyệt KHÔNG có gói giọng đọc tiếng Việt bản địa -> phát trực tiếp luồng giọng nữ tiếng Việt chuẩn, KHÔNG bao giờ dùng giọng tiếng Anh của hệ điều hành!
         if (!warmVoice) {
-          const fallbackChunks = splitVietnameseSentencesForSpeech(vietnamesePlain, 130);
-          playVietnameseFallbackAudioQueue(fallbackChunks, currentToken, forceSpeak);
+          CHAT_VOICE_STATE.ttsEnabled = false;
+          updateChatTtsButtonVisual();
+          if (forceSpeak) {
+            showToast("⚠️ Trình duyệt/thiết bị này chưa cài gói giọng đọc Tiếng Việt nên không thể đọc thành tiếng.", "warning");
+          }
           return;
         }
 
-        const sentences = splitVietnameseSentencesForSpeech(vietnamesePlain, 145);
+        const sentences = splitVietnameseSentencesForSpeech(vietnamesePlain);
         let idx = 0;
 
         const speakNextSentence = () => {
@@ -5427,8 +5373,9 @@
           if (idx >= sentences.length) return;
 
           const utter = new SpeechSynthesisUtterance(sentences[idx]);
-          utter.voice = warmVoice;
           utter.lang = warmVoice.lang || "vi-VN";
+          utter.voice = warmVoice;
+          // Giọng trầm ấm (pitch: 0.96), tốc độ nhanh vừa tự nhiên (rate: 1.06)
           utter.rate = 1.06;
           utter.pitch = 0.96;
           utter.volume = 1.0;
@@ -5440,9 +5387,9 @@
             }
           };
           utter.onerror = () => {
-            // Nếu giọng hệ thống lỗi giữa chừng -> chuyển ngay sang luồng giọng tiếng Việt dự phòng
-            if (currentToken === CHAT_VOICE_STATE.speakQueueToken) {
-              playVietnameseFallbackAudioQueue(sentences.slice(idx), currentToken, forceSpeak);
+            idx++;
+            if (idx < sentences.length && currentToken === CHAT_VOICE_STATE.speakQueueToken) {
+              setTimeout(speakNextSentence, 80);
             }
           };
 
@@ -5500,7 +5447,9 @@
         return;
       }
 
-      stopAllSpeechPlayback();
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
 
       const input = document.getElementById("chatInputField");
       const baseText = input ? input.value.trim() : "";
@@ -5583,7 +5532,7 @@
 
     function resetChatConversation() {
       stopChatVoiceInput();
-      stopAllSpeechPlayback();
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
       const container = document.getElementById("chatMessagesContainer");
       const ctx = getCurrentChatPortalContext();
       if (!container) return;

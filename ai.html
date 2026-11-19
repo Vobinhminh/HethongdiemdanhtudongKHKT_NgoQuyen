@@ -1908,7 +1908,10 @@
           const res = await fetch(WEB_APP_URL, {
             method: "POST",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({
+              action: "saveAiStudentFaceSamples",
+              args: [payload]
+            })
           });
           if (!res.ok) {
             throw new Error(`Lỗi máy chủ (Mã ${res.status})`);
@@ -1975,6 +1978,13 @@
         });
 
         if (result && result.status === "success") {
+          try {
+            localStorage.setItem("AI_FACE_UPDATED", JSON.stringify({
+              className: currentClassName,
+              studentName: currentStudent.name,
+              ts: Date.now()
+            }));
+          } catch (_) {}
           const vecNote = result.vectorSaved
             ? " (Đã đồng bộ dữ liệu nhận diện tự động)"
             : " (Đã lưu 3 ảnh lên hệ thống)";
@@ -1997,6 +2007,30 @@
         btn.innerHTML = oldHtml;
       }
     }
+  </script>
+  <script>
+    (function checkAiStationAppUpdate() {
+      const AI_STATION_VERSION = "1.2.4";
+      fetch("./version.json?t=" + Date.now(), { cache: "no-store" })
+        .then(r => (r.ok ? r.json() : null))
+        .then(data => {
+          if (!data || !data.version) return;
+          const savedVer = localStorage.getItem("AI_STATION_APP_VERSION");
+          if (savedVer && savedVer !== String(data.version)) {
+            localStorage.setItem("AI_STATION_APP_VERSION", String(data.version));
+            if ("caches" in window) {
+              caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).finally(() => {
+                window.location.reload();
+              });
+            } else {
+              window.location.reload();
+            }
+          } else {
+            localStorage.setItem("AI_STATION_APP_VERSION", String(data.version || AI_STATION_VERSION));
+          }
+        })
+        .catch(() => {});
+    })();
   </script>
   <script src="version.js" onerror="console.log('Chế độ offline/standalone')"></script>
 </body>

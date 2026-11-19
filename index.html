@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Cổng Điểm Danh & Trạm AI Trung Học Phổ Thông</title>
   <script>
-      const APP_VERSION = "1.2.2"; // Cập nhật số này mỗi khi sửa file
+      const APP_VERSION = "1.2.4"; // Cập nhật số này mỗi khi sửa file
 
       async function checkAppUpdate() {
         try {
@@ -461,13 +461,21 @@
                 </span>
               </div>
 
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <span id="deviceBatteryBadge" class="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-white/10 text-slate-200 border border-white/20">
+                  🔋 Pin: Đang kiểm tra...
+                </span>
                 <span id="concurrencyLastSyncLabel" class="text-[11px] text-slate-300 font-mono hidden sm:inline">
                   Đồng bộ: --:--:--
                 </span>
                 <button type="button" onclick="manualSyncDistributedClass()"
                         class="px-2.5 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-white text-[11px] font-bold border border-white/20 transition">
                   🔄 Đồng bộ 2 nguồn
+                </button>
+                <button type="button" id="btnManualBatteryHandover" onclick="triggerLowBatteryHandover('MANUAL')"
+                        title="Chuyển toàn bộ dữ liệu đang có sang máy còn lại và tự khóa thiết bị này"
+                        class="px-2.5 py-1 rounded-lg bg-amber-500/25 hover:bg-amber-500/40 text-amber-200 text-[11px] font-bold border border-amber-400/40 transition">
+                  🪫 Bàn giao &amp; Tự khóa
                 </button>
               </div>
             </div>
@@ -491,6 +499,23 @@
                 <button type="button" onclick="retryAcquireClassSlot()"
                         class="px-3 py-1.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold shadow-sm transition">
                   🔄 Kiểm tra khe trống &amp; Kết nối lại
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- CẢNH BÁO TỰ KHÓA SAU KHI BÀN GIAO DỮ LIỆU DO HẾT PIN -->
+          <div id="batteryHandoverLockedBox" class="hidden mt-4 rounded-2xl bg-amber-50 border-2 border-amber-500 p-4 flex items-start gap-3 text-amber-950 shadow-sm">
+            <span class="text-2xl">🪫</span>
+            <div class="flex-1 text-xs sm:text-sm space-y-1.5">
+              <p class="font-extrabold text-amber-900">Đã Bàn Giao Dữ Liệu Sang Máy Còn Lại &amp; Tự Khóa Thiết Bị Này</p>
+              <p id="batteryHandoverLockedReason" class="text-amber-800">
+                Thiết bị này đã chuyển toàn bộ trạng thái điểm danh đang có sang thiết bị song song và giải phóng khe nguồn để máy còn lại tiếp tục điểm danh không gián đoạn.
+              </p>
+              <div class="pt-1 flex flex-wrap items-center gap-2">
+                <button type="button" onclick="unlockAfterBatteryHandover()"
+                        class="px-3 py-1.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold shadow-sm transition">
+                  🔌 Đã cắm sạc • Mở khóa &amp; Kết nối lại
                 </button>
               </div>
             </div>
@@ -1181,7 +1206,7 @@
                   onpointerdown="startChatTtsLongPress(event)"
                   onpointerup="cancelChatTtsLongPress()"
                   onpointerleave="cancelChatTtsLongPress()"
-                  title="Đọc 100% tiếng Việt giọng ấm áp (Bấm bật/tắt • Nhấn giữ để nghe lại)"
+                  title="Đọc 100% tiếng Việt giọng ấm áp, tốc độ nhanh vừa (Bấm bật/tắt • Nhấn giữ để nghe lại)"
                   class="text-white text-xs font-bold px-2 py-1 rounded-lg bg-white/20 hover:bg-white/30 transition select-none">
             🔊
           </button>
@@ -1461,6 +1486,7 @@
       updateLiveSystemClocks();
       setInterval(updateLiveSystemClocks, 1000);
       loadInitialAppData();
+      initDeviceBatteryMonitor();
       setInterval(refreshAttendanceTimeGateUI, 15000);
     });
 
@@ -1809,7 +1835,13 @@
       syncTimer: null,
       channel: null,
       currentScopeKey: "",
-      lastSyncTimeStr: ""
+      lastSyncTimeStr: "",
+      lowBatteryLocked: false,
+      lowBatteryLockReason: "",
+      batteryLevelPct: null,
+      batteryCharging: null,
+      handoverInProgress: false,
+      lastHandoverAlertKey: ""
     };
 
     function tickLamportClock(remoteClock = 0) {
@@ -2205,6 +2237,19 @@
       DIST_CONCURRENCY.lastSyncTimeStr = formatTimeVN(new Date());
       renderDistributedConcurrencyUI();
 
+      // Kiểm tra thông báo bàn giao khẩn cấp từ thiết bị hết pin
+      if (local.lastHandover && local.lastHandover.fromNodeId && local.lastHandover.fromNodeId !== DIST_CONCURRENCY.nodeId) {
+        const hoKey = `${local.lastHandover.fromNodeId}_${local.lastHandover.tsMs}`;
+        if (DIST_CONCURRENCY.lastHandoverAlertKey !== hoKey && (Date.now() - (Number(local.lastHandover.tsMs) || 0)) < 180000) {
+          DIST_CONCURRENCY.lastHandoverAlertKey = hoKey;
+          playCheckinBeep(false);
+          showToast(
+            `📲 Đã tiếp nhận toàn bộ dữ liệu từ ${local.lastHandover.fromUser} (${local.lastHandover.reason}) — Máy kia đã tự khóa!`,
+            "success"
+          );
+        }
+      }
+
       if (mergedChanges > 0) {
         updateAttendanceSummary();
         if (subMode === "LIST") {
@@ -2239,6 +2284,202 @@
       } finally {
         hideLoader();
       }
+    }
+
+    /* ---------------------------------------------------------------------
+     * GIÁM SÁT PIN THIẾT BỊ & TỰ ĐỘNG BÀN GIAO DỮ LIỆU KHI SẮP HẾT PIN
+     * Ngưỡng cảnh báo: <= 15% (không sạc) | Ngưỡng bàn giao & tự khóa: <= 8% (không sạc)
+     * --------------------------------------------------------------------- */
+    const LOW_BATTERY_WARN_PCT = 15;
+    const LOW_BATTERY_HANDOVER_PCT = 8;
+
+    function updateBatteryStatusBadge() {
+      const badge = document.getElementById("deviceBatteryBadge");
+      if (!badge) return;
+      if (DIST_CONCURRENCY.batteryLevelPct === null) {
+        badge.textContent = "🔋 Pin: Sẵn sàng";
+        badge.className = "text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-white/10 text-slate-200 border border-white/20";
+        return;
+      }
+      const pct = DIST_CONCURRENCY.batteryLevelPct;
+      const charging = DIST_CONCURRENCY.batteryCharging;
+      if (charging) {
+        badge.textContent = `⚡ Đang sạc: ${pct}%`;
+        badge.className = "text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40";
+      } else if (pct <= LOW_BATTERY_HANDOVER_PCT) {
+        badge.textContent = `🪫 Pin cạn: ${pct}%`;
+        badge.className = "text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-rose-500/30 text-rose-200 border border-rose-400/50 animate-pulse";
+      } else if (pct <= LOW_BATTERY_WARN_PCT) {
+        badge.textContent = `⚠️ Pin yếu: ${pct}%`;
+        badge.className = "text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-amber-500/30 text-amber-200 border border-amber-400/50";
+      } else {
+        badge.textContent = `🔋 Pin: ${pct}%`;
+        badge.className = "text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-white/10 text-slate-200 border border-white/20";
+      }
+    }
+
+    async function initDeviceBatteryMonitor() {
+      updateBatteryStatusBadge();
+      if (typeof navigator === "undefined" || typeof navigator.getBattery !== "function") return;
+      try {
+        const battery = await navigator.getBattery();
+        const evaluateBattery = async () => {
+          const pct = Math.round((Number(battery.level) || 0) * 100);
+          const charging = Boolean(battery.charging);
+          DIST_CONCURRENCY.batteryLevelPct = pct;
+          DIST_CONCURRENCY.batteryCharging = charging;
+          updateBatteryStatusBadge();
+
+          const attPanel = document.getElementById("panelAttendance");
+          const isAttendanceOpen = attPanel && !attPanel.classList.contains("hidden");
+          if (!isAttendanceOpen || !APP_STATE.attendance || !APP_STATE.attendance.className) return;
+
+          if (!charging && pct <= LOW_BATTERY_HANDOVER_PCT && !DIST_CONCURRENCY.lowBatteryLocked && !DIST_CONCURRENCY.handoverInProgress) {
+            await triggerLowBatteryHandover("AUTO_LOW_BATTERY", pct);
+          } else if (!charging && pct <= LOW_BATTERY_WARN_PCT && !DIST_CONCURRENCY.lowBatteryLocked) {
+            // Đồng bộ dự phòng ngay lập tức khi pin chạm mốc 15%
+            syncDistributedAttendanceState(false);
+          }
+        };
+
+        await evaluateBattery();
+        battery.addEventListener("levelchange", evaluateBattery);
+        battery.addEventListener("chargingchange", evaluateBattery);
+      } catch (_) {}
+    }
+
+    async function triggerLowBatteryHandover(triggerMode = "MANUAL", pct = null) {
+      if (DIST_CONCURRENCY.handoverInProgress || DIST_CONCURRENCY.lowBatteryLocked) return;
+      const { className, statusMap, silentLogs } = APP_STATE.attendance || {};
+      if (!className) return;
+
+      if (triggerMode === "MANUAL") {
+        const ok = confirm(
+          `Xác nhận chuyển toàn bộ dữ liệu điểm danh đang có của lớp ${className} sang máy còn lại và TỰ KHÓA thiết bị này?`
+        );
+        if (!ok) return;
+      }
+
+      DIST_CONCURRENCY.handoverInProgress = true;
+      const session = document.getElementById("attSessionSelect").value;
+      const dateStr = (APP_STATE.initData && APP_STATE.initData.dateStr) || formatDateVN(new Date());
+      const scopeKey = getDistributedScopeKey(className, session, dateStr);
+      const u = APP_STATE.currentUser || { name: "Cán bộ" };
+      const clock = tickLamportClock();
+      const nowMs = Date.now();
+      const batteryInfoStr = pct !== null
+        ? `pin chỉ còn ${pct}%`
+        : (DIST_CONCURRENCY.batteryLevelPct !== null ? `pin còn ${DIST_CONCURRENCY.batteryLevelPct}%` : "thao tác bàn giao chủ động");
+
+      showLoader("Đang chuyển toàn bộ dữ liệu sang máy còn lại & tự khóa...");
+      try {
+        // 1. Đóng gói và đẩy toàn bộ bản ghi điểm danh hiện có của thiết bị này với Lamport Clock mới nhất
+        const handoverRecords = {};
+        let presentTransferred = 0;
+        Object.keys(statusMap || {}).forEach(k => {
+          const item = statusMap[k];
+          if (!item) return;
+          if (item.status === "PRESENT") presentTransferred++;
+          handoverRecords[k] = {
+            ...item,
+            lamport: Math.max(Number(item.lamport) || 0, clock),
+            updatedAt: nowMs,
+            handedOverFromNode: DIST_CONCURRENCY.nodeId,
+            handedOverFromUser: u.name
+          };
+        });
+
+        const local = readLocalClusterState(scopeKey);
+        mergeStatusRecordsCRDT(local.records, handoverRecords);
+        Object.keys(handoverRecords).forEach(k => {
+          const cur = handoverRecords[k];
+          const prev = local.records[k];
+          if (!prev || getStatusPriorityRank(cur.status, cur.method) >= getStatusPriorityRank(prev.status, prev.method)) {
+            local.records[k] = { ...cur };
+          }
+        });
+
+        const seenEventIds = new Set((local.logs || []).map(l => l.eventId || `${l.maHS}_${l.name}`));
+        (silentLogs || []).forEach(l => {
+          const eid = l.eventId || `${l.maHS}_${l.name}`;
+          if (!seenEventIds.has(eid)) {
+            seenEventIds.add(eid);
+            local.logs.push(l);
+          }
+        });
+
+        local.lastHandover = {
+          fromNodeId: DIST_CONCURRENCY.nodeId,
+          fromUser: u.name,
+          reason: batteryInfoStr,
+          presentCount: presentTransferred,
+          totalCount: Object.keys(handoverRecords).length,
+          timestamp: formatDateTimeVN(new Date()),
+          tsMs: nowMs
+        };
+        local.lamport = clock;
+        writeLocalClusterState(scopeKey, local);
+
+        // 2. Xả ngay hàng đợi log quét QR/AI chưa gửi lên Google Sheet
+        await flushSilentAttendanceLogs();
+
+        // 3. Đồng bộ lên máy chủ GAS & giải phóng khe nguồn để máy còn lại tiếp quản trọn vẹn
+        if (DIST_CONCURRENCY.serverSupportsConcurrencyApi) {
+          try {
+            await callGasApi("syncClassAttendanceState", {
+              className,
+              session,
+              dateStr,
+              nodeId: DIST_CONCURRENCY.nodeId,
+              lamportClock: clock,
+              records: local.records,
+              logs: local.logs,
+              handoverNotice: local.lastHandover
+            });
+          } catch (_) {}
+        }
+
+        await releaseClassConcurrencySlot(scopeKey, false);
+
+        // 4. Dừng camera QR / AI để tiết kiệm pin tối đa và khóa thiết bị này
+        await stopQrScanner();
+        stopAiScanner();
+
+        DIST_CONCURRENCY.slotGranted = false;
+        DIST_CONCURRENCY.slotIndex = 0;
+        DIST_CONCURRENCY.lowBatteryLocked = true;
+        DIST_CONCURRENCY.lowBatteryLockReason =
+          `Thiết bị (${u.name} • ${DIST_CONCURRENCY.nodeId}) đã tự động chuyển toàn bộ dữ liệu điểm danh lớp ${className} (${presentTransferred}/${Object.keys(handoverRecords).length} HS có mặt) sang máy còn lại lúc ${formatTimeVN(new Date())} do ${batteryInfoStr} và TỰ ĐỘNG KHÓA.`;
+
+        const box = document.getElementById("batteryHandoverLockedBox");
+        const reasonEl = document.getElementById("batteryHandoverLockedReason");
+        if (box && reasonEl) {
+          reasonEl.textContent = DIST_CONCURRENCY.lowBatteryLockReason;
+          box.classList.remove("hidden");
+        }
+
+        renderDistributedConcurrencyUI();
+        refreshAttendanceTimeGateUI();
+        playCheckinBeep(true);
+        showToast(`🪫 Đã chuyển toàn bộ dữ liệu sang máy còn lại và TỰ KHÓA thiết bị này!`, "warning");
+      } catch (err) {
+        showToast("Lỗi khi bàn giao dữ liệu: " + err.message, "error");
+      } finally {
+        DIST_CONCURRENCY.handoverInProgress = false;
+        hideLoader();
+      }
+    }
+
+    async function unlockAfterBatteryHandover() {
+      if (!DIST_CONCURRENCY.batteryCharging && DIST_CONCURRENCY.batteryLevelPct !== null && DIST_CONCURRENCY.batteryLevelPct <= LOW_BATTERY_HANDOVER_PCT) {
+        showToast(`⚠️ Pin hiện tại vẫn đang ở mức ${DIST_CONCURRENCY.batteryLevelPct}% và chưa cắm sạc! Vui lòng cắm sạc trước khi mở khóa.`, "warning");
+        return;
+      }
+      DIST_CONCURRENCY.lowBatteryLocked = false;
+      DIST_CONCURRENCY.lowBatteryLockReason = "";
+      const box = document.getElementById("batteryHandoverLockedBox");
+      if (box) box.classList.add("hidden");
+      await retryAcquireClassSlot();
     }
 
     function renderDistributedConcurrencyUI() {
@@ -2312,7 +2553,8 @@
       const session = sessionEl ? sessionEl.value : ((APP_STATE.initData && APP_STATE.initData.session) || "Sáng");
       const gate = evaluateAttendanceTimeGate(session);
       const isHardLocked = Boolean(APP_STATE.attendance && APP_STATE.attendance.isHardLocked);
-      const canWrite = gate.allowed && DIST_CONCURRENCY.slotGranted && !isHardLocked;
+      const isBatteryLocked = Boolean(DIST_CONCURRENCY && DIST_CONCURRENCY.lowBatteryLocked);
+      const canWrite = gate.allowed && DIST_CONCURRENCY.slotGranted && !isHardLocked && !isBatteryLocked;
 
       const badge = document.getElementById("attTimeWindowBadge");
       const lockBox = document.getElementById("attTimeGateLockedBox");
@@ -2332,7 +2574,10 @@
       }
 
       if (lockBox && lockReason) {
-        if (isHardLocked) {
+        if (isBatteryLocked) {
+          lockBox.classList.remove("hidden");
+          lockReason.textContent = DIST_CONCURRENCY.lowBatteryLockReason || "Thiết bị này đã bàn giao toàn bộ dữ liệu điểm danh sang máy còn lại do pin yếu và tự động khóa thao tác ghi.";
+        } else if (isHardLocked) {
           lockBox.classList.remove("hidden");
           lockReason.textContent = "Sổ điểm danh ngày hôm nay đã được Giám thị / Quản trị viên KHÓA SỔ. Không thể chỉnh sửa thêm.";
         } else if (gate.allowed) {
@@ -2716,6 +2961,10 @@
       stopAiScanner();
       if (tabId !== "ATTENDANCE") {
         releaseClassConcurrencySlot();
+      DIST_CONCURRENCY.lowBatteryLocked = false;
+      DIST_CONCURRENCY.lowBatteryLockReason = "";
+      const bBox = document.getElementById("batteryHandoverLockedBox");
+      if (bBox) bBox.classList.add("hidden");
       }
 
       document.querySelectorAll(".ws-tab-btn").forEach(btn => {
@@ -2768,6 +3017,15 @@
 
     window.addEventListener("beforeunload", () => {
       releaseClassConcurrencySlot(null, true);
+    });
+
+    window.addEventListener("storage", (e) => {
+      if (e.key === "AI_FACE_UPDATED" && e.newValue) {
+        const attPanel = document.getElementById("panelAttendance");
+        if (attPanel && !attPanel.classList.contains("hidden") && APP_STATE.attendance && APP_STATE.attendance.className) {
+          loadAttendanceClassSheet();
+        }
+      }
     });
 
     /* ---------------------------------------------------------------------
@@ -2848,6 +3106,7 @@
       const session = document.getElementById("attSessionSelect").value;
       const subject = document.getElementById("attSubjectSelect").value;
       const dateStr = (APP_STATE.initData && APP_STATE.initData.dateStr) || formatDateVN(new Date());
+      const dateStr = (APP_STATE.initData && APP_STATE.initData.dateStr) || formatDateVN(new Date());
 
       if (!className) return;
 
@@ -2878,6 +3137,16 @@
         const isEditMode = Boolean(res && res.status === "LOCKED");
         const isHardLocked = Boolean(res && res.isHardLocked);
         const existingReport = (res && res.existingReport) || null;
+
+        if (isEditMode && existingReport) {
+          const scopeKey = getDistributedScopeKey(className, session, dateStr);
+          const staleLocal = readLocalClusterState(scopeKey);
+          if (staleLocal.records && Object.keys(staleLocal.records).length > 0) {
+            staleLocal.records = {};
+            staleLocal.logs = [];
+            writeLocalClusterState(scopeKey, staleLocal);
+          }
+        }
 
         if (isEditMode && existingReport) {
           const normName = (s) => String(s || "").trim().toLowerCase();
@@ -3241,7 +3510,7 @@
 
       aiModelLoadingPromise = Promise.all([
         faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODEL_URL),
-        faceapi.nets.faceLandmark68TinyNet.loadFromUri(FACE_MODEL_URL),
+        faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODEL_URL),
         faceapi.nets.faceRecognitionNet.loadFromUri(FACE_MODEL_URL)
       ]).then(() => {
         APP_STATE.aiModelsLoaded = true;
@@ -3466,7 +3735,7 @@
 
             const det = await faceapi
               .detectSingleFace(video, detectorOptions)
-              .withFaceLandmarks(true)
+              .withFaceLandmarks()
               .withFaceDescriptor();
 
             if (det && aiLoopActive) {
@@ -3488,7 +3757,7 @@
                   }
                 }
 
-                if (best && minDist <= 0.50) {
+                if (best && minDist <= 0.44) {
                   const curStatus = APP_STATE.attendance.statusMap[best.key];
                   if (curStatus && curStatus.status === "PRESENT") {
                     boxColor = "#06b6d4";
@@ -4757,26 +5026,59 @@
       lastBotReplyText: "Xin chào! Mình là Trợ lý trí tuệ nhân tạo Điểm Danh Trung học phổ thông. Bạn cần hướng dẫn sử dụng cổng điểm danh, xin nghỉ phép hay tra cứu chuyên cần?",
       longPressTimer: null,
       longPressTriggered: false,
-      speakQueueToken: 0
+      speakQueueToken: 0,
+      audioUnlocked: false
     };
+
+    function isVietnameseVoice(v) {
+      if (!v) return false;
+      const lang = String(v.lang || "").toLowerCase().replace(/_/g, "-");
+      const name = String(v.name || "").toLowerCase();
+      return (
+        lang === "vi" ||
+        lang.startsWith("vi-") ||
+        name.includes("vietnam") ||
+        name.includes("vietnamese") ||
+        name.includes("tiếng việt") ||
+        name.includes("tieng viet") ||
+        name.includes("hoaimy") ||
+        name.includes("hoài my") ||
+        name.includes("linh") ||
+        name.includes("namminh")
+      );
+    }
 
     function selectWarmVietnameseVoice() {
       if (!("speechSynthesis" in window)) return null;
       const voices = window.speechSynthesis.getVoices() || [];
       if (voices.length === 0) return null;
 
-      const viVoices = voices.filter(v => {
-        const lang = String(v.lang || "").toLowerCase();
-        const name = String(v.name || "").toLowerCase();
-        return lang.includes("vi") || name.includes("vietnam") || name.includes("tiếng việt") || name.includes("hoaimy") || name.includes("linh");
-      });
+      const viVoices = voices.filter(isVietnameseVoice);
+      if (viVoices.length === 0) {
+        CHAT_VOICE_STATE.selectedVoice = null;
+        return null;
+      }
 
-      if (viVoices.length === 0) return null;
-
-      // Ưu tiên giọng nữ/giọng ấm áp tự nhiên tiếng Việt
-      const preferredKeywords = ["hoaimy", "natural", "google tiếng việt", "linh", "lan", "mai", "female", "nữ", "vi-vn"];
+      // Ưu tiên giọng nữ ấm áp tự nhiên 100% tiếng Việt (Hoài My, Google Tiếng Việt, Linh, Lan, Mai...)
+      const preferredKeywords = [
+        "hoaimy",
+        "hoài my",
+        "natural",
+        "online",
+        "google tiếng việt",
+        "microsoft hoaimy",
+        "linh",
+        "lan",
+        "mai",
+        "female",
+        "nữ",
+        "vi-vn"
+      ];
       for (const kw of preferredKeywords) {
-        const found = viVoices.find(v => String(v.name || "").toLowerCase().includes(kw) || String(v.lang || "").toLowerCase().includes(kw));
+        const found = viVoices.find(v =>
+          String(v.name || "").toLowerCase().includes(kw) ||
+          String(v.lang || "").toLowerCase().replace(/_/g, "-").includes(kw)
+        );
         if (found) {
           CHAT_VOICE_STATE.selectedVoice = found;
           return found;
@@ -4786,6 +5088,32 @@
       return viVoices[0];
     }
 
+    function ensureVietnameseVoicesReady(timeoutMs = 900) {
+      return new Promise((resolve) => {
+        if (!("speechSynthesis" in window)) return resolve(null);
+        const existing = selectWarmVietnameseVoice();
+        if (existing) return resolve(existing);
+
+        let settled = false;
+        const finish = () => {
+          if (settled) return;
+          settled = true;
+          resolve(selectWarmVietnameseVoice());
+        };
+
+        const timer = setTimeout(finish, timeoutMs);
+        const prevHandler = window.speechSynthesis.onvoiceschanged;
+        window.speechSynthesis.onvoiceschanged = () => {
+          if (typeof prevHandler === "function") prevHandler();
+          const v = selectWarmVietnameseVoice();
+          if (v) {
+            clearTimeout(timer);
+            finish();
+          }
+        };
+      });
+    }
+
     if ("speechSynthesis" in window) {
       selectWarmVietnameseVoice();
       window.speechSynthesis.onvoiceschanged = () => {
@@ -4793,30 +5121,126 @@
       };
     }
 
+    // Mở khóa bộ tổng hợp giọng nói ngay lần chạm đầu tiên trên điện thoại/máy tính
+    function unlockVietnameseSpeechEngine() {
+      if (CHAT_VOICE_STATE.audioUnlocked || !("speechSynthesis" in window)) return;
+      CHAT_VOICE_STATE.audioUnlocked = true;
+      selectWarmVietnameseVoice();
+      try {
+        const primer = new SpeechSynthesisUtterance("");
+        primer.lang = "vi-VN";
+        primer.volume = 0;
+        window.speechSynthesis.speak(primer);
+      } catch (_) {}
+    }
+    document.addEventListener("pointerdown", unlockVietnameseSpeechEngine, { once: true });
+
+    function spellUnknownEnglishTokenInVietnamese(token) {
+      const viLetterMap = {
+        a: "a", b: "bê", c: "xê", d: "đê", e: "e", f: "ép", g: "giê",
+        h: "hát", i: "i", j: "giây", k: "ca", l: "lờ", m: "mờ", n: "nờ",
+        o: "o", p: "pê", q: "quy", r: "rờ", s: "ét", t: "tê", u: "u",
+        v: "vê", w: "vê kép", x: "ích", y: "i", z: "dét"
+      };
+      // Nếu từ chứa ký tự tiếng Việt có dấu thì giữ nguyên 100%
+      if (/[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/i.test(token)) {
+        return token;
+      }
+      // Giữ nguyên các từ tiếng Việt không dấu thông dụng
+      const commonViNoAccent = new Set([
+        "xin", "chao", "minh", "la", "tro", "ly", "diem", "danh", "lop", "hoc", "sinh",
+        "giao", "vien", "chu", "nhiem", "giam", "thi", "quan", "tri", "phep", "nghi",
+        "sang", "chieu", "ngay", "thang", "nam", "gio", "phut", "giay", "vang", "co",
+        "mat", "tre", "bo", "tiet", "dong", "phuc", "kiem", "tra", "bao", "cao", "gui",
+        "duyet", "xem", "thong", "ke", "chuyen", "can", "vi", "pham", "tai", "khoan",
+        "mat", "khau", "dang", "nhap", "xuat", "cong", "tram", "anh", "khuon", "mat",
+        "quet", "the", "cam", "on", "ban", "vui", "long", "thu", "lai", "sau", "nhe",
+        "khong", "duoc", "chua", "da", "hoan", "tat", "thanh", "cong", "loi", "ket", "noi"
+      ]);
+      const lower = token.toLowerCase();
+      if (commonViNoAccent.has(lower)) return token;
+
+      // Chữ viết tắt toàn chữ hoa (2-5 ký tự) đọc theo bảng chữ cái tiếng Việt
+      if (/^[A-Z]{2,5}$/.test(token)) {
+        return token.toLowerCase().split("").map(ch => viLetterMap[ch] || ch).join(" ");
+      }
+      return token;
+    }
+
     function normalizeTextFor100PercentVietnamese(rawText) {
       let text = normalizeSchoolLabels(rawText || "");
       text = text
-        // Xóa URL và định dạng markdown / emoji
-        .replace(/https?:\/\/[^\s]+/gi, " ")
+        // Xóa URL, mã code inline và định dạng markdown / emoji
+        .replace(/https?:\/\/[^\s]+/gi, " đường dẫn trang web ")
         .replace(/[*#_`~>•✓✕⛔⚠️🎉📊📝🔐🛡️👑📋✅🎖️🔄📥📤🚀🕒🔒⏰🎓👩‍🏫📷🤖💾📨🔍]/g, " ")
-        // Việt hóa 100% các thuật ngữ/ký hiệu để giọng đọc thuần Việt, rõ nghĩa
-        .replace(/\bAI\s*128D\b/gi, "trí tuệ nhân tạo nhận diện khuôn mặt")
-        .replace(/\bAI\b/gi, "trí tuệ nhân tạo")
-        .replace(/\bQR\b/gi, "mã quy rờ")
-        .replace(/\bPIN\b/gi, "mã pin")
-        .replace(/\bGVCN\b/gi, "Giáo viên chủ nhiệm")
-        .replace(/\bBGH\b/gi, "Ban giám hiệu")
-        .replace(/\bHS\b/gi, "học sinh")
+        // Việt hóa 100% toàn bộ từ khóa/thuật ngữ tiếng Anh & ký hiệu chuyên môn
+        .replace(/AI\s*128D/gi, "trí tuệ nhân tạo nhận diện khuôn mặt")
+        .replace(/AI\s*Studio/gi, "phòng chụp trí tuệ nhân tạo")
+        .replace(/AI/gi, "trí tuệ nhân tạo")
+        .replace(/QR\s*code/gi, "mã quy rờ")
+        .replace(/QR/gi, "mã quy rờ")
+        .replace(/PIN/gi, "mã pin")
+        .replace(/GVCN/gi, "Giáo viên chủ nhiệm")
+        .replace(/BGH/gi, "Ban giám hiệu")
+        .replace(/THPT/gi, "Trung học phổ thông")
+        .replace(/HS/gi, "học sinh")
+        .replace(/GV/gi, "giáo viên")
+        .replace(/GT/gi, "giám thị")
         .replace(/(^|[^\p{L}\p{N}_])Vắng\s*KP(?=$|[^\p{L}\p{N}_])/giu, "$1Vắng không phép")
         .replace(/(^|[^\p{L}\p{N}_])Vắng\s*CP(?=$|[^\p{L}\p{N}_])/giu, "$1Vắng có phép")
         .replace(/(^|[^\p{L}\p{N}_])Không\s*ĐT\/ĐP(?=$|[^\p{L}\p{N}_])/giu, "$1Không đồng phục")
-        .replace(/\bCSV\b/gi, "tệp dữ liệu C S V")
-        .replace(/\bXLSX\b/gi, "tệp bảng tính Excel")
-        .replace(/\bPDF\b/gi, "tệp P D F")
-        .replace(/\bConcurrency\s*Control\b/gi, "kiểm soát xử lý đồng thời")
-        .replace(/\bDD\/MM\/YYYY\s*-\s*HH:MM:SS\b/gi, "ngày tháng năm và giờ phút giây")
+        .replace(/CSV/gi, "tệp dữ liệu xê ét vê")
+        .replace(/XLSX/gi, "tệp bảng tính ích xeo")
+        .replace(/XLS/gi, "tệp bảng tính ích xeo")
+        .replace(/Excel/gi, "bảng tính ích xeo")
+        .replace(/PDF/gi, "tệp pê đê ép")
+        .replace(/Google\s*Sheets?/gi, "bảng tính Gu gồ")
+        .replace(/Google\s*Apps\s*Script/gi, "hệ thống máy chủ Gu gồ")
+        .replace(/Google/gi, "Gu gồ")
+        .replace(/Chrome/gi, "trình duyệt Crôm")
+        .replace(/Edge/gi, "trình duyệt Ét")
+        .replace(/Admin/gi, "quản trị viên")
+        .replace(/Online/gi, "trực tuyến")
+        .replace(/Offline/gi, "ngoại tuyến")
+        .replace(/Camera/gi, "máy ảnh")
+        .replace(/Micro/gi, "mi cờ rô")
+        .replace(/Reset/gi, "đặt lại")
+        .replace(/Update/gi, "cập nhật")
+        .replace(/Login/gi, "đăng nhập")
+        .replace(/Logout/gi, "đăng xuất")
+        .replace(/App/gi, "ứng dụng")
+        .replace(/Web/gi, "trang web")
+        .replace(/Link/gi, "liên kết")
+        .replace(/File/gi, "tệp tin")
+        .replace(/Tab/gi, "thẻ chức năng")
+        .replace(/Icon/gi, "biểu tượng")
+        .replace(/Button/gi, "nút bấm")
+        .replace(/Data/gi, "dữ liệu")
+        .replace(/System/gi, "hệ thống")
+        .replace(/Server/gi, "máy chủ")
+        .replace(/Error/gi, "lỗi")
+        .replace(/OK/gi, "đồng ý")
+        .replace(/Concurrency\s*Control/gi, "kiểm soát xử lý đồng thời")
+        .replace(/DD\/MM\/YYYY\s*-\s*HH:MM:SS/gi, "ngày tháng năm và giờ phút giây")
+        // Đọc mã lớp kiểu 10A01, 12A1 sang phát âm tiếng Việt tự nhiên
+        .replace(/(\d{2})([A-Za-z])(\d{1,2})/g, (_, khoi, chu, stt) => {
+          const docChu = { a: "a", b: "bê", c: "xê", d: "đê" }[chu.toLowerCase()] || chu.toLowerCase();
+          return `${khoi} ${docChu} ${parseInt(stt, 10)}`;
+        })
+        // Đọc giờ HH:MM:SS hoặc HH:MM sang tiếng Việt tự nhiên
+        .replace(/(\d{1,2}):(\d{2})(?::(\d{2}))?/g, (_, h, m, s) => {
+          const minNum = parseInt(m, 10);
+          const secNum = s ? parseInt(s, 10) : 0;
+          let out = `${parseInt(h, 10)} giờ`;
+          if (minNum > 0) out += ` ${minNum} phút`;
+          if (secNum > 0) out += ` ${secNum} giây`;
+          return out;
+        })
         .replace(/(\d+)\s*\/\s*(\d+)/g, "$1 trên $2")
+        .replace(/%/g, " phần trăm ")
+        .replace(/&/g, " và ")
         .replace(/[|]/g, ", ")
+        .replace(/[A-Za-zÀ-ỹ0-9_-]+/g, (tok) => spellUnknownEnglishTokenInVietnamese(tok))
         .replace(/\s+/g, " ")
         .trim();
       return text;
@@ -4831,14 +5255,14 @@
 
       const chunks = [];
       rawParts.forEach(part => {
-        if (part.length <= 165) {
+        if (part.length <= 150) {
           chunks.push(part);
         } else {
-          // Cắt mềm theo dấu phẩy nếu câu quá dài để tránh trình duyệt tự ngắt giọng
+          // Cắt mềm theo dấu phẩy nếu câu quá dài để giữ nhịp thở tự nhiên, không bị ngắt quãng
           const subParts = part.split(/,\s+/);
           let buf = "";
           subParts.forEach(sp => {
-            if ((buf + ", " + sp).length > 165 && buf) {
+            if ((buf + ", " + sp).length > 150 && buf) {
               chunks.push(buf.trim());
               buf = sp;
             } else {
@@ -4899,16 +5323,16 @@
         if ("speechSynthesis" in window) {
           window.speechSynthesis.cancel();
         }
-        showToast("Đã tắt đọc giọng nói Trợ lý AI", "info");
+        showToast("Đã tắt đọc giọng nói Trợ lý trí tuệ nhân tạo", "info");
       } else {
-        showToast("🔊 Đã bật đọc 100% tiếng Việt (giọng ấm áp, tốc độ vừa phải)", "success");
+        showToast("🔊 Đã bật đọc 100% tiếng Việt (giọng ấm áp, tốc độ nhanh vừa)", "success");
         if (CHAT_VOICE_STATE.lastBotReplyText) {
           speakChatBotReply(CHAT_VOICE_STATE.lastBotReplyText, true);
         }
       }
     }
 
-    function speakChatBotReply(rawText, forceSpeak = false) {
+    async function speakChatBotReply(rawText, forceSpeak = false) {
       if (rawText && String(rawText).trim()) {
         CHAT_VOICE_STATE.lastBotReplyText = String(rawText).trim();
       }
@@ -4922,10 +5346,13 @@
         const vietnamesePlain = normalizeTextFor100PercentVietnamese(CHAT_VOICE_STATE.lastBotReplyText);
         if (!vietnamesePlain) return;
 
-        const sentences = splitVietnameseSentencesForSpeech(vietnamesePlain);
-        const warmVoice = CHAT_VOICE_STATE.selectedVoice || selectWarmVietnameseVoice();
+        // Đảm bảo nạp xong danh sách giọng đọc tiếng Việt trước khi phát âm để không bao giờ rơi về giọng Anh mặc định
+        const warmVoice = CHAT_VOICE_STATE.selectedVoice || await ensureVietnameseVoicesReady(900);
+        if (currentToken !== CHAT_VOICE_STATE.speakQueueToken) return;
 
+        const sentences = splitVietnameseSentencesForSpeech(vietnamesePlain);
         let idx = 0;
+
         const speakNextSentence = () => {
           if (currentToken !== CHAT_VOICE_STATE.speakQueueToken) return;
           if (!CHAT_VOICE_STATE.ttsEnabled && !forceSpeak) return;
@@ -4936,21 +5363,21 @@
           if (warmVoice) {
             utter.voice = warmVoice;
           }
-          // Tốc độ vừa phải (0.90) và cao độ trầm ấm (0.96) để nghe truyền cảm, dễ chịu
-          utter.rate = 0.90;
+          // Giọng trầm ấm (pitch: 0.96), tốc độ nhanh vừa tự nhiên (rate: 1.06)
+          utter.rate = 1.06;
           utter.pitch = 0.96;
           utter.volume = 1.0;
 
           utter.onend = () => {
             idx++;
             if (idx < sentences.length && currentToken === CHAT_VOICE_STATE.speakQueueToken) {
-              setTimeout(speakNextSentence, 140);
+              setTimeout(speakNextSentence, 95);
             }
           };
           utter.onerror = () => {
             idx++;
             if (idx < sentences.length && currentToken === CHAT_VOICE_STATE.speakQueueToken) {
-              setTimeout(speakNextSentence, 100);
+              setTimeout(speakNextSentence, 80);
             }
           };
 

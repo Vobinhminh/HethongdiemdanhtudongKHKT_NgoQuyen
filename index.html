@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Cổng Điểm Danh & Trạm AI Trung Học Phổ Thông</title>
   <script>
-      const APP_VERSION = "1.2.7"; // Cập nhật số này mỗi khi sửa file
+      const APP_VERSION = "1.2.8"; // Cập nhật số này mỗi khi sửa file
 
       async function checkAppUpdate() {
         try {
@@ -165,6 +165,11 @@
       </div>
 
       <div class="flex items-center gap-2">
+        <button type="button" id="headerSchoolBadge" onclick="openSchoolSwitcherModal()" title="Nhấn để chuyển Mã trường hoặc Máy chủ Google Sheet riêng"
+                class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-400/30 text-emerald-200 text-xs font-bold transition">
+          <span>🏫</span>
+          <span id="headerSchoolBadgeText">Mặc định</span>
+        </button>
         <a id="aiStationLink" href="ai.html" target="_blank"
            class="px-3 py-1.5 rounded-xl bg-indigo-500/30 hover:bg-indigo-500/50 border border-indigo-300/30 text-xs font-semibold flex items-center gap-1.5 transition">
           <span>📸</span>
@@ -1336,6 +1341,45 @@
     </div>
   </div>
 
+  <!-- HỘP THOẠI CHUYỂN ĐỔI MÃ TRƯỜNG (PHƯƠNG ÁN 1) HOẶC GOOGLE SHEET RIÊNG (CÁCH 2) -->
+  <div id="schoolSwitcherModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-extrabold text-lg text-slate-900">🏫 Kết Nối Trường / Máy Chủ</h3>
+        <button type="button" onclick="closeModal('schoolSwitcherModal')" class="text-slate-400 hover:text-slate-700 font-bold text-lg">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div class="p-3 rounded-2xl bg-indigo-50/80 border border-indigo-200 space-y-2">
+          <label class="block font-extrabold text-indigo-950 uppercase">Phương án 1: Dùng chung 1 Web App (Mã trường)</label>
+          <input type="text" id="inputSchoolCodeModal" placeholder="VD: THPT_NGUYEN_TRAI (để trống = mặc định)"
+                 class="w-full rounded-xl border border-indigo-200 bg-white px-3 py-2 text-sm font-mono font-bold uppercase focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+          <p class="text-[11px] text-indigo-800">Tự động thêm tham số <code class="font-mono font-bold">?school=MA_TRUONG</code> lên URL và cô lập bộ nhớ đệm.</p>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-2">
+          <label class="block font-extrabold text-emerald-950 uppercase">Cách 2: Tách riêng file Google Sheet (URL GAS riêng)</label>
+          <input type="url" id="inputCustomGasUrlModal" placeholder="https://script.google.com/macros/s/.../exec"
+                 class="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-600" />
+          <p class="text-[11px] text-emerald-800">Dán link Web App Google Apps Script riêng của trường hoặc truyền qua <code class="font-mono font-bold">?gasUrl=...</code></p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-2">
+        <button type="button" onclick="copyCurrentSchoolShareUrl()"
+                class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
+          📋 Sao chép link trường này
+        </button>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="closeModal('schoolSwitcherModal')"
+                  class="px-3.5 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Hủy</button>
+          <button type="button" onclick="applySchoolEnvironmentFromModal()"
+                  class="px-4 py-2 rounded-xl bg-navy-800 hover:bg-navy-900 text-white text-xs font-bold shadow">Áp dụng</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ===================================================================== -->
   <!-- MÃ XỬ LÝ LOGIC ỨNG DỤNG                                               -->
   <!-- ===================================================================== -->
@@ -1346,6 +1390,9 @@
 
     const APP_STATE = {
       gasUrl: DEFAULT_SYSTEM_GAS_URL,
+      isCustomGasUrl: false,
+      schoolCode: "",
+      tenantNamespace: "DEFAULT",
       chatBoxUrl: CHATBOX_WEB_APP_URL,
       initData: null,
       selectedLoginRole: "STUDENT",
@@ -1492,16 +1539,116 @@
       setInterval(refreshAttendanceTimeGateUI, 15000);
     });
 
+    function sanitizeSchoolCode(rawCode) {
+      return String(rawCode || "")
+        .trim()
+        .toUpperCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/Đ/g, "D")
+        .replace(/[^A-Z0-9_-]/g, "_")
+        .replace(/_{2,}/g, "_")
+        .replace(/^_|_$/g, "");
+    }
+
+    function computeTenantNamespace(schoolCode, gasUrl) {
+      if (schoolCode) return `SCH_${schoolCode}`;
+      if (gasUrl && gasUrl !== DEFAULT_SYSTEM_GAS_URL) {
+        let hash = 0;
+        for (let i = 0; i < gasUrl.length; i++) {
+          hash = ((hash << 5) - hash + gasUrl.charCodeAt(i)) | 0;
+        }
+        return `GAS_${Math.abs(hash).toString(36).toUpperCase()}`;
+      }
+      return "DEFAULT";
+    }
+
     function initGasUrlFromEnvironment() {
       const params = new URLSearchParams(window.location.search);
       const sysParam = params.get("gasUrl") || params.get("api") || params.get("systemUrl");
+      const rawSchool = params.get("school") || params.get("truong") || params.get("schoolCode") || params.get("id") || "";
 
-      APP_STATE.gasUrl = (sysParam && sysParam.startsWith("https://")) ? sysParam.trim() : DEFAULT_SYSTEM_GAS_URL;
+      const cleanSchool = sanitizeSchoolCode(rawSchool);
+      const hasCustomGas = Boolean(sysParam && sysParam.trim().startsWith("https://"));
+      const resolvedGasUrl = hasCustomGas ? sysParam.trim() : DEFAULT_SYSTEM_GAS_URL;
+
+      APP_STATE.schoolCode = cleanSchool;
+      APP_STATE.isCustomGasUrl = hasCustomGas && resolvedGasUrl !== DEFAULT_SYSTEM_GAS_URL;
+      APP_STATE.gasUrl = resolvedGasUrl;
+      APP_STATE.tenantNamespace = computeTenantNamespace(cleanSchool, resolvedGasUrl);
       APP_STATE.chatBoxUrl = CHATBOX_WEB_APP_URL;
 
+      // Đồng bộ đường dẫn sang Trạm Ảnh AI (ai.html) mang theo đầy đủ gasUrl & school
       const aiLink = document.getElementById("aiStationLink");
-      if (aiLink && APP_STATE.gasUrl) {
-        aiLink.href = `ai.html?gasUrl=${encodeURIComponent(APP_STATE.gasUrl)}`;
+      if (aiLink) {
+        const aiParams = new URLSearchParams();
+        if (APP_STATE.gasUrl) aiParams.set("gasUrl", APP_STATE.gasUrl);
+        if (APP_STATE.schoolCode) aiParams.set("school", APP_STATE.schoolCode);
+        const qs = aiParams.toString();
+        aiLink.href = qs ? `ai.html?${qs}` : "ai.html";
+      }
+
+      // Cập nhật huy hiệu nhận diện Trường / Máy chủ trên Header
+      const badgeEl = document.getElementById("headerSchoolBadge");
+      const badgeTextEl = document.getElementById("headerSchoolBadgeText");
+      if (badgeEl && badgeTextEl) {
+        badgeEl.classList.remove("hidden");
+        if (APP_STATE.schoolCode && APP_STATE.isCustomGasUrl) {
+          badgeTextEl.textContent = `${APP_STATE.schoolCode} • Sheet riêng`;
+        } else if (APP_STATE.schoolCode) {
+          badgeTextEl.textContent = `Mã trường: ${APP_STATE.schoolCode}`;
+        } else if (APP_STATE.isCustomGasUrl) {
+          badgeTextEl.textContent = "Google Sheet riêng";
+        } else {
+          badgeTextEl.textContent = "Trường mặc định";
+        }
+      }
+    }
+
+    function openSchoolSwitcherModal() {
+      const inpCode = document.getElementById("inputSchoolCodeModal");
+      const inpGas = document.getElementById("inputCustomGasUrlModal");
+      if (inpCode) inpCode.value = APP_STATE.schoolCode || "";
+      if (inpGas) inpGas.value = APP_STATE.isCustomGasUrl ? APP_STATE.gasUrl : "";
+      openModal("schoolSwitcherModal");
+    }
+
+    function applySchoolEnvironmentFromModal() {
+      const rawCode = document.getElementById("inputSchoolCodeModal")?.value || "";
+      const rawGas = (document.getElementById("inputCustomGasUrlModal")?.value || "").trim();
+
+      if (rawGas && !rawGas.startsWith("https://script.google.com/")) {
+        showToast("URL Google Apps Script phải bắt đầu bằng https://script.google.com/...", "error");
+        return;
+      }
+
+      const nextUrl = new URL(window.location.href);
+      const cleanCode = sanitizeSchoolCode(rawCode);
+      if (cleanCode) {
+        nextUrl.searchParams.set("school", cleanCode);
+      } else {
+        nextUrl.searchParams.delete("school");
+        nextUrl.searchParams.delete("truong");
+        nextUrl.searchParams.delete("schoolCode");
+      }
+
+      if (rawGas) {
+        nextUrl.searchParams.set("gasUrl", rawGas);
+      } else {
+        nextUrl.searchParams.delete("gasUrl");
+        nextUrl.searchParams.delete("api");
+        nextUrl.searchParams.delete("systemUrl");
+      }
+
+      window.location.href = nextUrl.toString();
+    }
+
+    async function copyCurrentSchoolShareUrl() {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        showToast("Đã sao chép đường dẫn truy cập của trường!", "success");
+      } catch (_) {
+        showToast(window.location.href, "info");
       }
     }
 
@@ -1522,10 +1669,15 @@
       const targetGasUrl = APP_STATE.gasUrl || DEFAULT_SYSTEM_GAS_URL;
       const maxRetries = 3;
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        const payloadBody = { action, args };
+        if (APP_STATE.schoolCode) {
+          payloadBody.school = APP_STATE.schoolCode;
+          payloadBody.schoolCode = APP_STATE.schoolCode;
+        }
         const res = await fetch(targetGasUrl, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ action, args })
+          body: JSON.stringify(payloadBody)
         });
         if (!res.ok) {
           throw new Error(`Lỗi kết nối máy chủ - Mã ${res.status}`);
@@ -1548,6 +1700,14 @@
       try {
         const data = await callGasApi("getAppInitData");
         APP_STATE.initData = data;
+        if (data && data.schoolName) {
+          const badgeTextEl = document.getElementById("headerSchoolBadgeText");
+          if (badgeTextEl) {
+            badgeTextEl.textContent = APP_STATE.schoolCode
+              ? `${data.schoolName} (${APP_STATE.schoolCode})`
+              : data.schoolName;
+          }
+        }
 
         updateLiveSystemClocks();
         document.getElementById("headerSessionBadge").textContent = `Ca ${data.session || "Sáng"}`;
@@ -1866,7 +2026,8 @@
     }
 
     function getDistributedScopeKey(className, session, dateStr) {
-      return `DIST_ATT_${dateStr}_${session}_${className}`;
+      const ns = APP_STATE.tenantNamespace || "DEFAULT";
+      return `DIST_ATT_${ns}_${dateStr}_${session}_${className}`;
     }
 
     function readLocalClusterState(scopeKey) {
@@ -1958,8 +2119,13 @@
         if (useBeacon && typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function" && !isInsideGasIframe()) {
           try {
             const targetGasUrl = APP_STATE.gasUrl || DEFAULT_SYSTEM_GAS_URL;
+            const beaconBody = { action: "releaseClassAttendanceNode", args: [payloadObj] };
+            if (APP_STATE.schoolCode) {
+              beaconBody.school = APP_STATE.schoolCode;
+              beaconBody.schoolCode = APP_STATE.schoolCode;
+            }
             const blob = new Blob(
-              [JSON.stringify({ action: "releaseClassAttendanceNode", args: [payloadObj] })],
+              [JSON.stringify(beaconBody)],
               { type: "text/plain;charset=utf-8" }
             );
             navigator.sendBeacon(targetGasUrl, blob);

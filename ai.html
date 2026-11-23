@@ -352,16 +352,12 @@
     const FACE_MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model";
 
     function resolveSystemGasUrl() {
-      const params = new URLSearchParams(window.location.search);
-      const urlParam = params.get("gasUrl") || params.get("api") || params.get("systemUrl");
-      if (urlParam && urlParam.startsWith("https://")) {
-        const cleanUrl = urlParam.trim();
-        try { sessionStorage.setItem("ATTENDANCE_GAS_URL", cleanUrl); } catch (e) {}
-        return cleanUrl;
-      }
       try {
-        const saved = sessionStorage.getItem("ATTENDANCE_GAS_URL");
-        if (saved && saved.startsWith("https://")) return saved;
+        const params = new URLSearchParams(window.location.search);
+        const urlParam = params.get("gasUrl") || params.get("api") || params.get("systemUrl");
+        if (urlParam && urlParam.trim().startsWith("https://")) {
+          return urlParam.trim();
+        }
       } catch (e) {}
       return DEFAULT_SYSTEM_GAS_URL;
     }
@@ -615,7 +611,7 @@
       return typeof window.google !== "undefined" && window.google.script && window.google.script.run;
     }
 
-    async function callGasApi(action, args = [], options = {}) {
+    async function callGasApi(action, ...args) {
       if (isInsideGasIframe()) {
         return new Promise((resolve, reject) => {
           window.google.script.run
@@ -625,15 +621,14 @@
         });
       }
 
-      const maxRetries = options.maxRetries || 4;
-      const onRetry = typeof options.onRetry === "function" ? options.onRetry : null;
-
+      const maxRetries = 4;
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
           const res = await fetch(WEB_APP_URL, {
             method: "POST",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({ action, args })
+            body: JSON.stringify({ action, args }),
+            redirect: "follow"
           });
           if (!res.ok) {
             throw new Error(`Lỗi máy chủ (Mã ${res.status})`);
@@ -641,7 +636,6 @@
           const json = await res.json();
           if (json && json.status === "busy" && attempt < maxRetries) {
             const waitMs = 1500 + Math.floor(Math.random() * 1800) + attempt * 500;
-            if (onRetry) onRetry(attempt, maxRetries, waitMs);
             await yieldToMainThread(waitMs);
             continue;
           }
@@ -649,7 +643,6 @@
         } catch (err) {
           if (attempt >= maxRetries) throw err;
           const waitMs = 1400 + Math.floor(Math.random() * 1400);
-          if (onRetry) onRetry(attempt, maxRetries, waitMs);
           await yieldToMainThread(waitMs);
         }
       }
@@ -1395,7 +1388,7 @@
       resetStudentCombobox("⏳ Đang tải danh sách học sinh...", true);
 
       try {
-        const res = await callGasApi('getClassDataRawStudents', [cls]);
+        const res = await callGasApi('getClassDataRawStudents', cls);
         if (reqId !== studentFetchSeq) return;
 
         aiStudentsList = (res && Array.isArray(res.students)) ? res.students : [];
@@ -1448,7 +1441,7 @@
           isPinValid = (String(student.pin).trim() === pin);
         }
         if (!isPinValid) {
-          const verifyRes = await callGasApi('verifyStudentPin', [cls, student.maHS || student.name, pin]);
+          const verifyRes = await callGasApi('verifyStudentPin', cls, student.maHS || student.name, pin);
           isPinValid = Boolean(verifyRes && verifyRes.success);
         }
 
@@ -2009,28 +2002,40 @@
     }
   </script>
   <script>
-    (function checkAiStationAppUpdate() {
-      const AI_STATION_VERSION = "1.2.4";
-      fetch("./version.json?t=" + Date.now(), { cache: "no-store" })
-        .then(r => (r.ok ? r.json() : null))
-        .then(data => {
-          if (!data || !data.version) return;
-          const savedVer = localStorage.getItem("AI_STATION_APP_VERSION");
-          if (savedVer && savedVer !== String(data.version)) {
-            localStorage.setItem("AI_STATION_APP_VERSION", String(data.version));
-            if ("caches" in window) {
-              caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).finally(() => {
-                window.location.reload();
-              });
-            } else {
-              window.location.reload();
-            }
-          } else {
-            localStorage.setItem("AI_STATION_APP_VERSION", String(data.version || AI_STATION_VERSION));
+    const APP_VERSION = "1.2.6";
+
+    async function checkAppUpdate() {
+      try {
+        const res = await fetch(`./version.json?t=${Date.now()}`, { cache: "no-store" });
+        if (!res.ok) return;
+        const remote = await res.json();
+
+        if (remote.version && String(remote.version) !== APP_VERSION) {
+          if ("caches" in window) {
+            const cacheNames = await caches.keys();
+            await Promise.all(cacheNames.map(name => caches.delete(name)));
           }
-        })
-        .catch(() => {});
-    })();
+          if ("serviceWorker" in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (const reg of registrations) {
+              await reg.unregister();
+            }
+          }
+          if (remote.forceUpdate) {
+            const url = new URL(window.location.href);
+            url.searchParams.set("v", remote.version);
+            window.location.replace(url.toString());
+            return;
+          }
+          window.location.reload();
+        }
+      } catch (err) {
+        console.warn("Bỏ qua kiểm tra cập nhật (đang offline hoặc chưa có version.json):", err);
+      }
+    }
+
+    window.addEventListener("load", checkAppUpdate);
+    setInterval(checkAppUpdate, 5 * 60 * 1000);
   </script>
   <script src="version.js" onerror="console.log('Chế độ offline/standalone')"></script>
 </body>
